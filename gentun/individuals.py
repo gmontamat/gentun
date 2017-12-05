@@ -74,7 +74,7 @@ class XgboostIndividual(Individual):
         }
         if genes is None:
             self.genes = self.generate_random_genes()
-        if set(self.genome.keys()) != set(genes.keys()):
+        if set(self.genome.keys()) != set(self.genes.keys()):
             raise ValueError("Genes passed don't correspond to individual's genome")
 
     def generate_random_genes(self):
