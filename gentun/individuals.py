@@ -10,7 +10,8 @@ import random
 
 class Individual(object):
     """Basic definition of an individual containing reproduction and
-    mutation methods. Not to be instantiated, use a subclass.
+    mutation methods. Not to be instantiated, use a subclass which
+    defines a genome, plus item getters and random genes generation.
     """
 
     def __init__(self, genes, uniform_rate, mutation_rate):
@@ -20,29 +21,37 @@ class Individual(object):
         self.mutation_rate = mutation_rate
 
     def generate_random_genes(self):
-        raise NotImplementedError('Use a subclass with genes definition')
+        raise NotImplementedError("Use a subclass with genes definition")
+
+    def get_genes(self):
+        raise NotImplementedError("Use a subclass with genes definition")
 
     def get_genome(self):
-        raise NotImplementedError('Use a subclass with genes definition')
+        raise NotImplementedError("Use a subclass with genes definition")
 
     def reproduce(self, partner):
+        """Return a new individual which inherits genes from self
+        and a partner
+        """
         assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
         child_genes = {}
-        for name, value in self.genes.iteritems():
+        for name, value in self.get_genes().iteritems():
             if random.random() < self.uniform_rate:
                 child_genes[name] = value
             else:
-                child_genes[name] = partner.get_gene()[name]
+                child_genes[name] = partner.get_genes[name]
         return self.__class__(child_genes, self.uniform_rate, self.mutation_rate)
 
     def mutate(self):
-        for name, value in self.genes.iteritems():
+        """Mutate instance's genes with a certain probability
+        """
+        for name, value in self.get_genes().iteritems():
             if random.random() < self.mutation_rate:
                 default, minimum, maximum = self.get_genome()[name]
                 if type(default) == int:
-                    self.genes[name] = random.randint(minimum, maximum)
+                    self.get_genes()[name] = random.randint(minimum, maximum)
                 else:
-                    self.genes[name] = random.uniform(minimum, maximum)
+                    self.get_genes()[name] = random.uniform(minimum, maximum)
 
 
 class XgboostIndividual(Individual):
@@ -65,9 +74,8 @@ class XgboostIndividual(Individual):
         }
         if genes is None:
             self.genes = self.generate_random_genes()
-        else:
-            # Check that genes passed correspond to the individual's genome
-            assert set(self.genome.keys()) == set(genes.keys())
+        if set(self.genome.keys()) != set(genes.keys()):
+            raise ValueError("Genes passed don't correspond to individual's genome")
 
     def generate_random_genes(self):
         genes = {}
@@ -77,6 +85,9 @@ class XgboostIndividual(Individual):
             else:
                 genes[name] = random.uniform(minimum, maximum)
         return genes
+
+    def get_genes(self):
+        return self.genes
 
     def get_genome(self):
         return self.genome
