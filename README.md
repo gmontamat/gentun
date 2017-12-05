@@ -12,5 +12,14 @@ reproduction and mutation is handled by the server.
 
 # References
 
-* Artificial Intelligence: A Modern Approach. 3rd edition. Chapter 4.
+## Genetic algorithms
+
+* Artificial Intelligence: A Modern Approach. 3rd edition. Section 4.1.4
 * https://github.com/DEAP/deap
+* http://www.theprojectspot.com/tutorial-post/creating-a-genetic-algorithm-for-beginners/3
+
+## xgboost parameter tuning
+
+* http://xgboost.readthedocs.io/en/latest/parameter.html
+* http://xgboost.readthedocs.io/en/latest/how_to/param_tuning.html
+* https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
