@@ -29,6 +29,9 @@ class Individual(object):
     def get_genome(self):
         raise NotImplementedError("Use a subclass with genes definition")
 
+    def evaluate_fitness(self):
+        raise NotImplementedError("Use a subclass with genes definition")
+
     def reproduce(self, partner):
         """Return a new individual which inherits genes from self
         and a partner
@@ -52,6 +55,7 @@ class Individual(object):
                     self.get_genes()[name] = random.randint(minimum, maximum)
                 else:
                     self.get_genes()[name] = random.uniform(minimum, maximum)
+                self.fitness = float('inf')  # The mutation produces a new individual
 
 
 class XgboostIndividual(Individual):
@@ -91,3 +95,6 @@ class XgboostIndividual(Individual):
 
     def get_genome(self):
         return self.genome
+
+    def evaluate_fitness(self):
+        pass
