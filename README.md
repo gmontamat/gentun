@@ -6,11 +6,8 @@ particular individual of a given population is time consuming, a client-server a
 clients perform model fitting and cross-validation of the individuals that a server assigns. Offspring generation by
 reproduction and mutation is handled by the server.
 
-```
-"Parameter tuning is a dark art in machine learning, the optimal
- parameters of a model can depend on many scenarios."
-                             Xgboost's Notes on Parameter Tuning
-```
+*"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
+~ Xgboost's Notes on Parameter Tuning
 
 # Supported models
 
