@@ -9,9 +9,13 @@ reproduction and mutation is handled by the server.
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ Xgboost's Notes on Parameter Tuning
 
-# Supported models
+# Supported models (work in progress)
 
-* xgboost
+- [ ] Xgboost regressor
+- [ ] Xgboost classifier
+- [ ] Scikit-learn Multilayer Perceptron Regressor
+- [ ] Scikit-learn Multilayer Perceptron Classifier
+- [ ] Keras
 
 # References
 
