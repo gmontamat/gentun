@@ -7,6 +7,8 @@ and mutation processes
 
 import random
 
+from models import XgboostRegressor
+
 
 class Individual(object):
     """Basic definition of an individual containing reproduction and
@@ -14,8 +16,10 @@ class Individual(object):
     defines a genome, plus item getters and random genes generation.
     """
 
-    def __init__(self, genes, uniform_rate, mutation_rate):
-        self.fitness = float('inf')  # Until evaluated an individual is unfit
+    def __init__(self, x_train, y_train, genes, uniform_rate, mutation_rate):
+        self.x_train = x_train
+        self.y_train = y_train
+        self.fitness = None  # Until evaluated an individual is unfit
         self.genes = genes
         self.uniform_rate = uniform_rate
         self.mutation_rate = mutation_rate
@@ -31,6 +35,11 @@ class Individual(object):
 
     def evaluate_fitness(self):
         raise NotImplementedError("Use a subclass with genes definition")
+
+    def get_fitness(self):
+        if self.fitness is None:
+            self.evaluate_fitness()
+        return self.fitness
 
     def reproduce(self, partner):
         """Return a new individual which inherits genes from self
@@ -60,8 +69,8 @@ class Individual(object):
 
 class XgboostIndividual(Individual):
 
-    def __init__(self, genes=None, uniform_rate=0.5, mutation_rate=0.015):
-        super(XgboostIndividual, self).__init__(genes, uniform_rate, mutation_rate)
+    def __init__(self, x_train, y_train, genes=None, uniform_rate=0.5, mutation_rate=0.015):
+        super(XgboostIndividual, self).__init__(x_train, y_train, genes, uniform_rate, mutation_rate)
         self.genome = {
             # name: (default, min, max)
             'eta': (0.3, 0.0, 1.0),
@@ -97,4 +106,5 @@ class XgboostIndividual(Individual):
         return self.genome
 
     def evaluate_fitness(self):
-        pass
+        model = XgboostRegressor(self.x_train, self.y_train, self.genes)
+        self.fitness = model.cross_validate()
