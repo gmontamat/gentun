@@ -6,30 +6,39 @@ Machine Learning models compatible with the Genetic Algorithm
 import pandas as pd
 import xgboost as xgb
 
+class GentunModel(object):
 
-class XgboostRegressor(object):
-
-    def __init__(self, x_train, y_train, hyperparameters, eval_metric='rmse', nfold=5):
+    def __init__(self, x_train, y_train, hyperparameters):
         self.x_train = x_train
         self.y_train = y_train
+        self.hyperparameters = hyperparameters
+    
+    def cross_validate(self):
+        raise NotImplementedError("Use a subclass with a defined model.")
+
+
+class XgboostRegressor(GentunModel):
+
+    def __init__(self, x_train, y_train, hyperparameters, eval_metric='rmse', nfold=5):
         hyperparameters.update({
             'booster': 'gbtree',
             'objective': 'reg:linear',
             'eval_metric': eval_metric,
             'silent': 1
         })
-        self.params = hyperparameters
+        super(XgboostRegressor, self).__init__(x_train, y_train, hyperparameters)
+        self.eval_metric = eval_metric
         self.nfold = nfold
 
     def cross_validate(self):
         """Train model using n-fold cross validation and
-        return mean validation metric
+        return mean value of validation metric.
         """
         d_train = xgb.DMatrix(self.x_train, label=self.y_train)
         cv_result = xgb.cv(
             self.params, d_train, num_boost_round=1000, early_stopping_rounds=50, nfold=self.nfold
         )
-        return cv_result['test-rmse-mean'][cv_result.index[-1]]
+        return cv_result['test-{}-mean'.format(self.eval_metric)][cv_result.index[-1]]
 
 
 if __name__ == '__main__':
