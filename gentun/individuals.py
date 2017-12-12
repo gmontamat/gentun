@@ -2,7 +2,7 @@
 """
 Classes which define the individuals of a population
 with its characteristic genes, generation, crossover
-and mutation processes
+and mutation processes.
 """
 
 import random
@@ -11,9 +11,11 @@ from models import XgboostRegressor
 
 
 class Individual(object):
-    """Basic definition of an individual containing reproduction and
-    mutation methods. Not to be instantiated, use a subclass which
-    defines a genome, plus item getters and random genes generation.
+    """Basic definition of an individual containing
+    reproduction and mutation methods. Not to be
+    instantiated, use a subclass which extends this object
+    by defining a genome, item getters and a random
+    individual generator.
     """
 
     def __init__(self, x_train, y_train, genes, uniform_rate, mutation_rate):
@@ -25,16 +27,16 @@ class Individual(object):
         self.mutation_rate = mutation_rate
 
     def generate_random_genes(self):
-        raise NotImplementedError("Use a subclass with genes definition")
+        raise NotImplementedError("Use a subclass with genes definition.")
 
     def get_genes(self):
-        raise NotImplementedError("Use a subclass with genes definition")
+        raise NotImplementedError("Use a subclass with genes definition.")
 
     def get_genome(self):
-        raise NotImplementedError("Use a subclass with genes definition")
+        raise NotImplementedError("Use a subclass with genes definition.")
 
     def evaluate_fitness(self):
-        raise NotImplementedError("Use a subclass with genes definition")
+        raise NotImplementedError("Use a subclass with genes definition.")
 
     def get_fitness(self):
         if self.fitness is None:
@@ -42,8 +44,8 @@ class Individual(object):
         return self.fitness
 
     def reproduce(self, partner):
-        """Return a new individual which inherits genes from self
-        and a partner
+        """Mix genes from self and partner randomly and
+        return a new instance of an individual.
         """
         assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
         child_genes = {}
@@ -55,7 +57,8 @@ class Individual(object):
         return self.__class__(child_genes, self.uniform_rate, self.mutation_rate)
 
     def mutate(self):
-        """Mutate instance's genes with a certain probability
+        """Mutate instance's genes with a certain
+        probability.
         """
         for name, value in self.get_genes().iteritems():
             if random.random() < self.mutation_rate:
