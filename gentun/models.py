@@ -6,13 +6,14 @@ Machine Learning models compatible with the Genetic Algorithm
 import pandas as pd
 import xgboost as xgb
 
+
 class GentunModel(object):
 
-    def __init__(self, x_train, y_train, hyperparameters):
+    def __init__(self, x_train, y_train, parameters):
         self.x_train = x_train
         self.y_train = y_train
-        self.hyperparameters = hyperparameters
-    
+        self.params = parameters
+
     def cross_validate(self):
         raise NotImplementedError("Use a subclass with a defined model.")
 
