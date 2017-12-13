@@ -3,7 +3,6 @@
 Machine Learning models compatible with the Genetic Algorithm
 """
 
-import pandas as pd
 import xgboost as xgb
 
 
@@ -22,13 +21,13 @@ class XgboostRegressor(GentunModel):
     def __init__(self, x_train, y_train, hyperparameters, eval_metric='rmse', nfold=5,
                  num_boost_round=5000, early_stopping_rounds=100):
         super(XgboostRegressor, self).__init__(x_train, y_train)
-        hyperparameters.update({
+        self.params = {
             'booster': 'gbtree',
             'objective': 'reg:linear',
             'eval_metric': eval_metric,
             'silent': 1
-        })
-        self.params = hyperparameters
+        }
+        self.params.update(hyperparameters)
         self.eval_metric = eval_metric
         self.nfold = nfold
         self.num_boost_round = num_boost_round
@@ -47,6 +46,7 @@ class XgboostRegressor(GentunModel):
 
 
 if __name__ == '__main__':
+    import pandas as pd
     data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
     y = data['quality']
     x = data.drop(['quality'], axis=1)
