@@ -17,6 +17,19 @@ reproduction and mutation is handled by the server.
 - [ ] Scikit-learn Multilayer Perceptron Classifier
 - [ ] Keras
 
+# Sample usage
+
+```python
+import pandas as pd
+from gentun import Population, GeneticAlgorithm
+data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
+y_train = data['quality']
+x_train = data.drop(['quality'], axis=1)
+pop = Population('XgboostIndividual', x_train, y_train, size=100, additional_parameters={'nfold': 3})
+ga = GeneticAlgorithm(pop)
+ga.run(10)
+```
+
 # References
 
 ## Genetic algorithms
