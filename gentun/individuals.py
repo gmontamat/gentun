@@ -5,6 +5,7 @@ with its characteristic genes, generation, crossover
 and mutation processes.
 """
 
+import pprint
 import random
 
 from models import XgboostRegressor
@@ -18,13 +19,14 @@ class Individual(object):
     individual generator.
     """
 
-    def __init__(self, x_train, y_train, genes, uniform_rate, mutation_rate):
+    def __init__(self, x_train, y_train, genes, uniform_rate, mutation_rate, additional_parameters=None):
         self.x_train = x_train
         self.y_train = y_train
         self.fitness = None  # Until evaluated an individual is unfit
         self.genes = genes
         self.uniform_rate = uniform_rate
         self.mutation_rate = mutation_rate
+        assert additional_parameters is None
 
     def generate_random_genes(self):
         raise NotImplementedError("Use a subclass with genes definition.")
@@ -36,6 +38,9 @@ class Individual(object):
         raise NotImplementedError("Use a subclass with genes definition.")
 
     def evaluate_fitness(self):
+        raise NotImplementedError("Use a subclass with genes definition.")
+
+    def get_additional_parameters(self):
         raise NotImplementedError("Use a subclass with genes definition.")
 
     def get_fitness(self):
@@ -53,8 +58,11 @@ class Individual(object):
             if random.random() < self.uniform_rate:
                 child_genes[name] = value
             else:
-                child_genes[name] = partner.get_genes[name]
-        return self.__class__(child_genes, self.uniform_rate, self.mutation_rate)
+                child_genes[name] = partner.get_genes()[name]
+        return self.__class__(
+            self.x_train, self.y_train, child_genes, self.uniform_rate, self.mutation_rate,
+            **self.get_additional_parameters()
+        )
 
     def mutate(self):
         """Mutate instance's genes with a certain
@@ -93,6 +101,7 @@ class XgboostIndividual(Individual):
             self.genes = self.generate_random_genes()
         if set(self.genome.keys()) != set(self.genes.keys()):
             raise ValueError("Genes passed don't correspond to individual's genome.")
+        # Additional parameters which are not tuned
         self.eval_metric = eval_metric
         self.nfold = nfold
         self.num_boost_round = num_boost_round
@@ -120,3 +129,14 @@ class XgboostIndividual(Individual):
             early_stopping_rounds=self.early_stopping_rounds
         )
         self.fitness = model.cross_validate()
+
+    def get_additional_parameters(self):
+        return {
+            'eval_metric': self.eval_metric,
+            'nfold': self.nfold,
+            'num_boost_round': self.num_boost_round,
+            'early_stopping_rounds': self.early_stopping_rounds
+        }
+
+    def __str__(self):
+        return pprint.pformat(self.genes)
