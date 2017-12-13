@@ -77,7 +77,7 @@ class GeneticAlgorithm(object):
     def tournament_select(self):
         tournament = Population(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[
-                self.population[i] for i in random.sample(range(self.population.get_size(), self.tournament_size))
+                self.population[i] for i in random.sample(range(self.population.get_size()), self.tournament_size)
             ]
         )
         return tournament.get_fittest()
