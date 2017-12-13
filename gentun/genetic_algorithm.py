@@ -63,8 +63,19 @@ class GeneticAlgorithm(object):
         self.x_train, self.y_train = self.population.get_data()
         self.tournament_size = tournament_size
         self.elitism = elitism
+        self.generation = 0
 
-    def evolve(self):
+    def run(self, max_generations):
+        print 'Starting genetic algorithm...'
+        print
+        while self.generation < max_generations:
+            self.evolve_population()
+            self.generation += 1
+
+    def evolve_population(self):
+        print 'Generation #{}, fittest individual is:'.format(self.generation)
+        print self.population.get_fittest()
+        print
         new_population = Population(self.population.get_species(), self.x_train, self.y_train, individual_list=[])
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
@@ -90,4 +101,4 @@ if __name__ == '__main__':
     x_train = data.drop(['quality'], axis=1)
     pop = Population('XgboostIndividual', x_train, y_train, size=100, additional_parameters={'nfold': 3})
     ga = GeneticAlgorithm(pop)
-    ga.evolve()
+    ga.run(10)
