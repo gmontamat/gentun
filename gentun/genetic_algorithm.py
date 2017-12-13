@@ -49,16 +49,18 @@ class Population(object):
     def get_fittest(self):
         return min(self.individuals, key=operator.methodcaller('get_fitness'))
 
+    def get_data(self):
+        return self.x_train, self.y_train
+
     def __getitem__(self, item):
         return self.individuals[item]
 
 
 class GeneticAlgorithm(object):
 
-    def __init__(self, population, x_train, y_train, tournament_size=5, elitism=True):
+    def __init__(self, population, tournament_size=5, elitism=True):
         self.population = population
-        self.x_train = x_train
-        self.y_train = y_train
+        self.x_train, self.y_train = self.population.get_data()
         self.tournament_size = tournament_size
         self.elitism = elitism
 
@@ -87,3 +89,5 @@ if __name__ == '__main__':
     y_train = data['quality']
     x_train = data.drop(['quality'], axis=1)
     pop = Population('XgboostIndividual', x_train, y_train, size=100, additional_parameters={'nfold': 3})
+    ga = GeneticAlgorithm(pop)
+    ga.evolve()
