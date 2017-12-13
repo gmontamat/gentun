@@ -20,7 +20,7 @@ mutation is handled by the server.
 # Sample usage
 
 Client-server model is still a work in progress, but you can test the genetic algorithm on a single box, as shown in the
-following example.
+following example:
 
 ```python
 import pandas as pd
