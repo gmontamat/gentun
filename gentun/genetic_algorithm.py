@@ -13,16 +13,21 @@ import individuals
 class Population(object):
 
     def __init__(self, species, x_train, y_train, individual_list=None, size=None,
-                 uniform_rate=0.5, mutation_rate=0.015):
+                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
         self.x_train = x_train
         self.y_train = y_train
         self.species = getattr(individuals, species)
         if individual_list is None and size is None:
             raise ValueError("Either pass a list of individuals or set a population size for a random creation")
         elif individual_list is None:
+            if additional_parameters is None:
+                additional_parameters = {}
             self.population_size = size
             self.individuals = [
-                self.species(self.x_train, self.y_train, uniform_rate=uniform_rate, mutation_rate=mutation_rate)
+                self.species(
+                    self.x_train, self.y_train, uniform_rate=uniform_rate,
+                    mutation_rate=mutation_rate, **additional_parameters
+                )
                 for _ in xrange(size)
             ]
         else:
@@ -77,6 +82,8 @@ class GeneticAlgorithm(object):
 
 
 if __name__ == '__main__':
-    x_train = 1
-    y_train = 1
-    pop = Population('XgboostIndividual', x_train, y_train, size=100)
+    import pandas as pd
+    data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
+    y_train = data['quality']
+    x_train = data.drop(['quality'], axis=1)
+    pop = Population('XgboostIndividual', x_train, y_train, size=100, additional_parameters={'nfold': 3})

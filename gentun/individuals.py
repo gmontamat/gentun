@@ -72,7 +72,8 @@ class Individual(object):
 
 class XgboostIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genes=None, uniform_rate=0.5, mutation_rate=0.015):
+    def __init__(self, x_train, y_train, genes=None, uniform_rate=0.5, mutation_rate=0.015,
+                 eval_metric='rmse', nfold=5, num_boost_round=5000, early_stopping_rounds=100):
         super(XgboostIndividual, self).__init__(x_train, y_train, genes, uniform_rate, mutation_rate)
         self.genome = {
             # name: (default, min, max)
@@ -91,7 +92,11 @@ class XgboostIndividual(Individual):
         if genes is None:
             self.genes = self.generate_random_genes()
         if set(self.genome.keys()) != set(self.genes.keys()):
-            raise ValueError("Genes passed don't correspond to individual's genome")
+            raise ValueError("Genes passed don't correspond to individual's genome.")
+        self.eval_metric = eval_metric
+        self.nfold = nfold
+        self.num_boost_round = num_boost_round
+        self.early_stopping_rounds = early_stopping_rounds
 
     def generate_random_genes(self):
         genes = {}
@@ -109,5 +114,9 @@ class XgboostIndividual(Individual):
         return self.genome
 
     def evaluate_fitness(self):
-        model = XgboostRegressor(self.x_train, self.y_train, self.genes)
+        model = XgboostRegressor(
+            self.x_train, self.y_train, self.genes, eval_metric=self.eval_metric,
+            nfold=self.nfold, num_boost_round=self.num_boost_round,
+            early_stopping_rounds=self.early_stopping_rounds
+        )
         self.fitness = model.cross_validate()

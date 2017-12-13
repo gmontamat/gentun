@@ -55,5 +55,5 @@ if __name__ == '__main__':
         'subsample': 1.0, 'colsample_bytree': 1.0, 'colsample_bylevel': 1.0, 'lambda': 1.0,
         'alpha': 0.0, 'scale_pos_weight': 1.0
     }
-    model = XgboostRegressor(x, y, genes)
+    model = XgboostRegressor(x, y, genes, nfold=3)
     print model.cross_validate()
