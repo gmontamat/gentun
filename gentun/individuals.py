@@ -70,12 +70,12 @@ class Individual(object):
         """
         for name, value in self.get_genes().iteritems():
             if random.random() < self.mutation_rate:
-                default, minimum, maximum = self.get_genome()[name]
+                default, minimum, maximum, precision = self.get_genome()[name]
                 if type(default) == int:
                     self.get_genes()[name] = random.randint(minimum, maximum)
                 else:
-                    self.get_genes()[name] = random.uniform(minimum, maximum)
-                self.fitness = float('inf')  # The mutation produces a new individual
+                    self.get_genes()[name] = round(random.uniform(minimum, maximum), precision)
+                self.fitness = None  # The mutation produces a new individual
 
 
 class XgboostIndividual(Individual):
@@ -84,18 +84,18 @@ class XgboostIndividual(Individual):
                  eval_metric='rmse', nfold=5, num_boost_round=5000, early_stopping_rounds=100):
         super(XgboostIndividual, self).__init__(x_train, y_train, genes, uniform_rate, mutation_rate)
         self.genome = {
-            # name: (default, min, max)
-            'eta': (0.3, 0.0, 1.0),
-            'min_child_weight': (1, 0, 10),
-            'max_depth': (6, 3, 10),
-            'gamma': (0.0, 0.0, 10.0),
-            'max_delta_step': (0, 0, 10),
-            'subsample': (1.0, 0.5, 1.0),
-            'colsample_bytree': (1.0, 0.5, 1.0),
-            'colsample_bylevel': (1.0, 0.5, 1.0),
-            'lambda': (1.0, 0.0, 10.0),
-            'alpha': (0.0, 0.0, 10.0),
-            'scale_pos_weight': (1.0, 0.0, 10.0)
+            # name: (default, min, max, precision)
+            'eta': (0.3, 0.0, 1.0, 6),
+            'min_child_weight': (1, 0, 10, None),
+            'max_depth': (6, 3, 10, None),
+            'gamma': (0.0, 0.0, 10.0, 2),
+            'max_delta_step': (0, 0, 10, None),
+            'subsample': (1.0, 0.5, 1.0, 2),
+            'colsample_bytree': (1.0, 0.5, 1.0, 2),
+            'colsample_bylevel': (1.0, 0.5, 1.0, 2),
+            'lambda': (1.0, 0.0, 10.0, 2),
+            'alpha': (0.0, 0.0, 10.0, 2),
+            'scale_pos_weight': (1.0, 0.0, 10.0, 2)
         }
         if genes is None:
             self.genes = self.generate_random_genes()
@@ -109,11 +109,11 @@ class XgboostIndividual(Individual):
 
     def generate_random_genes(self):
         genes = {}
-        for name, (default, minimum, maximum) in self.genome.iteritems():
+        for name, (default, minimum, maximum, precision) in self.genome.iteritems():
             if type(default) == int:
                 genes[name] = random.randint(minimum, maximum)
             else:
-                genes[name] = random.uniform(minimum, maximum)
+                genes[name] = round(random.uniform(minimum, maximum), precision)
         return genes
 
     def get_genes(self):
