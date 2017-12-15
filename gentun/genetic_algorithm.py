@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Basic genetic algorithm in Python
+Genetic algorithm and population classes
 """
 
 import operator
