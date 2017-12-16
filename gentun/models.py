@@ -7,7 +7,10 @@ import xgboost as xgb
 
 
 class GentunModel(object):
-
+    """Template definition of a machine learning model which
+    is passed a train set and fits the model using n-fold
+    cross-validation to avoid overfitting.
+    """
     def __init__(self, x_train, y_train):
         self.x_train = x_train
         self.y_train = y_train
