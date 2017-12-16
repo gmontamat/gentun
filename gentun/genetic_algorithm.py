@@ -18,7 +18,7 @@ class Population(object):
         self.y_train = y_train
         self.species = getattr(individuals, species)
         if individual_list is None and size is None:
-            raise ValueError("Either pass a list of individuals or set a population size for a random creation")
+            raise ValueError("Either pass a list of individuals or set a population size for a random one.")
         elif individual_list is None:
             if additional_parameters is None:
                 additional_parameters = {}
@@ -66,14 +66,14 @@ class GeneticAlgorithm(object):
         self.generation = 0
 
     def run(self, max_generations):
-        print 'Starting genetic algorithm...'
+        print "Starting genetic algorithm..."
         print
         while self.generation < max_generations:
             self.evolve_population()
             self.generation += 1
 
     def evolve_population(self):
-        print 'Generation #{}, fittest individual is:'.format(self.generation)
+        print "Generation #{}, fittest individual is:".format(self.generation)
         print self.population.get_fittest()
         print
         new_population = Population(self.population.get_species(), self.x_train, self.y_train, individual_list=[])
