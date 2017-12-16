@@ -4,8 +4,8 @@ The purpose of this project is to provide a simple framework for hyperparameter 
 as Neural Networks and Gradient Boosted Trees using a genetic algorithm. Measuring the fitness of an individual of a
 given population implies training the machine learning model using a particular set of parameters which define the
 individual's genes. This is a time consuming process, therefore, a master-slave approach is used to allow several
-clients (slaves) perform the model fitting and cross-validation of each individual passed by a server (master).
-Offspring generation by reproduction and mutation is handled by the server.
+clients (slaves) perform the model fitting and cross-validation of individuals passed by a server (master). Offspring
+generation by reproduction and mutation is handled by the server.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ XGBoost's Notes on Parameter Tuning
