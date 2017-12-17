@@ -58,7 +58,8 @@ class Individual(object):
         """Return individual's genome."""
         return self.genome
 
-    def generate_random_genes(self):
+    @staticmethod
+    def generate_random_genes(genome):
         raise NotImplementedError("Use a subclass with genes definition.")
 
     def evaluate_fitness(self):
