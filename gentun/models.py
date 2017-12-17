@@ -11,6 +11,7 @@ class GentunModel(object):
     is passed a train set and fits the model using n-fold
     cross-validation to avoid overfitting.
     """
+
     def __init__(self, x_train, y_train):
         self.x_train = x_train
         self.y_train = y_train
