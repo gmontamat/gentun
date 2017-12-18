@@ -11,6 +11,12 @@ import individuals
 
 
 class Population(object):
+    """Group of individuals of the same species, that is,
+    with the same genome. Can be initialized either with a
+    list of individuals or a population size so that
+    random individuals are created. The get_fittest method
+    returns the strongest individual.
+    """
 
     def __init__(self, species, x_train, y_train, individual_list=None, size=None,
                  uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
@@ -57,13 +63,18 @@ class Population(object):
 
 
 class GeneticAlgorithm(object):
+    """Evolve a population iteratively to find better
+    individuals on each generation. If elitism is set, the
+    fittest individual of a generation will be part of the
+    next one.
+    """
 
     def __init__(self, population, tournament_size=5, elitism=True):
         self.population = population
         self.x_train, self.y_train = self.population.get_data()
         self.tournament_size = tournament_size
         self.elitism = elitism
-        self.generation = 0
+        self.generation = 1
 
     def run(self, max_generations):
         print "Starting genetic algorithm..."

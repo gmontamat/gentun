@@ -8,7 +8,7 @@ import xgboost as xgb
 
 class GentunModel(object):
     """Template definition of a machine learning model which
-    is passed a train set and fits the model using n-fold
+    receives a train set and fits a model using n-fold
     cross-validation to avoid overfitting.
     """
 
