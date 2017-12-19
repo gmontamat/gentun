@@ -3,8 +3,8 @@
 The purpose of this project is to provide a simple framework for hyperparameter tuning of machine learning models such
 as Neural Networks and Gradient Boosted Trees using a genetic algorithm. Measuring the fitness of an individual of a
 given population implies training the machine learning model using a particular set of parameters which define the
-individual's genes. This is a time consuming process, therefore, a master-slave approach is used to allow several
-clients (slaves) perform the model fitting and cross-validation of individuals passed by a server (master). Offspring
+individual's genes. This is a time consuming process, therefore, a master-workers approach is used to allow several
+clients (workers) perform the model fitting and cross-validation of individuals passed by a server (master). Offspring
 generation by reproduction and mutation is handled by the server.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
@@ -20,7 +20,9 @@ generation by reproduction and mutation is handled by the server.
 
 # Sample usage
 
-Master-slave approach is still a work in progress, but you can test the genetic algorithm on a single box, as shown in
+## Single machine
+
+You can run the genetic algorithm on a single box, as shown in
 the following example:
 
 ```python
@@ -42,6 +44,22 @@ ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
 
+## Multiple boxes (work in progress)
+
+You can speed up the algorithm by using several machines. One of them will act as a *master*, generating a population
+and running the genetic algorithm. Each time the *master* needs to evaluate an individual, it will send a request to a
+pool of *workers*, which receive the model's hyperparameters from the individual and perform model fitting using n-fold
+cross-validation. The more *workers* you use, the faster the algorithm will run.
+
+First, you need to setup a [RabbitMQ](https://www.rabbitmq.com/download.html) message broker server. It will handle
+communications between the *master* and all the *workers* via a queueing system.
+
+```bash
+$ sudo apt-get install rabbitmq-server
+$ sudo service rabbitmq-server start
+$ sudo rabbitmqctl add_user <username> <password>
+```
+
 # References
 
 ## Genetic algorithms
@@ -55,3 +73,7 @@ ga.run(10)
 * http://xgboost.readthedocs.io/en/latest/parameter.html
 * http://xgboost.readthedocs.io/en/latest/how_to/param_tuning.html
 * https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
+
+## Master-Workers model and RabbitMQ
+
+* https://www.rabbitmq.com/tutorials/tutorial-six-python.html
