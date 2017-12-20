@@ -4,6 +4,7 @@ Client to communicate with RabbitMQ and extensions of
 individuals which add AMQP capabilities.
 """
 
+import json
 import pika
 import Queue
 import random
@@ -62,24 +63,27 @@ class DistributedPopulation(Population):
         super(DistributedPopulation, self).__init__(
             species, None, None, individual_list, size, uniform_rate, mutation_rate, additional_parameters
         )
-        self.evaluate_all()
 
-    def evaluate_all(self):
+    def evaluate_in_parallel(self):
         """Send job requests to RabbitMQ pool so that workers
         evaluate individuals.
         """
-        pass
+        jobs = Queue.Queue()  # Acts as a counter of pending jobs
+        responses = Queue.Queue()  # Collects fitness values from workers
+        for i, individual in enumerate(self.individuals):
+            if not individual.get_fitness_status():
+                job_order = json.dumps([i, individual.get_genes(), individual.get_additional_parameters()])
+                jobs.put(True)
+                client = RpcClient(jobs, responses)
+                thread = threading.Thread(target=client.call, args=[job_order])
+                thread.start()
+        jobs.join()  # Wait for all jobs to be completed
+        # Collect results and assign to population
+        while not responses.empty():
+            response = responses.get(False)
+            i, value = json.loads(response)
+            self.individuals[i].set_fitness(value)
 
 
 if __name__ == '__main__':
-    jobs = Queue.Queue()
-    responses = Queue.Queue()
-    for i in xrange(20):
-        n = random.randint(25, 35)
-        print(" [x] Requesting fib({})".format(n))
-        jobs.put(True)
-        client = RpcClient(jobs, responses)
-        t = threading.Thread(target=client.call, args=[n])
-        t.start()
-    jobs.join()
-    print list(responses.queue)
+    pass

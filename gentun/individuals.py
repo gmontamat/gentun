@@ -101,12 +101,8 @@ class Individual(object):
                     self.get_genes()[name] = round(random.uniform(minimum, maximum), precision)
                 self.fitness = None  # The mutation produces a new individual
 
-    def generate_job(self):
-        """Return serialized object with individual's genes and additional parameters."""
-        pass
-
     def set_fitness(self, value):
-        """Assign fitness."""
+        """Assign fitness. Only to be used by DistributedPopulation."""
         self.fitness = value
 
     def __str__(self):
