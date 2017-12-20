@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Extend models by turning them into AMPQ consumers
+Worker
 """
 
 import pika
