@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Master
+Client to communicate with RabbitMQ and extensions of
+individuals which add AMQP capabilities.
 """
 
 import pika
@@ -8,6 +9,8 @@ import Queue
 import random
 import threading
 import uuid
+
+from genetic_algorithm import Population
 
 
 class RpcClient(object):
@@ -52,6 +55,22 @@ class RpcClient(object):
         self.jobs.task_done()
 
 
+class DistributedPopulation(Population):
+
+    def __init__(self, species, individual_list=None, size=None,
+                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
+        super(DistributedPopulation, self).__init__(
+            species, None, None, individual_list, size, uniform_rate, mutation_rate, additional_parameters
+        )
+        self.evaluate_all()
+
+    def evaluate_all(self):
+        """Send job requests to RabbitMQ pool so that workers
+        evaluate individuals.
+        """
+        pass
+
+
 if __name__ == '__main__':
     jobs = Queue.Queue()
     responses = Queue.Queue()
@@ -63,4 +82,4 @@ if __name__ == '__main__':
         t = threading.Thread(target=client.call, args=[n])
         t.start()
     jobs.join()
-    print [n for n in responses]
+    print list(responses.queue)
