@@ -3,16 +3,15 @@
 Worker
 """
 
+import json
 import pika
+import random
+import time
 
 
-def fib(n):
-    if n == 0:
-        return 0
-    elif n == 1:
-        return 1
-    else:
-        return fib(n - 1) + fib(n - 2)
+def sample_model():
+    time.sleep(random.randint(3, 7))
+    return random.random()
 
 
 class GentunWorker(object):
@@ -24,12 +23,15 @@ class GentunWorker(object):
         self.channel.queue_declare(queue='rpc_queue')
 
     def on_request(self, channel, method, properties, body):
-        n = int(body)
-        print(" [.] fib(%s)" % n)
-        response = self.model(n)
+        i, genes, additional_parameters = json.loads(body)
+        print(" [.] Evaluating individual {}".format(i))
+        print("     ... Genes: {}".format(str(genes)))
+        print("     ... Other: {}".format(str(additional_parameters)))
+        fitness = self.model()
+        response = json.dumps([i, fitness])
         channel.basic_publish(
             exchange='', routing_key=properties.reply_to,
-            properties=pika.BasicProperties(correlation_id=properties.correlation_id), body=str(response)
+            properties=pika.BasicProperties(correlation_id=properties.correlation_id), body=response
         )
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -41,5 +43,5 @@ class GentunWorker(object):
 
 
 if __name__ == '__main__':
-    gw = GentunWorker(fib)
+    gw = GentunWorker(sample_model)
     gw.work()
