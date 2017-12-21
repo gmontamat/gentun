@@ -76,6 +76,9 @@ class GeneticAlgorithm(object):
         self.elitism = elitism
         self.generation = 1
 
+    def get_population_type(self):
+        return self.population.__class__
+
     def run(self, max_generations):
         print "Starting genetic algorithm..."
         print
@@ -87,7 +90,9 @@ class GeneticAlgorithm(object):
         print "Generation #{}, fittest individual is:".format(self.generation)
         print self.population.get_fittest()
         print
-        new_population = Population(self.population.get_species(), self.x_train, self.y_train, individual_list=[])
+        new_population = self.get_population_type()(
+            self.population.get_species(), self.x_train, self.y_train, individual_list=[]
+        )
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
         while new_population.get_size() < self.population.get_size():
@@ -97,7 +102,7 @@ class GeneticAlgorithm(object):
         self.population = new_population
 
     def tournament_select(self):
-        tournament = Population(
+        tournament = self.get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[
                 self.population[i] for i in random.sample(range(self.population.get_size()), self.tournament_size)
             ]
