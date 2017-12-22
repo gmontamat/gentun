@@ -12,7 +12,7 @@ generation by reproduction and mutation is handled by the server.
 
 # Supported models (work in progress)
 
-- [*] XGBoost regressor
+- [x] XGBoost regressor
 - [ ] XGBoost classifier
 - [ ] Scikit-learn Multilayer Perceptron Regressor
 - [ ] Scikit-learn Multilayer Perceptron Classifier
