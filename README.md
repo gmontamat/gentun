@@ -12,7 +12,7 @@ generation by reproduction and mutation is handled by the server.
 
 # Supported models (work in progress)
 
-- [ ] XGBoost regressor
+- [*] XGBoost regressor
 - [ ] XGBoost classifier
 - [ ] Scikit-learn Multilayer Perceptron Regressor
 - [ ] Scikit-learn Multilayer Perceptron Classifier
@@ -44,7 +44,7 @@ ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
 
-## Multiple boxes (work in progress)
+## Multiple boxes
 
 You can speed up the algorithm by using several machines. One of them will act as a *master*, generating a population
 and running the genetic algorithm. Each time the *master* needs to evaluate an individual, it will send a request to a
@@ -58,6 +58,31 @@ communications between the *master* and all the *workers* via a queueing system.
 $ sudo apt-get install rabbitmq-server
 $ sudo service rabbitmq-server start
 $ sudo rabbitmqctl add_user <username> <password>
+```
+
+Next, start the worker nodes. Each node has to have access to the train data. You can use as many nodes as desired as
+long as they can access the RabbitMQ server.
+
+```python
+from gentun import GentunWorker, XgboostRegressor
+import pandas as pd
+
+data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
+y = data['quality']
+x = data.drop(['quality'], axis=1)
+
+gw = GentunWorker(XgboostRegressor, x, y)
+gw.work()
+```
+
+Finally run the genetic algorithm but this time with a *DistributedPopulation* which acts as the *master* node sending
+job requests to the *workers* each time an individual needs to be evaluated.
+
+```python
+from gentun import DistributedPopulation, GeneticAlgorithm
+population = DistributedPopulation('XgboostIndividual', size=100, additional_parameters={'nfold': 3})
+ga = GeneticAlgorithm(population)
+ga.run(10)
 ```
 
 # References
