@@ -27,7 +27,7 @@ class Individual(object):
         self.validate_genes()
         self.uniform_rate = uniform_rate
         self.mutation_rate = mutation_rate
-        self.fitness = None  # Until evaluated an individual is unfit
+        self.fitness = None  # Until evaluated an individual fitness is unknown
         assert additional_parameters is None
 
     def validate_genome(self):
@@ -100,6 +100,14 @@ class Individual(object):
                 else:
                     self.get_genes()[name] = round(random.uniform(minimum, maximum), precision)
                 self.fitness = None  # The mutation produces a new individual
+
+    def get_fitness_status(self):
+        """Return True if individual's fitness in known."""
+        return self.fitness is not None
+
+    def set_fitness(self, value):
+        """Assign fitness. Only to be used by DistributedPopulation."""
+        self.fitness = value
 
     def __str__(self):
         """Return genes which identify the individual."""
