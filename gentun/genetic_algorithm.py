@@ -6,9 +6,6 @@ Genetic algorithm and population classes
 import operator
 import random
 
-# Custom definitions of individuals and its genes
-import individuals
-
 
 class Population(object):
     """Group of individuals of the same species, that is,
@@ -22,7 +19,7 @@ class Population(object):
                  uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
         self.x_train = x_train
         self.y_train = y_train
-        self.species = getattr(individuals, species)
+        self.species = species
         if individual_list is None and size is None:
             raise ValueError("Either pass a list of individuals or set a population size for a random one.")
         elif individual_list is None:
@@ -37,17 +34,17 @@ class Population(object):
                 for _ in xrange(size)
             ]
         else:
-            assert all([self.species == individual.__class__ for individual in individual_list])
+            assert all([type(individual) is self.species for individual in individual_list])
             self.population_size = len(individual_list)
             self.individuals = individual_list
 
     def add_individual(self, individual):
-        assert self.species == individual.__class__
+        assert type(individual) is self.species
         self.individuals.append(individual)
         self.population_size += 1
 
     def get_species(self):
-        return self.species.__name__
+        return self.species
 
     def get_size(self):
         return self.population_size
@@ -112,9 +109,10 @@ class GeneticAlgorithm(object):
 
 if __name__ == '__main__':
     import pandas as pd
+    from individuals import XgboostIndividual
     data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
     y_train = data['quality']
     x_train = data.drop(['quality'], axis=1)
-    pop = Population('XgboostIndividual', x_train, y_train, size=100, additional_parameters={'nfold': 3})
+    pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
     ga = GeneticAlgorithm(pop)
     ga.run(10)

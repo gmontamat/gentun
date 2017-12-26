@@ -27,7 +27,7 @@ the following example:
 
 ```python
 import pandas as pd
-from gentun import Population, GeneticAlgorithm
+from gentun import GeneticAlgorithm, Population, XgboostIndividual
 ```
 
 ```python
@@ -39,7 +39,7 @@ x_train = data.drop(['quality'], axis=1)
 
 ```python
 # Generate a random population and run the genetic algorithm
-pop = Population('XgboostIndividual', x_train, y_train, size=100, additional_parameters={'nfold': 3})
+pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
 ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
@@ -79,8 +79,8 @@ Finally run the genetic algorithm but this time with a *DistributedPopulation* w
 job requests to the *workers* each time an individual needs to be evaluated.
 
 ```python
-from gentun import DistributedPopulation, GeneticAlgorithm
-population = DistributedPopulation('XgboostIndividual', size=100, additional_parameters={'nfold': 3})
+from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
+population = DistributedPopulation(XgboostIndividual, size=100, additional_parameters={'nfold': 3})
 ga = GeneticAlgorithm(population)
 ga.run(10)
 ```
