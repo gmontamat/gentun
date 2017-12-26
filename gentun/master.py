@@ -57,11 +57,15 @@ class RpcClient(object):
 
 
 class DistributedPopulation(Population):
+    """Override Population class by making x_train and
+    y_train optional parameters set to None and sending
+    evaluation requests to the workers before computing
+    the fittest individual.
+    """
 
     def __init__(self, species, x_train=None, y_train=None, individual_list=None, size=None,
                  uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
-        # Train set is not necessary since workers have it
-        assert x_train is None and y_train is None
+        assert x_train is None and y_train is None  # Train set is not necessary since workers have it
         super(DistributedPopulation, self).__init__(
             species, x_train, y_train, individual_list, size, uniform_rate, mutation_rate, additional_parameters
         )
@@ -72,8 +76,8 @@ class DistributedPopulation(Population):
         return super(DistributedPopulation, self).get_fittest()
 
     def evaluate_in_parallel(self):
-        """Send job requests to RabbitMQ pool so that workers
-        evaluate individuals whose fitness is unknown.
+        """Send job requests to RabbitMQ pool so that
+        workers evaluate individuals with unknown fitness.
         """
         jobs = Queue.Queue()  # "Counter" of pending jobs
         responses = Queue.Queue()  # Collect fitness values from workers
@@ -94,6 +98,7 @@ class DistributedPopulation(Population):
 
 if __name__ == '__main__':
     from genetic_algorithm import GeneticAlgorithm
-    pop = DistributedPopulation('XgboostIndividual', size=10, additional_parameters={'nfold': 3})
+    from individuals import XgboostIndividual
+    pop = DistributedPopulation(XgboostIndividual, size=10, additional_parameters={'nfold': 3})
     ga = GeneticAlgorithm(pop)
     ga.run(10)
