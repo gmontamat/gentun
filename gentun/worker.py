@@ -8,8 +8,6 @@ import pika
 import random
 import time
 
-from models import XgboostRegressor
-
 
 def sample_model():
     time.sleep(random.randint(3, 7))
@@ -51,6 +49,7 @@ class GentunWorker(object):
 
 if __name__ == '__main__':
     import pandas as pd
+    from models import XgboostRegressor
     data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
     y = data['quality']
     x = data.drop(['quality'], axis=1)
