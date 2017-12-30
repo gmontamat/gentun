@@ -12,7 +12,7 @@ import time
 
 def sample_model():
     """Emulate model cross-validation for debugging purposes."""
-    time.sleep(random.randint(3, 7))
+    time.sleep(random.randint(1, 10))
     return random.random()
 
 
@@ -29,7 +29,9 @@ class GentunWorker(object):
         self.channel = self.connection.channel()
         self.rabbit_queue = rabbit_queue
         self.channel.queue_declare(queue=self.rabbit_queue)
+        # Report to the RabbitMQ server
         heartbeat_thread = threading.Thread(target=self.heartbeat)
+        heartbeat_thread.daemon = True
         heartbeat_thread.start()
 
     def heartbeat(self):
@@ -55,10 +57,14 @@ class GentunWorker(object):
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def work(self):
-        self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(self.on_request, queue=self.rabbit_queue)
-        print(" [x] Awaiting master's requests")
-        self.channel.start_consuming()
+        try:
+            self.channel.basic_qos(prefetch_count=1)
+            self.channel.basic_consume(self.on_request, queue=self.rabbit_queue)
+            print(" [x] Awaiting master's requests")
+            print(" [-] Press Ctrl+C to interrupt")
+            self.channel.start_consuming()
+        except KeyboardInterrupt:
+            print("\nGood bye!")
 
 
 if __name__ == '__main__':
