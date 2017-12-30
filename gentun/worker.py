@@ -16,13 +16,17 @@ def sample_model():
 
 class GentunWorker(object):
 
-    def __init__(self, model, x_train, y_train):
+    def __init__(self, model, x_train, y_train, host='localhost', port=5672,
+                 user='guest', password='guest', rabbit_queue='rpc_queue'):
         self.model = model
         self.x_train = x_train
         self.y_train = y_train
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        self.credentials = pika.PlainCredentials(user, password)
+        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials, heartbeat=0, socket_timeout=10)
+        self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
-        self.channel.queue_declare(queue='rpc_queue')
+        self.rabbit_queue = rabbit_queue
+        self.channel.queue_declare(queue=self.rabbit_queue)
 
     def on_request(self, channel, method, properties, body):
         i, genes, additional_parameters = json.loads(body)
@@ -42,7 +46,7 @@ class GentunWorker(object):
 
     def work(self):
         self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(self.on_request, queue='rpc_queue')
+        self.channel.basic_consume(self.on_request, queue=self.rabbit_queue)
         print(" [x] Awaiting master's requests")
         self.channel.start_consuming()
 

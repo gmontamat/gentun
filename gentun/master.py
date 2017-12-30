@@ -23,7 +23,7 @@ class RpcClient(object):
                  user='guest', password='guest', rabbit_queue='rpc_queue'):
         # Set connection and channel
         self.credentials = pika.PlainCredentials(user, password)
-        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials)
+        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials, heartbeat=0, socket_timeout=10)
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
         # Set queue for jobs and callback queue for responses
