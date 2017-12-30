@@ -37,6 +37,7 @@ class RpcClient(object):
         # Local queues shared between threads
         self.jobs = jobs
         self.responses = responses
+        # Report to the RabbitMQ server
         heartbeat_thread = threading.Thread(target=self.heartbeat)
         heartbeat_thread.start()
 
@@ -58,7 +59,7 @@ class RpcClient(object):
             exchange='', routing_key=self.rabbit_queue, properties=properties, body=parameters
         )
         while self.response is None:
-            self.connection.process_data_events()
+            time.sleep(3)
         print(" [*] Got fitness for individual {}".format(json.loads(parameters)[0]))
         self.responses.put(self.response)
         self.jobs.get()
