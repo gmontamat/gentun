@@ -8,6 +8,7 @@ import json
 import pika
 import Queue
 import threading
+import time
 import uuid
 
 from genetic_algorithm import Population
@@ -23,7 +24,7 @@ class RpcClient(object):
                  user='guest', password='guest', rabbit_queue='rpc_queue'):
         # Set connection and channel
         self.credentials = pika.PlainCredentials(user, password)
-        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials, heartbeat=0, socket_timeout=10)
+        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials)
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
         # Set queue for jobs and callback queue for responses
@@ -36,6 +37,14 @@ class RpcClient(object):
         # Local queues shared between threads
         self.jobs = jobs
         self.responses = responses
+        heartbeat_thread = threading.Thread(target=self.heartbeat)
+        heartbeat_thread.start()
+
+    def heartbeat(self):
+        """Send heartbeat messages to RabbitMQ server."""
+        while True:
+            time.sleep(10)
+            self.connection.process_data_events()
 
     def on_response(self, channel, method, properties, body):
         if self.id == properties.correlation_id:

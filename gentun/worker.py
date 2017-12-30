@@ -6,10 +6,12 @@ Worker
 import json
 import pika
 import random
+import threading
 import time
 
 
 def sample_model():
+    """Emulate model cross-validation for debugging purposes."""
     time.sleep(random.randint(3, 7))
     return random.random()
 
@@ -22,11 +24,19 @@ class GentunWorker(object):
         self.x_train = x_train
         self.y_train = y_train
         self.credentials = pika.PlainCredentials(user, password)
-        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials, heartbeat=0, socket_timeout=10)
+        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials)
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
         self.rabbit_queue = rabbit_queue
         self.channel.queue_declare(queue=self.rabbit_queue)
+        heartbeat_thread = threading.Thread(target=self.heartbeat)
+        heartbeat_thread.start()
+
+    def heartbeat(self):
+        """Send heartbeat messages to RabbitMQ server."""
+        while True:
+            time.sleep(10)
+            self.connection.process_data_events()
 
     def on_request(self, channel, method, properties, body):
         i, genes, additional_parameters = json.loads(body)
