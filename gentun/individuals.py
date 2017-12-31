@@ -8,7 +8,7 @@ mutation processes.
 import pprint
 import random
 
-from models import XgboostRegressor
+from models import XgboostModel
 
 
 class Individual(object):
@@ -117,7 +117,8 @@ class Individual(object):
 class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
-                 eval_metric='rmse', nfold=5, num_boost_round=5000, early_stopping_rounds=100):
+                 booster='gbtree', objective='reg:linear', eval_metric='rmse', nfold=5,
+                 num_boost_round=5000, early_stopping_rounds=100):
         if genome is None:
             genome = {
                 # name: (default, min, max, precision)
@@ -138,6 +139,8 @@ class XgboostIndividual(Individual):
         # Set individual's attributes
         super(XgboostIndividual, self).__init__(x_train, y_train, genome, genes, uniform_rate, mutation_rate)
         # Set additional parameters which are not tuned
+        self.booster = booster
+        self.objective = objective
         self.eval_metric = eval_metric
         self.nfold = nfold
         self.num_boost_round = num_boost_round
@@ -156,15 +159,17 @@ class XgboostIndividual(Individual):
 
     def evaluate_fitness(self):
         """Create model and perform cross-validation."""
-        model = XgboostRegressor(
-            self.x_train, self.y_train, self.genes, eval_metric=self.eval_metric,
-            nfold=self.nfold, num_boost_round=self.num_boost_round,
+        model = XgboostModel(
+            self.x_train, self.y_train, self.genes, booster=self.booster, objective=self.objective,
+            eval_metric=self.eval_metric, nfold=self.nfold, num_boost_round=self.num_boost_round,
             early_stopping_rounds=self.early_stopping_rounds
         )
         self.fitness = model.cross_validate()
 
     def get_additional_parameters(self):
         return {
+            'booster': self.booster,
+            'objective': self.objective,
             'eval_metric': self.eval_metric,
             'nfold': self.nfold,
             'num_boost_round': self.num_boost_round,

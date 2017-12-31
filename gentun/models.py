@@ -20,14 +20,14 @@ class GentunModel(object):
         raise NotImplementedError("Use a subclass with a defined model.")
 
 
-class XgboostRegressor(GentunModel):
+class XgboostModel(GentunModel):
 
-    def __init__(self, x_train, y_train, hyperparameters, eval_metric='rmse', nfold=5,
-                 num_boost_round=5000, early_stopping_rounds=100):
-        super(XgboostRegressor, self).__init__(x_train, y_train)
+    def __init__(self, x_train, y_train, hyperparameters, booster='gbtree', objective='reg:linear',
+                 eval_metric='rmse', nfold=5, num_boost_round=5000, early_stopping_rounds=100):
+        super(XgboostModel, self).__init__(x_train, y_train)
         self.params = {
-            'booster': 'gbtree',
-            'objective': 'reg:linear',
+            'booster': booster,
+            'objective': objective,
             'eval_metric': eval_metric,
             'silent': 1
         }
@@ -59,5 +59,5 @@ if __name__ == '__main__':
         'subsample': 1.0, 'colsample_bytree': 1.0, 'colsample_bylevel': 1.0, 'lambda': 1.0,
         'alpha': 0.0, 'scale_pos_weight': 1.0
     }
-    model = XgboostRegressor(x, y, genes, nfold=3)
+    model = XgboostModel(x, y, genes, nfold=3)
     print model.cross_validate()
