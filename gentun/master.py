@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Client to communicate with RabbitMQ and extensions of
-individuals which add AMQP capabilities.
+Client to communicate with RabbitMQ and extension of
+Population which add parallel computing capabilities.
 """
 
 import json
@@ -62,6 +62,7 @@ class RpcClient(object):
             time.sleep(3)
         print(" [*] Got fitness for individual {}".format(json.loads(parameters)[0]))
         self.responses.put(self.response)
+        # Job is completed, remove job order from queue
         self.jobs.get()
         self.jobs.task_done()
 
@@ -89,15 +90,15 @@ class DistributedPopulation(Population):
         """Send job requests to RabbitMQ pool so that
         workers evaluate individuals with unknown fitness.
         """
-        jobs = Queue.Queue()  # "Counter" of pending jobs
+        jobs = Queue.Queue()  # "Counter" of pending jobs, shared between threads
         responses = Queue.Queue()  # Collect fitness values from workers
         for i, individual in enumerate(self.individuals):
             if not individual.get_fitness_status():
                 job_order = json.dumps([i, individual.get_genes(), individual.get_additional_parameters()])
                 jobs.put(True)
                 client = RpcClient(jobs, responses)
-                thread = threading.Thread(target=client.call, args=[job_order])
-                thread.start()
+                communication_thread = threading.Thread(target=client.call, args=[job_order])
+                communication_thread.start()
         jobs.join()  # Block here until all jobs are completed
         # Collect results and assign them to their respective individuals
         while not responses.empty():
