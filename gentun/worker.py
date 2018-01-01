@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Worker
+Define worker class which loads a train set and receives
+job orders from a master via a RabbitMQ message broker.
 """
 
 import json
