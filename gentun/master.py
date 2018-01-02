@@ -39,6 +39,7 @@ class RpcClient(object):
         self.responses = responses
         # Report to the RabbitMQ server
         heartbeat_thread = threading.Thread(target=self.heartbeat)
+        heartbeat_thread.daemon = True
         heartbeat_thread.start()
 
     def heartbeat(self):
@@ -98,6 +99,7 @@ class DistributedPopulation(Population):
                 jobs.put(True)
                 client = RpcClient(jobs, responses)
                 communication_thread = threading.Thread(target=client.call, args=[job_order])
+                communication_thread.daemon = True
                 communication_thread.start()
         jobs.join()  # Block here until all jobs are completed
         # Collect results and assign them to their respective individuals
