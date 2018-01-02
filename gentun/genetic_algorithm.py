@@ -79,7 +79,7 @@ class GeneticAlgorithm(object):
     def run(self, max_generations):
         print "Starting genetic algorithm..."
         print
-        while self.generation < max_generations:
+        while self.generation <= max_generations:
             self.evolve_population()
             self.generation += 1
 
