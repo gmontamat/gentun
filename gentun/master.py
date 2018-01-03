@@ -76,11 +76,19 @@ class DistributedPopulation(Population):
     """
 
     def __init__(self, species, x_train=None, y_train=None, individual_list=None, size=None,
-                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
+                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None,
+                 host='localhost', port=5672, user='guest', password='guest', rabbit_queue='rpc_queue'):
         assert x_train is None and y_train is None  # Train set is not necessary since workers have it
         super(DistributedPopulation, self).__init__(
             species, x_train, y_train, individual_list, size, uniform_rate, mutation_rate, additional_parameters
         )
+        self.credentials = {
+            'host': host,
+            'port': port,
+            'user': user,
+            'password': password,
+            'rabbit_queue': rabbit_queue
+        }
 
     def get_fittest(self):
         """Evaluate necessary individuals in parallel before getting fittest."""
@@ -97,7 +105,7 @@ class DistributedPopulation(Population):
             if not individual.get_fitness_status():
                 job_order = json.dumps([i, individual.get_genes(), individual.get_additional_parameters()])
                 jobs.put(True)
-                client = RpcClient(jobs, responses)
+                client = RpcClient(jobs, responses, **self.credentials)
                 communication_thread = threading.Thread(target=client.call, args=[job_order])
                 communication_thread.daemon = True
                 communication_thread.start()
