@@ -56,12 +56,20 @@ communications between the *master* and all the *workers* via a queueing system.
 
 ```bash
 $ sudo apt-get install rabbitmq-server
+```
+
+Start the message server and add a user with privileges to communicate the master and worker nodes. The default guest
+user can only be used to access RabbitMQ locally.
+
+```bash
 $ sudo service rabbitmq-server start
 $ sudo rabbitmqctl add_user <username> <password>
+$ sudo rabbitmqctl set_user_tags <username> administrator
+$ sudo rabbitmqctl set_permissions -p / <username> ".*" ".*" ".*"
 ```
 
 Next, start the worker nodes. Each node has to have access to the train data. You can use as many nodes as desired as
-long as they can access the RabbitMQ server.
+long as they can access the message broker server.
 
 ```python
 from gentun import GentunWorker, XgboostRegressor
@@ -71,7 +79,7 @@ data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
 y = data['quality']
 x = data.drop(['quality'], axis=1)
 
-gw = GentunWorker(XgboostRegressor, x, y)
+gw = GentunWorker(XgboostRegressor, x, y, host=RABBITMQ_SERVER_IP, user='<username>', password='<password>')
 gw.work()
 ```
 

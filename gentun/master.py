@@ -112,6 +112,6 @@ class DistributedPopulation(Population):
 if __name__ == '__main__':
     from genetic_algorithm import GeneticAlgorithm
     from individuals import XgboostIndividual
-    pop = DistributedPopulation(XgboostIndividual, size=10, additional_parameters={'nfold': 3})
+    pop = DistributedPopulation(XgboostIndividual, size=100, additional_parameters={'nfold': 3})
     ga = GeneticAlgorithm(pop)
     ga.run(10)
