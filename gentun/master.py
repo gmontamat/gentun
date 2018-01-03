@@ -46,7 +46,11 @@ class RpcClient(object):
         """Send heartbeat messages to RabbitMQ server."""
         while True:
             time.sleep(10)
-            self.connection.process_data_events()
+            try:
+                self.connection.process_data_events()
+            except pika.exceptions.ConnectionClosed:
+                # Connection was closed, stop sending heartbeat messages
+                break
 
     def on_response(self, channel, method, properties, body):
         if self.id == properties.correlation_id:
@@ -66,6 +70,8 @@ class RpcClient(object):
         # Job is completed, remove job order from queue
         self.jobs.get()
         self.jobs.task_done()
+        # Close RabbitMQ connection to prevent file descriptors limit from blocking server
+        self.connection.close()
 
 
 class DistributedPopulation(Population):
