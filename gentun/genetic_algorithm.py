@@ -77,16 +77,17 @@ class GeneticAlgorithm(object):
         return self.population.__class__
 
     def run(self, max_generations):
-        print "Starting genetic algorithm..."
-        print
+        print("Starting genetic algorithm...\n")
         while self.generation <= max_generations:
             self.evolve_population()
             self.generation += 1
 
     def evolve_population(self):
-        print "Generation #{}, fittest individual is:".format(self.generation)
-        print self.population.get_fittest()
-        print
+        print("Evaluating generation #{}...".format(self.generation))
+        fittest = self.population.get_fittest()
+        print("Fittest individual is:")
+        print(fittest)
+        print("Fitness value is: {}\n".format(round(fittest.get_fitness(), 4)))
         new_population = self.get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[]
         )
@@ -110,6 +111,7 @@ class GeneticAlgorithm(object):
 if __name__ == '__main__':
     import pandas as pd
     from individuals import XgboostIndividual
+
     data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
     y_train = data['quality']
     x_train = data.drop(['quality'], axis=1)
