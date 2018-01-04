@@ -122,7 +122,7 @@ class XgboostIndividual(Individual):
         if genome is None:
             genome = {
                 # name: (default, min, max, precision)
-                'eta': (0.3, 0.0, 1.0, 6),
+                'eta': (0.3, 0.0, 1.0, 4),
                 'min_child_weight': (1, 0, 10, None),
                 'max_depth': (6, 3, 10, None),
                 'gamma': (0.0, 0.0, 10.0, 2),
