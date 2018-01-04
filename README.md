@@ -79,7 +79,10 @@ data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
 y = data['quality']
 x = data.drop(['quality'], axis=1)
 
-gw = GentunWorker(XgboostRegressor, x, y, host=RABBITMQ_SERVER_IP, user='<username>', password='<password>')
+gw = GentunWorker(
+    XgboostRegressor, x, y,
+    host='<rabbitmq_server_ip>', user='<username>', password='<password>'
+)
 gw.work()
 ```
 
@@ -88,7 +91,11 @@ job requests to the *workers* each time an individual needs to be evaluated.
 
 ```python
 from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
-population = DistributedPopulation(XgboostIndividual, size=100, additional_parameters={'nfold': 3})
+
+population = DistributedPopulation(
+    XgboostIndividual, size=100, additional_parameters={'nfold': 3},
+    host='<rabbitmq_server_ip>', user='<username>', password='<password>'
+)
 ga = GeneticAlgorithm(population)
 ga.run(10)
 ```
