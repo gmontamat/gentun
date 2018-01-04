@@ -72,7 +72,7 @@ Next, start the worker nodes. Each node has to have access to the train data. Yo
 long as they can access the message broker server.
 
 ```python
-from gentun import GentunWorker, XgboostRegressor
+from gentun import GentunWorker, XgboostModel
 import pandas as pd
 
 data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
@@ -80,8 +80,8 @@ y = data['quality']
 x = data.drop(['quality'], axis=1)
 
 gw = GentunWorker(
-    XgboostRegressor, x, y,
-    host='<rabbitmq_server_ip>', user='<username>', password='<password>'
+    XgboostModel, x, y, host='<rabbitmq_server_ip>',
+    user='<username>', password='<password>'
 )
 gw.work()
 ```
