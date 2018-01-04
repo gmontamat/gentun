@@ -71,6 +71,7 @@ class GentunWorker(object):
 if __name__ == '__main__':
     import pandas as pd
     from models import XgboostModel
+
     data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
     y = data['quality']
     x = data.drop(['quality'], axis=1)
