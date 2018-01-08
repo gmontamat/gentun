@@ -22,8 +22,7 @@ generation by reproduction and mutation is handled by the server.
 
 ## Single machine
 
-You can run the genetic algorithm on a single box, as shown in
-the following example:
+The genetic algorithm can be run on a single box, as shown in the following example:
 
 ```python
 import pandas as pd
@@ -40,6 +39,23 @@ x_train = data.drop(['quality'], axis=1)
 ```python
 # Generate a random population and run the genetic algorithm
 pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
+ga = GeneticAlgorithm(pop)
+ga.run(10)
+```
+
+You can also add custom individuals to the population before running the genetic algorithm if you already have an
+intuition of which hyperparameters work well with your model. An example of how this works is the following:
+
+```python
+custom_genes = {
+    'eta': 0.1, 'min_child_weight': 1, 'max_depth': 9,
+    'gamma': 0.0, 'max_delta_step': 0, 'subsample': 1.0,
+    'colsample_bytree': 0.9, 'colsample_bylevel': 1.0,
+    'lambda': 1.0, 'alpha': 0.0, 'scale_pos_weight': 1.0
+}
+# Generate a random population, add a custom individual, and run the genetic algorithm
+pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parameters={'nfold': 3})
+pop.add_individual = XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3)
 ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
