@@ -37,8 +37,9 @@ x_train = data.drop(['quality'], axis=1)
 ```
 
 ```python
-# Generate a random population and run the genetic algorithm
+# Generate a random population
 pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
+# Run the algorithm for ten generations
 ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
@@ -47,15 +48,17 @@ You can also add custom individuals to the population before running the genetic
 intuition of which hyperparameters work well with your model. An example of how this works is the following:
 
 ```python
+# Custom genes with parameters that already work well with our model
 custom_genes = {
     'eta': 0.1, 'min_child_weight': 1, 'max_depth': 9,
     'gamma': 0.0, 'max_delta_step': 0, 'subsample': 1.0,
     'colsample_bytree': 0.9, 'colsample_bylevel': 1.0,
     'lambda': 1.0, 'alpha': 0.0, 'scale_pos_weight': 1.0
 }
-# Generate a random population, add a custom individual, and run the genetic algorithm
+# Generate a random population and add a custom individual
 pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parameters={'nfold': 3})
 pop.add_individual = XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3)
+# Run the algorithm for ten generations
 ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
@@ -75,7 +78,8 @@ $ sudo apt-get install rabbitmq-server
 ```
 
 Start the message server and add a user with privileges to communicate the master and worker nodes. The default guest
-user can only be used to access RabbitMQ locally.
+user can only be used to access RabbitMQ locally, so the first time you start it, you should add a new user and set its
+privileges as shown below:
 
 ```bash
 $ sudo service rabbitmq-server start
@@ -85,7 +89,7 @@ $ sudo rabbitmqctl set_permissions -p / <username> ".*" ".*" ".*"
 ```
 
 Next, start the worker nodes. Each node has to have access to the train data. You can use as many nodes as desired as
-long as they can access the message broker server.
+long as they have network access to the message broker server.
 
 ```python
 from gentun import GentunWorker, XgboostModel
@@ -102,7 +106,7 @@ gw = GentunWorker(
 gw.work()
 ```
 
-Finally run the genetic algorithm but this time with a *DistributedPopulation* which acts as the *master* node sending
+Finally, run the genetic algorithm but this time with a *DistributedPopulation* which acts as the *master* node sending
 job requests to the *workers* each time an individual needs to be evaluated.
 
 ```python
@@ -112,6 +116,7 @@ population = DistributedPopulation(
     XgboostIndividual, size=100, additional_parameters={'nfold': 3},
     host='<rabbitmq_server_ip>', user='<username>', password='<password>'
 )
+# Run the algorithm for ten generations using worker nodes to evaluate individuals
 ga = GeneticAlgorithm(population)
 ga.run(10)
 ```
