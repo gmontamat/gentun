@@ -45,10 +45,12 @@ ga.run(10)
 ```
 
 You can also add custom individuals to the population before running the genetic algorithm if you already have an
-intuition of which hyperparameters work well with your model. An example of how this works is the following:
+intuition of which hyperparameters work well with your model. Moreover, a whole set of individuals taken from a grid
+search approach could be used as the population. An example of how to add a customized individual to a population is the
+the following one:
 
 ```python
-# Custom genes with parameters that already work well with our model
+# Best known parameters so far
 custom_genes = {
     'eta': 0.1, 'min_child_weight': 1, 'max_depth': 9,
     'gamma': 0.0, 'max_delta_step': 0, 'subsample': 1.0,
@@ -58,9 +60,6 @@ custom_genes = {
 # Generate a random population and add a custom individual
 pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parameters={'nfold': 3})
 pop.add_individual = XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3)
-# Run the algorithm for ten generations
-ga = GeneticAlgorithm(pop)
-ga.run(10)
 ```
 
 ## Multiple boxes
