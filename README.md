@@ -46,8 +46,8 @@ ga.run(10)
 
 You can also add custom individuals to the population before running the genetic algorithm if you already have an
 intuition of which hyperparameters work well with your model. Moreover, a whole set of individuals taken from a grid
-search approach could be used as the population. An example of how to add a customized individual to a population is the
-the following one:
+search approach could be used as the initial population. An example of how to add a customized individual is the the
+following one:
 
 ```python
 # Best known parameters so far
