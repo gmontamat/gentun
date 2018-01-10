@@ -59,7 +59,7 @@ custom_genes = {
 }
 # Generate a random population and add a custom individual
 pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parameters={'nfold': 3})
-pop.add_individual = XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3)
+pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3))
 ```
 
 ## Multiple boxes
