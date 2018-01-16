@@ -12,11 +12,25 @@ generation by reproduction and mutation is handled by the server.
 
 # Supported models (work in progress)
 
+We encourage you to submit your own individual-model pairs to enhance the project. You can base your work on the
+*XgboostIndividual* and *XgboostModel* classes provided. So far, this project supports parameter tuning for the
+following models:
+
 - [x] XGBoost regressor
 - [x] XGBoost classifier
 - [ ] Scikit-learn Multilayer Perceptron Regressor
 - [ ] Scikit-learn Multilayer Perceptron Classifier
-- [ ] Keras
+- [ ] Keras deep net
+
+# Installation
+
+Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended.
+
+```bash
+$ git clone https://github.com/gmontamat/gentun
+$ cd gentun
+$ python setup.py install
+```
 
 # Sample usage
 
@@ -46,7 +60,7 @@ ga.run(10)
 
 You can also add custom individuals to the population before running the genetic algorithm if you already have an
 intuition of which hyperparameters work well with your model. Moreover, a whole set of individuals taken from a grid
-search approach could be used as the initial population. An example of how to add a customized individual is the the
+search approach could be used as the initial population. An example of how to add a custom individual is the the
 following one:
 
 ```python
