@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 
-from genetic_algorithm import Population
+from populations import Population
 
 
 class RpcClient(object):
@@ -124,7 +124,7 @@ class DistributedPopulation(Population):
 
 
 if __name__ == '__main__':
-    from genetic_algorithm import GeneticAlgorithm
+    from algorithms import GeneticAlgorithm
     from individuals import XgboostIndividual
 
     pop = DistributedPopulation(XgboostIndividual, size=100, additional_parameters={'nfold': 3})
