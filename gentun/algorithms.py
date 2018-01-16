@@ -60,7 +60,7 @@ if __name__ == '__main__':
     from populations import Population
     from individuals import XgboostIndividual
 
-    data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
+    data = pd.read_csv('../tests/data/winequality-white.csv', delimiter=';')
     y_train = data['quality']
     x_train = data.drop(['quality'], axis=1)
     pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
