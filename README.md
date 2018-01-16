@@ -31,7 +31,7 @@ from gentun import GeneticAlgorithm, Population, XgboostIndividual
 
 ```python
 # Load features and response variable from train set
-data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
+data = pd.read_csv('./tests/data/winequality-white.csv', delimiter=';')
 y_train = data['quality']
 x_train = data.drop(['quality'], axis=1)
 ```
@@ -94,7 +94,7 @@ long as they have network access to the message broker server.
 from gentun import GentunWorker, XgboostModel
 import pandas as pd
 
-data = pd.read_csv('../tests/wine-quality/winequality-white.csv', delimiter=';')
+data = pd.read_csv('./tests/data/winequality-white.csv', delimiter=';')
 y = data['quality']
 x = data.drop(['quality'], axis=1)
 
