@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 
-from populations import Population
+from populations import Population, GridPopulation
 
 
 class RpcClient(object):
@@ -81,12 +81,11 @@ class DistributedPopulation(Population):
     the fittest individual.
     """
 
-    def __init__(self, species, x_train=None, y_train=None, individual_list=None, size=None,
-                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None,
-                 host='localhost', port=5672, user='guest', password='guest', rabbit_queue='rpc_queue'):
-        assert x_train is None and y_train is None  # Train set is not necessary since workers have it
+    def __init__(self, species, individual_list=None, size=None, uniform_rate=0.5,
+                 mutation_rate=0.015, additional_parameters=None, host='localhost',
+                 port=5672, user='guest', password='guest', rabbit_queue='rpc_queue'):
         super(DistributedPopulation, self).__init__(
-            species, x_train, y_train, individual_list, size, uniform_rate, mutation_rate, additional_parameters
+            species, None, None, individual_list, size, uniform_rate, mutation_rate, additional_parameters
         )
         self.credentials = {
             'host': host,
@@ -121,6 +120,21 @@ class DistributedPopulation(Population):
             response = responses.get(False)
             i, value = json.loads(response)
             self.individuals[i].set_fitness(value)
+
+
+class DistributedGridPopulation(DistributedPopulation, GridPopulation):
+    """Same as a DistributedPopulation but creates a
+    GridPopulation instead of a random one.
+    """
+
+    def __init__(self, species, individual_list=None, genes_grid=None, uniform_rate=0.5,
+                 mutation_rate=0.015, additional_parameters=None, host='localhost',
+                 port=5672, user='guest', password='guest', rabbit_queue='rpc_queue'):
+        # size parameter of DistributedPopulation is replaced with genes_grid
+        super(DistributedGridPopulation, self).__init__(
+            species, individual_list, genes_grid, uniform_rate, mutation_rate,
+            additional_parameters, host, port, user, password, rabbit_queue
+        )
 
 
 if __name__ == '__main__':

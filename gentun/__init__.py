@@ -1,7 +1,7 @@
 # Make public APIs available at top-level import
 from algorithms import GeneticAlgorithm
 from populations import Population, GridPopulation
-from master import DistributedPopulation
+from master import DistributedPopulation, DistributedGridPopulation
 from worker import GentunWorker
 
 # Individual-Model pairs
