@@ -3,6 +3,7 @@
 Population class
 """
 
+import itertools
 import operator
 
 
@@ -20,7 +21,7 @@ class Population(object):
         self.y_train = y_train
         self.species = species
         if individual_list is None and size is None:
-            raise ValueError("Either pass a list of individuals or set a population size for a random one.")
+            raise ValueError("Either pass a list of individuals or a population size for a random population.")
         elif individual_list is None:
             if additional_parameters is None:
                 additional_parameters = {}
@@ -56,3 +57,39 @@ class Population(object):
 
     def __getitem__(self, item):
         return self.individuals[item]
+
+
+class GridPopulation(Population):
+    """Population whose individuals are created based on a
+     grid search approach instead of randomly. Can be
+     initialized either with a list of individuals (in
+     which case it behaves like a Population) or with a
+     dictionary of genes and grid values pairs.
+     """
+
+    def __init__(self, species, x_train, y_train, individual_list=None, genes_grid=None,
+                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
+        if individual_list is None and genes_grid is None:
+            raise ValueError("Either pass a list of individuals or a grid definition.")
+        elif genes_grid is not None:
+            genome = species(None, None).get_genome()  # Get species' genome
+            if not set(genes_grid.keys()).issubset(set(genome.keys())):
+                raise ValueError("Some grid parameters do not belong to the species' genome")
+            # Fill genes_grid with default parameters
+            for gene, properties in genome.iteritems():
+                if gene not in genes_grid:
+                    genes_grid[gene] = [properties[0]]  # Use default value
+            individual_list = [
+                species(
+                    x_train, y_train, genes=genes, uniform_rate=uniform_rate,
+                    mutation_rate=mutation_rate, **additional_parameters
+                )
+                for genes in (
+                    dict(itertools.izip(genes_grid, x))
+                    for x in itertools.product(*genes_grid.itervalues())
+                )
+            ]
+            print("Grid population. Size: {}".format(len(individual_list)))
+        super(GridPopulation, self).__init__(
+            species, x_train, y_train, individual_list, None, uniform_rate, mutation_rate, additional_parameters
+        )
