@@ -6,15 +6,8 @@ job orders from a master via a RabbitMQ message broker.
 
 import json
 import pika
-import random
 import threading
 import time
-
-
-def sample_model():
-    """Emulate model cross-validation for debugging purposes."""
-    time.sleep(random.randint(1, 10))
-    return random.random()
 
 
 class GentunWorker(object):
