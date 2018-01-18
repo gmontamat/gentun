@@ -33,6 +33,7 @@ class Population(object):
                 )
                 for _ in xrange(size)
             ]
+            print("Using a random population. Size: {}".format(size))
         else:
             assert all([type(individual) is self.species for individual in individual_list])
             self.population_size = len(individual_list)
@@ -89,7 +90,7 @@ class GridPopulation(Population):
                     for x in itertools.product(*genes_grid.itervalues())
                 )
             ]
-            print("Grid population. Size: {}".format(len(individual_list)))
+            print("Using a grid population. Size: {}".format(len(individual_list)))
         super(GridPopulation, self).__init__(
             species, x_train, y_train, individual_list, None, uniform_rate, mutation_rate, additional_parameters
         )
