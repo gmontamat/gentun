@@ -36,7 +36,7 @@ $ python setup.py install
 
 ## Single machine
 
-The genetic algorithm can be run on a single box, as shown in the following example:
+The genetic algorithm can be run on a single computer, as shown in the following example:
 
 ```python
 import pandas as pd
@@ -58,10 +58,11 @@ ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
 
-You can also add custom individuals to the population before running the genetic algorithm if you already have an
-intuition of which hyperparameters work well with your model. Moreover, a whole set of individuals taken from a grid
-search approach could be used as the initial population. An example of how to add a custom individual is the the
-following one:
+## Advanced features
+
+It's usually convenient to initialize a population with certain known individuals instead of fully at random. For
+example, you can add custom individuals to the population before running the genetic algorithm if you already have an
+intuition of which hyperparameters work well with your model:
 
 ```python
 # Best known parameters so far
@@ -76,7 +77,19 @@ pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parame
 pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3))
 ```
 
-## Multiple boxes
+Moreover, a whole set of individuals taken from a grid search approach could be used as the initial population:
+
+```python
+grid = {
+    'eta': [0.001, 0.005, 0.01, 0.015, 0.2],
+    'max_depth': range(3, 11),
+    'colsample_bytree': [0.80, 0.85, 0.90, 0.95, 1.0]
+}
+# Generate a grid of individuals as the population
+pop = GridPopulation(XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3})
+```
+
+## Multiple computers
 
 You can speed up the algorithm by using several machines. One of them will act as a *master*, generating a population
 and running the genetic algorithm. Each time the *master* needs to evaluate an individual, it will send a request to a
@@ -119,8 +132,8 @@ gw = GentunWorker(
 gw.work()
 ```
 
-Finally, run the genetic algorithm but this time with a *DistributedPopulation* which acts as the *master* node sending
-job requests to the *workers* each time an individual needs to be evaluated.
+Finally, run the genetic algorithm but this time with a *DistributedPopulation* or a *DistributedGridPopulation* which
+acts as the *master* node sending job requests to the *workers* each time an individual needs to be evaluated.
 
 ```python
 from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
