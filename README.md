@@ -60,9 +60,9 @@ ga.run(10)
 
 ## Advanced features
 
-It's usually convenient to initialize a population with certain known individuals instead of fully at random. For
-example, you can add custom individuals to the population before running the genetic algorithm if you already have an
-intuition of which hyperparameters work well with your model:
+It's usually convenient to initialize the genetic algorithm with some known individuals instead of a random population.
+For example, you can add custom individuals to the population before running the genetic algorithm if you already have
+an intuition of which hyperparameters work well with your model:
 
 ```python
 # Best known parameters so far
@@ -77,9 +77,12 @@ pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parame
 pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3))
 ```
 
-Moreover, a whole set of individuals taken from a grid search approach could be used as the initial population:
+Moreover, you can create a grid by defining which values you want to evaluate per gene and the *GridPopulation* class
+will generate all possible gene combinations and assign each of them to an individual. This way of generating an initial
+population resembles the grid search method which is widely used in parameter optimization:
 
 ```python
+# Specify which values you want to use, the remaining genes will take the default one
 grid = {
     'eta': [0.001, 0.005, 0.01, 0.015, 0.2],
     'max_depth': range(3, 11),
