@@ -58,7 +58,7 @@ ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
 
-## Advanced features
+## Custom individuals and grid search
 
 It's usually convenient to initialize the genetic algorithm with some known individuals instead of a random population.
 For example, you can add custom individuals to the population before running the genetic algorithm if you already have
@@ -91,6 +91,8 @@ grid = {
 # Generate a grid of individuals as the population
 pop = GridPopulation(XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3})
 ```
+
+Running the genetic algorithm for only one generation using this population is the equivalent of a grid search.
 
 ## Multiple computers
 
