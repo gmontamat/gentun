@@ -92,7 +92,7 @@ grid = {
 pop = GridPopulation(XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3})
 ```
 
-Running the genetic algorithm for only one generation using this population is the equivalent of a grid search.
+Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search.
 
 ## Multiple computers
 
