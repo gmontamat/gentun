@@ -5,10 +5,26 @@ its characteristic genes, generation, crossover and
 mutation processes.
 """
 
+import math
 import pprint
 import random
 
 from models import XgboostModel
+
+
+def random_log_uniform(minimum, maximum, base, eps=1e-12):
+    """Generate a random number which is uniform in a
+    logarithmic scale. If base > 0 scale goes from minimum
+    to maximum, if base < 0 vice versa, and if base is 0,
+    use a uniform scale.
+    """
+    if base == 0:
+        return random.uniform(minimum, maximum)
+    minimum += eps  # Avoid math domain error when minimum is zero
+    if base > 0:
+        return base ** random.uniform(math.log(minimum, base), math.log(maximum, base))
+    base = abs(base)
+    return maximum - base ** random.uniform(math.log(eps, base), math.log(maximum - minimum, base))
 
 
 class Individual(object):
@@ -42,7 +58,8 @@ class Individual(object):
             if len(properties) != 4:
                 raise TypeError(
                     "A gene must have 4 attributes: a default value, "
-                    "minimum value, maximum value, and a precision or None."
+                    "minimum value, maximum value, and a logarithm scale "
+                    "(or None for integers)."
                 )
 
     def validate_genes(self):
@@ -94,11 +111,11 @@ class Individual(object):
         """Mutate instance's genes with a certain probability."""
         for name, value in self.get_genes().iteritems():
             if random.random() < self.mutation_rate:
-                default, minimum, maximum, precision = self.get_genome()[name]
+                default, minimum, maximum, log_scale = self.get_genome()[name]
                 if type(default) == int:
                     self.get_genes()[name] = random.randint(minimum, maximum)
                 else:
-                    self.get_genes()[name] = round(random.uniform(minimum, maximum), precision)
+                    self.get_genes()[name] = round(random_log_uniform(minimum, maximum, log_scale), 4)
                 self.fitness = None  # The mutation produces a new individual
 
     def get_fitness_status(self):
@@ -121,18 +138,18 @@ class XgboostIndividual(Individual):
                  num_boost_round=5000, early_stopping_rounds=100):
         if genome is None:
             genome = {
-                # name: (default, min, max, precision)
-                'eta': (0.3, 0.0, 1.0, 4),
+                # name: (default, min, max, logarithmic-scale-base)
+                'eta': (0.3, 0.001, 1.0, 10),
                 'min_child_weight': (1, 0, 10, None),
                 'max_depth': (6, 3, 10, None),
-                'gamma': (0.0, 0.0, 10.0, 2),
+                'gamma': (0.0, 0.0, 10.0, 10),
                 'max_delta_step': (0, 0, 10, None),
-                'subsample': (1.0, 0.5, 1.0, 2),
-                'colsample_bytree': (1.0, 0.5, 1.0, 2),
-                'colsample_bylevel': (1.0, 0.5, 1.0, 2),
-                'lambda': (1.0, 0.0, 10.0, 2),
-                'alpha': (0.0, 0.0, 10.0, 2),
-                'scale_pos_weight': (1.0, 0.0, 10.0, 2)
+                'subsample': (1.0, 0.0, 1.0, -10),
+                'colsample_bytree': (1.0, 0.0, 1.0, -10),
+                'colsample_bylevel': (1.0, 0.0, 1.0, -10),
+                'lambda': (1.0, 0.1, 10.0, 10),
+                'alpha': (0.0, 0.0, 10.0, 10),
+                'scale_pos_weight': (1.0, 0.0, 10.0, 0)
             }
         if genes is None:
             genes = self.generate_random_genes(genome)
@@ -150,11 +167,11 @@ class XgboostIndividual(Individual):
     def generate_random_genes(genome):
         """Create and return random genes."""
         genes = {}
-        for name, (default, minimum, maximum, precision) in genome.iteritems():
+        for name, (default, minimum, maximum, log_scale) in genome.iteritems():
             if type(default) == int:
                 genes[name] = random.randint(minimum, maximum)
             else:
-                genes[name] = round(random.uniform(minimum, maximum), precision)
+                genes[name] = round(random_log_uniform(minimum, maximum, log_scale), 4)
         return genes
 
     def evaluate_fitness(self):
