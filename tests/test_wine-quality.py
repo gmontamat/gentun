@@ -9,9 +9,11 @@ import pandas as pd
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from gentun import GeneticAlgorithm, Population, XgboostIndividual
+
 
 if __name__ == '__main__':
+    from gentun import GeneticAlgorithm, Population, XgboostIndividual
+
     data = pd.read_csv('./data/winequality-white.csv', delimiter=';')
     y_train = data['quality']
     x_train = data.drop(['quality'], axis=1)
