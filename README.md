@@ -24,7 +24,8 @@ following models:
 
 # Installation
 
-Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended.
+Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Although the module was originally
+written for Python 2.7, only Python 3 is currently supported.
 
 ```bash
 $ git clone https://github.com/gmontamat/gentun
