@@ -53,16 +53,3 @@ class GeneticAlgorithm(object):
             ]
         )
         return tournament.get_fittest()
-
-
-if __name__ == '__main__':
-    import pandas as pd
-    from populations import Population
-    from individuals import XgboostIndividual
-
-    data = pd.read_csv('../tests/data/winequality-white.csv', delimiter=';')
-    y_train = data['quality']
-    x_train = data.drop(['quality'], axis=1)
-    pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
-    ga = GeneticAlgorithm(pop)
-    ga.run(10)

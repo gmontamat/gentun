@@ -61,4 +61,4 @@ if __name__ == '__main__':
         'alpha': 0.0, 'scale_pos_weight': 1.0
     }
     model = XgboostModel(x, y, genes, nfold=3)
-    print model.cross_validate()
+    print(model.cross_validate())

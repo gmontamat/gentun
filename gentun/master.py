@@ -6,12 +6,12 @@ Population which add parallel computing capabilities.
 
 import json
 import pika
-import Queue
+import queue
 import threading
 import time
 import uuid
 
-from populations import Population, GridPopulation
+from .populations import Population, GridPopulation
 
 
 class RpcClient(object):
@@ -104,8 +104,8 @@ class DistributedPopulation(Population):
         """Send job requests to RabbitMQ pool so that
         workers evaluate individuals with unknown fitness.
         """
-        jobs = Queue.Queue()  # "Counter" of pending jobs, shared between threads
-        responses = Queue.Queue()  # Collect fitness values from workers
+        jobs = queue.Queue()  # "Counter" of pending jobs, shared between threads
+        responses = queue.Queue()  # Collect fitness values from workers
         for i, individual in enumerate(self.individuals):
             if not individual.get_fitness_status():
                 job_order = json.dumps([i, individual.get_genes(), individual.get_additional_parameters()])
@@ -135,12 +135,3 @@ class DistributedGridPopulation(DistributedPopulation, GridPopulation):
             species, individual_list, genes_grid, uniform_rate, mutation_rate,
             additional_parameters, host, port, user, password, rabbit_queue
         )
-
-
-if __name__ == '__main__':
-    from algorithms import GeneticAlgorithm
-    from individuals import XgboostIndividual
-
-    pop = DistributedPopulation(XgboostIndividual, size=100, additional_parameters={'nfold': 3})
-    ga = GeneticAlgorithm(pop)
-    ga.run(10)

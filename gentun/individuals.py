@@ -9,7 +9,7 @@ import math
 import pprint
 import random
 
-from models import XgboostModel
+from .models import XgboostModel
 
 
 def random_log_uniform(minimum, maximum, base, eps=1e-12):
@@ -50,7 +50,7 @@ class Individual(object):
         """Check genome structure."""
         if type(self.genome) != dict:
             raise TypeError("Genome must be a dictionary.")
-        for gene, properties in self.genome.iteritems():
+        for gene, properties in self.genome.items():
             if type(gene) != str:
                 raise TypeError("Gene names must be strings.")
             if type(properties) != tuple:
@@ -97,7 +97,7 @@ class Individual(object):
         """
         assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
         child_genes = {}
-        for name, value in self.get_genes().iteritems():
+        for name, value in self.get_genes().items():
             if random.random() < self.uniform_rate:
                 child_genes[name] = value
             else:
@@ -109,7 +109,7 @@ class Individual(object):
 
     def mutate(self):
         """Mutate instance's genes with a certain probability."""
-        for name, value in self.get_genes().iteritems():
+        for name, value in self.get_genes().items():
             if random.random() < self.mutation_rate:
                 default, minimum, maximum, log_scale = self.get_genome()[name]
                 if type(default) == int:
@@ -167,7 +167,7 @@ class XgboostIndividual(Individual):
     def generate_random_genes(genome):
         """Create and return random genes."""
         genes = {}
-        for name, (default, minimum, maximum, log_scale) in genome.iteritems():
+        for name, (default, minimum, maximum, log_scale) in genome.items():
             if type(default) == int:
                 genes[name] = random.randint(minimum, maximum)
             else:

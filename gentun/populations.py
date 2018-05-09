@@ -31,7 +31,7 @@ class Population(object):
                     self.x_train, self.y_train, uniform_rate=uniform_rate,
                     mutation_rate=mutation_rate, **additional_parameters
                 )
-                for _ in xrange(size)
+                for _ in range(size)
             ]
             print("Using a random population. Size: {}".format(size))
         else:
@@ -86,7 +86,7 @@ class GridPopulation(Population):
                     mutation_rate=mutation_rate, **additional_parameters
                 )
                 for genes in (
-                    dict(itertools.izip(genes_grid, x))
+                    dict(zip(genes_grid, x))
                     for x in itertools.product(*genes_grid.itervalues())
                 )
             ]
