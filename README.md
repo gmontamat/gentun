@@ -10,17 +10,19 @@ generation by reproduction and mutation is handled by the server.
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ XGBoost's Notes on Parameter Tuning
 
-# Supported models (work in progress)
+*"[...] The number of possible network structures increases exponentially with the number of layers in the network,
+which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
+[Genetic CNN](https://arxiv.org/abs/1703.01513) paper
+
+# Supported gene encodings (work in progress)
 
 We encourage you to submit your own individual-model pairs to enhance the project. You can base your work on the
-*XgboostIndividual* and *XgboostModel* classes provided. So far, this project supports parameter tuning for the
-following models:
+*XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes. So
+far, this project supports parameter tuning for the following models:
 
-- [x] XGBoost regressor
-- [x] XGBoost classifier
-- [ ] Scikit-learn Multilayer Perceptron Regressor
-- [ ] Scikit-learn Multilayer Perceptron Classifier
-- [ ] Keras deep net
+- [x] XGBoost regressor (custom gene encoding)
+- [x] XGBoost classifier (custom gene encoding)
+- [ ] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
 
 # Installation
 
@@ -152,6 +154,8 @@ population = DistributedPopulation(
 ga = GeneticAlgorithm(population)
 ga.run(10)
 ```
+
+**NOTE:** Future versions will adopt [Apache Kafka](https://kafka.apache.org/) as a message broker in favor of RabbitMQ.
 
 # References
 
