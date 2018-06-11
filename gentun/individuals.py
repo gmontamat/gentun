@@ -10,6 +10,7 @@ import pprint
 import random
 
 from .models import XgboostModel
+from .models import GeneticCnnModel
 
 
 def random_log_uniform(minimum, maximum, base, eps=1e-12):
@@ -192,3 +193,50 @@ class XgboostIndividual(Individual):
             'num_boost_round': self.num_boost_round,
             'early_stopping_rounds': self.early_stopping_rounds
         }
+
+
+class GeneticCnnIndividual(Individual):
+
+    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
+                 nodes=(3, 5), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5))):
+        if genome is None:
+            genome = {'S_{}'.format(i+1): K_s*(K_s-1)/2 for i, K_s in enumerate(nodes)}
+        if genes is None:
+            genes = self.generate_random_genes(genome)
+        # Set individual's attributes
+        super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, uniform_rate, mutation_rate)
+        # Set additional parameters which are not tuned
+        assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
+        self.nodes = nodes
+        self.kernels_per_layer = kernels_per_layer
+        self.kernel_sizes = kernel_sizes
+
+    @staticmethod
+    def generate_random_genes(genome):
+        """Create and return random genes."""
+        genes = {}
+        for name, connections in genome.items():
+            genes[name] = ''.join([random.choice(['0', '1']) for _ in range(connections)])
+        return genes
+
+    def evaluate_fitness(self):
+        """Create model and perform cross-validation."""
+        model = GeneticCnnModel(self.x_train, self.y_train, self.genes, self.kernels_per_layer, self.kernel_sizes)
+        self.fitness = model.cross_validate()
+
+    def get_additional_parameters(self):
+        return {
+            'nodes': self.nodes,
+            'kernels_per_layer': self.kernels_per_layer,
+            'kernel_sizes': self.kernel_sizes
+        }
+
+    def mutate(self):
+        """Mutate instance's genes with a certain probability."""
+        for name, connections in self.get_genes().items():
+            new_connections = ''.join([
+                str(int(not int(byte) != random.random() < self.mutation_rate)) for byte in connections
+            ])
+            if new_connections != connections:
+                self.fitness = None  # The mutation produces a new individual
+            self.get_genes()[name] = new_connections

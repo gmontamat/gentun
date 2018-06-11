@@ -3,7 +3,11 @@
 Machine Learning models compatible with the Genetic Algorithm
 """
 
-import xgboost as xgb
+# import xgboost as xgb
+import keras.backend as K
+K.set_image_data_format('channels_last')
+from keras.layers import Input, Dense, Activation, Flatten, Conv2D, MaxPooling2D, Dropout
+from keras.models import Model
 
 
 class GentunModel(object):
@@ -49,7 +53,38 @@ class XgboostModel(GentunModel):
         return cv_result['test-{}-mean'.format(self.eval_metric)][cv_result.index[-1]]
 
 
+class GeneticCnnModel(GentunModel):
+
+    def __init__(self, x_train, y_train, genes, kernels_per_layer, kernel_sizes):
+        super(GeneticCnnModel, self).__init__(x_train, y_train)
+        self.model = self.build_model(genes, kernels_per_layer, kernel_sizes)
+
+    @staticmethod
+    def build_model(genes, kernels_per_layer, kernel_sizes):
+        X_input = Input((28, 28, 1))
+        X = X_input
+        for layer, kernels in enumerate(kernels_per_layer):
+            connections = genes['S_{}'.format(layer + 1)]
+            X = Conv2D(kernels, kernel_size=kernel_sizes[layer], strides=(1, 1), padding='same')(X)
+            X = Activation('relu')(X)
+            # TODO: complete internal connections
+            X = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(X)
+        X = Flatten()(X)
+        X = Dense(500, activation='relu')(X)
+        X = Dropout(0.5)(X)
+        X = Dense(10, activation='softmax')(X)
+        return Model(inputs=X_input, outputs=X, name='GeneticCNN')
+
+    def cross_validate(self):
+        """Train model using n-fold cross validation and
+        return mean value of validation metric.
+        """
+        self.model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+        self.model.fit(self.x_train, self.y_train, epochs=2, batch_size=128)
+
+
 if __name__ == '__main__':
+    '''
     import pandas as pd
 
     data = pd.read_csv('../tests/data/winequality-white.csv', delimiter=';')
@@ -62,3 +97,17 @@ if __name__ == '__main__':
     }
     model = XgboostModel(x, y, genes, nfold=3)
     print(model.cross_validate())
+    '''
+    from sklearn.datasets import fetch_mldata
+    from sklearn.preprocessing import LabelBinarizer
+    mnist = fetch_mldata('MNIST original', data_home='.')
+    lb = LabelBinarizer()
+    lb.fit(range(max(mnist.target.astype('int')) + 1))
+    y_train = lb.transform(mnist.target.astype('int'))
+    # print(y_train)
+    # print(y_train.shape)
+    x_train = mnist.data.reshape(mnist.data.shape[0], 28, 28, 1)
+    # print(x_train)
+    # print(x_train.shape)
+    model = GeneticCnnModel(x_train, y_train, {'S_1': '', 'S_2': ''}, (20, 50), ((5, 5), (5, 5)))
+    model.cross_validate()
