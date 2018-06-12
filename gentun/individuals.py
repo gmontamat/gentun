@@ -9,8 +9,8 @@ import math
 import pprint
 import random
 
-from .models import XgboostModel
-from .models import GeneticCnnModel
+from .models.xgboost_models import XgboostModel
+from .models.keras_models import GeneticCnnModel
 
 
 def random_log_uniform(minimum, maximum, base, eps=1e-12):
@@ -200,7 +200,7 @@ class GeneticCnnIndividual(Individual):
     def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
                  nodes=(3, 5), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5))):
         if genome is None:
-            genome = {'S_{}'.format(i+1): K_s*(K_s-1)/2 for i, K_s in enumerate(nodes)}
+            genome = {'S_{}'.format(i + 1): K_s * (K_s - 1) / 2 for i, K_s in enumerate(nodes)}
         if genes is None:
             genes = self.generate_random_genes(genome)
         # Set individual's attributes
