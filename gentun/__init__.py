@@ -1,10 +1,3 @@
-import sys
-import os
-
-# Avoid printing 'Using TensorFlow backend.' when the module is loaded
-stderr = sys.stderr
-sys.stderr = open(os.devnull, 'w')
-
 # Make public APIs available at top-level import
 from .algorithms import GeneticAlgorithm
 from .populations import Population, GridPopulation
@@ -24,5 +17,3 @@ try:
     from .models.keras_models import GeneticCnnModel
 except ImportError:
     print("Warning: install Keras and TensorFlow to use GeneticCnnIndividual and GeneticCnnModel.")
-
-sys.stderr = stderr
