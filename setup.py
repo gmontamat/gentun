@@ -34,6 +34,7 @@ setup(
     install_requires=['pandas', 'pika'],
     extras_require={
         'xgboost': ['xgboost'],
-        'full': ['xgboost'],
+        'keras': ['tensorflow', 'keras'],
+        'full': ['xgboost', 'tensorflow', 'keras'],
     },
 )
