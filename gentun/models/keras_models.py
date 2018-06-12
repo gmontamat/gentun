@@ -5,7 +5,7 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 
 import keras.backend as K
 
-from keras.layers import Input, Dense, Activation, Flatten, Conv2D, MaxPooling2D, Dropout
+from keras.layers import Input, Conv2D, Activation, Add, MaxPooling2D, Flatten, Dense, Dropout
 from keras.models import Model
 
 from .generic_models import GentunModel
@@ -15,25 +15,30 @@ K.set_image_data_format('channels_last')
 
 class GeneticCnnModel(GentunModel):
 
-    def __init__(self, x_train, y_train, genes, kernels_per_layer, kernel_sizes):
+    def __init__(self, x_train, y_train, genes, kernels_per_layer, kernel_sizes, input_shape, classes):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
-        self.model = self.build_model(genes, kernels_per_layer, kernel_sizes)
+        self.model = self.build_model(genes, kernels_per_layer, kernel_sizes, input_shape, classes)
 
     @staticmethod
-    def build_model(genes, kernels_per_layer, kernel_sizes):
-        X_input = Input((28, 28, 1))
-        X = X_input
+    def build_model(genes, kernels_per_layer, kernel_sizes, input_shape, classes):
+        x_input = Input(input_shape)
+        x = x_input
         for layer, kernels in enumerate(kernels_per_layer):
+            # Default input node
+            x = Conv2D(kernels, kernel_size=kernel_sizes[layer], strides=(1, 1), padding='same')(x)
+            x = Activation('relu')(x)
+            # Decode internal connections
             connections = genes['S_{}'.format(layer + 1)]
-            X = Conv2D(kernels, kernel_size=kernel_sizes[layer], strides=(1, 1), padding='same')(X)
-            X = Activation('relu')(X)
-            # TODO: complete internal connections
-            X = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(X)
-        X = Flatten()(X)
-        X = Dense(500, activation='relu')(X)
-        X = Dropout(0.5)(X)
-        X = Dense(10, activation='softmax')(X)
-        return Model(inputs=X_input, outputs=X, name='GeneticCNN')
+            if all([not bool(int(connection)) for connection in connections]):
+                # TODO: DAG
+                # TODO: Default output node
+                pass
+            x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(x)
+        x = Flatten()(x)
+        x = Dense(500, activation='relu')(x)
+        x = Dropout(0.5)(x)
+        x = Dense(classes, activation='softmax')(x)
+        return Model(inputs=x_input, outputs=x, name='GeneticCNN')
 
     def cross_validate(self):
         """Train model using n-fold cross validation and

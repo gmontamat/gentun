@@ -198,7 +198,8 @@ class XgboostIndividual(Individual):
 class GeneticCnnIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
-                 nodes=(3, 5), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5))):
+                 nodes=(3, 5), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)),
+                 input_shape=(28, 28, 1), classes=10):
         if genome is None:
             genome = {'S_{}'.format(i + 1): K_s * (K_s - 1) / 2 for i, K_s in enumerate(nodes)}
         if genes is None:
@@ -210,6 +211,8 @@ class GeneticCnnIndividual(Individual):
         self.nodes = nodes
         self.kernels_per_layer = kernels_per_layer
         self.kernel_sizes = kernel_sizes
+        self.input_shape = input_shape
+        self.classes = classes
 
     @staticmethod
     def generate_random_genes(genome):
@@ -221,14 +224,19 @@ class GeneticCnnIndividual(Individual):
 
     def evaluate_fitness(self):
         """Create model and perform cross-validation."""
-        model = GeneticCnnModel(self.x_train, self.y_train, self.genes, self.kernels_per_layer, self.kernel_sizes)
+        model = GeneticCnnModel(
+            self.x_train, self.y_train, self.genes, self.kernels_per_layer, self.kernel_sizes,
+            self.input_shape, self.classes
+        )
         self.fitness = model.cross_validate()
 
     def get_additional_parameters(self):
         return {
             'nodes': self.nodes,
             'kernels_per_layer': self.kernels_per_layer,
-            'kernel_sizes': self.kernel_sizes
+            'kernel_sizes': self.kernel_sizes,
+            'input_shape': self.input_shape,
+            'classes': self.classes
         }
 
     def mutate(self):
