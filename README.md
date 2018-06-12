@@ -26,8 +26,11 @@ far, this project supports parameter tuning for the following models:
 
 # Installation
 
-Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Although the module was originally
-written for Python 2.7, only Python 3 is currently supported.
+Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Also, it is better to install
+[xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and [TensorFlow](https://www.tensorflow.org/install/)
+before the setup script tries to do it for you because this offers better customization and also because *pip* may not
+be able to compile those libraries. Although the module was originally written for Python 2.7, only Python 3 is
+currently supported.
 
 ```bash
 $ git clone https://github.com/gmontamat/gentun
