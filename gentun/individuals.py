@@ -9,8 +9,15 @@ import math
 import pprint
 import random
 
-from .models.xgboost_models import XgboostModel
-from .models.keras_models import GeneticCnnModel
+try:
+    from .models.xgboost_models import XgboostModel
+except ImportError:
+    pass
+
+try:
+    from .models.keras_models import GeneticCnnModel
+except ImportError:
+    pass
 
 
 def random_log_uniform(minimum, maximum, base, eps=1e-12):
