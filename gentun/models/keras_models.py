@@ -101,5 +101,6 @@ class GeneticCnnModel(GentunModel):
         return mean value of validation metric.
         """
         self.model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-        # TODO: cross-validations or at least train/test split
-        return self.model.fit(self.x_train, self.y_train, epochs=2, batch_size=128, verbose=0)
+        # TODO: cross-validation (here we are just doing train/validation split)
+        fit = self.model.fit(self.x_train, self.y_train, epochs=2, batch_size=128, verbose=1, validation_split=0.2)
+        return fit.history['val_acc'][-1]
