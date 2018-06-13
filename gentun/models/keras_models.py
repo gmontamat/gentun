@@ -102,5 +102,5 @@ class GeneticCnnModel(GentunModel):
         """
         self.model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
         # TODO: cross-validation (here we are just doing train/validation split)
-        fit = self.model.fit(self.x_train, self.y_train, epochs=2, batch_size=128, verbose=1, validation_split=0.2)
-        return fit.history['val_acc'][-1]
+        fit = self.model.fit(self.x_train, self.y_train, epochs=1, batch_size=32, verbose=1, validation_split=0.2)
+        return fit.history['acc'][-1]

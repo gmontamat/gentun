@@ -61,14 +61,14 @@ class Individual(object):
         for gene, properties in self.genome.items():
             if type(gene) != str:
                 raise TypeError("Gene names must be strings.")
-            if type(properties) != tuple:
-                raise TypeError("Gene attributes must be a tuple.")
-            if len(properties) != 4:
-                raise TypeError(
-                    "A gene must have 4 attributes: a default value, "
-                    "minimum value, maximum value, and a logarithm scale "
-                    "(or None for integers)."
-                )
+            # if type(properties) != tuple:
+            #     raise TypeError("Gene attributes must be a tuple.")
+            # if len(properties) != 4:
+            #     raise TypeError(
+            #         "A gene must have 4 attributes: a default value, "
+            #         "minimum value, maximum value, and a logarithm scale "
+            #         "(or None for integers)."
+            #     )
 
     def validate_genes(self):
         """Check that genes are compatible with genome."""
@@ -208,7 +208,7 @@ class GeneticCnnIndividual(Individual):
                  nodes=(3, 5), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)),
                  input_shape=(28, 28, 1), classes=10):
         if genome is None:
-            genome = {'S_{}'.format(i + 1): K_s * (K_s - 1) / 2 for i, K_s in enumerate(nodes)}
+            genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
         if genes is None:
             genes = self.generate_random_genes(genome)
         # Set individual's attributes
