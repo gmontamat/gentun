@@ -14,29 +14,30 @@ K.set_image_data_format('channels_last')
 
 
 def build_dag(x, connections, kernels):
+    # Get number of nodes (K_s) using the fact that K_s*(K_s-1)/2 == #bits
     nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
-    # Separate bits
+    # Separate bits by whose input they represent (GeneticCNN paper uses a dash)
     ctr = 0
     idx = 0
     separated_connections = []
     while idx + ctr < len(connections):
         ctr += 1
-        separated_connections.append(connections[idx:idx+ctr])
+        separated_connections.append(connections[idx:idx + ctr])
         idx += ctr
-    # Get node outputs (dummy output not included)
+    # Get outputs by node (dummy output ignored)
     outputs = []
-    for node in range(nodes-1):
+    for node in range(nodes - 1):
         node_outputs = []
         for i, node_connections in enumerate(separated_connections[node:]):
             if node_connections[node] == '1':
                 node_outputs.append(node + i + 1)
         outputs.append(node_outputs)
     outputs.append([])
-    # Get node inputs (dummy input, x, not included)
+    # Get inputs by node (dummy input, x, ignored)
     inputs = [[]]
     for node in range(1, nodes):
         node_inputs = []
-        for i, connection in enumerate(separated_connections[node-1]):
+        for i, connection in enumerate(separated_connections[node - 1]):
             if connection == '1':
                 node_inputs.append(i)
         inputs.append(node_inputs)
@@ -68,6 +69,9 @@ class GeneticCnnModel(GentunModel):
     def __init__(self, x_train, y_train, genes, kernels_per_layer, kernel_sizes, input_shape, classes):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
         self.model = self.build_model(genes, kernels_per_layer, kernel_sizes, input_shape, classes)
+        # Draw model to validate gene-to-DAG
+        # from keras.utils import plot_model
+        # plot_model(self.model, to_file='model.png')
 
     @staticmethod
     def build_model(genes, kernels_per_layer, kernel_sizes, input_shape, classes):
@@ -97,6 +101,5 @@ class GeneticCnnModel(GentunModel):
         return mean value of validation metric.
         """
         self.model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-        # self.model.fit(self.x_train, self.y_train, epochs=2, batch_size=128)
-        from keras.utils import plot_model
-        plot_model(self.model, to_file='model.png')
+        # TODO: cross-validations or at least train/test split
+        return self.model.fit(self.x_train, self.y_train, epochs=2, batch_size=128, verbose=0)
