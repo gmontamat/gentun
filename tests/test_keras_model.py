@@ -20,10 +20,10 @@ if __name__ == '__main__':
     x_train = mnist.data.reshape(mnist.data.shape[0], 28, 28, 1)
     model = GeneticCnnModel(
         x_train, y_train,
-        {'S_1': '0111010001', 'S_2': '0100001011'},
+        {'S_1': '001100', 'S_2': '101100'},
         (20, 50),
         ((5, 5), (5, 5)),
         (28, 28, 1),
         10
     )
-    model.cross_validate()
+    print(model.cross_validate())
