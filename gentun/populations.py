@@ -16,10 +16,12 @@ class Population(object):
     """
 
     def __init__(self, species, x_train, y_train, individual_list=None, size=None,
-                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
+                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None,
+                 minimize=True):
         self.x_train = x_train
         self.y_train = y_train
         self.species = species
+        self.minimize = minimize
         if individual_list is None and size is None:
             raise ValueError("Either pass a list of individuals or a population size for a random population.")
         elif individual_list is None:
@@ -51,7 +53,9 @@ class Population(object):
         return self.population_size
 
     def get_fittest(self):
-        return min(self.individuals, key=operator.methodcaller('get_fitness'))
+        if self.minimize:
+            return min(self.individuals, key=operator.methodcaller('get_fitness'))
+        return max(self.individuals, key=operator.methodcaller('get_fitness'))
 
     def get_data(self):
         return self.x_train, self.y_train
@@ -69,7 +73,8 @@ class GridPopulation(Population):
      """
 
     def __init__(self, species, x_train, y_train, individual_list=None, genes_grid=None,
-                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None):
+                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None,
+                 minimize=True):
         if individual_list is None and genes_grid is None:
             raise ValueError("Either pass a list of individuals or a grid definition.")
         elif genes_grid is not None:
@@ -92,5 +97,6 @@ class GridPopulation(Population):
             ]
             print("Using a grid population. Size: {}".format(len(individual_list)))
         super(GridPopulation, self).__init__(
-            species, x_train, y_train, individual_list, None, uniform_rate, mutation_rate, additional_parameters
+            species, x_train, y_train, individual_list, None, uniform_rate, mutation_rate,
+            additional_parameters, minimize
         )
