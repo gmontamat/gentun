@@ -206,7 +206,7 @@ class GeneticCnnIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
                  nodes=(3, 5), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)),
-                 input_shape=(28, 28, 1), classes=10):
+                 input_shape=(28, 28, 1), dense_units=500, classes=10):
         if genome is None:
             genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
         if genes is None:
@@ -219,6 +219,7 @@ class GeneticCnnIndividual(Individual):
         self.kernels_per_layer = kernels_per_layer
         self.kernel_sizes = kernel_sizes
         self.input_shape = input_shape
+        self.dense_units = dense_units
         self.classes = classes
 
     @staticmethod
@@ -233,7 +234,7 @@ class GeneticCnnIndividual(Individual):
         """Create model and perform cross-validation."""
         model = GeneticCnnModel(
             self.x_train, self.y_train, self.genes, self.kernels_per_layer, self.kernel_sizes,
-            self.input_shape, self.classes
+            self.input_shape, self.dense_units, self.classes
         )
         self.fitness = model.cross_validate()
 
@@ -243,6 +244,7 @@ class GeneticCnnIndividual(Individual):
             'kernels_per_layer': self.kernels_per_layer,
             'kernel_sizes': self.kernel_sizes,
             'input_shape': self.input_shape,
+            'dense_units': self.dense_units,
             'classes': self.classes
         }
 
