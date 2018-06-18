@@ -261,7 +261,7 @@ class GeneticCnnIndividual(Individual):
         """Mutate instance's genes with a certain probability."""
         for name, connections in self.get_genes().items():
             new_connections = ''.join([
-                str(int(not int(byte) != random.random() < self.mutation_rate)) for byte in connections
+                str(int((not int(byte)) != (random.random() < self.mutation_rate))) for byte in connections
             ])
             if new_connections != connections:
                 self.fitness = None  # The mutation produces a new individual
