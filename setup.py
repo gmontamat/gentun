@@ -29,9 +29,9 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
-    keywords='gentun machine-learning parameter-tuning xgboost',
+    keywords='gentun machine-learning parameter-tuning xgboost keras',
     packages=find_packages(exclude=['tests']),
-    install_requires=['pandas', 'pika'],
+    install_requires=['pandas', 'pika', 'scikit-learn'],
     extras_require={
         'xgboost': ['xgboost'],
         'keras': ['tensorflow', 'keras'],
