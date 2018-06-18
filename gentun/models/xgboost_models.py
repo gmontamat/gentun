@@ -1,23 +1,11 @@
 #!/usr/bin/env python
 """
-Machine Learning models compatible with the Genetic Algorithm
+Machine Learning models compatible with the Genetic Algorithm implemented using xgboost
 """
 
 import xgboost as xgb
 
-
-class GentunModel(object):
-    """Template definition of a machine learning model
-    which receives a train set and fits a model using
-    n-fold cross-validation to avoid over-fitting.
-    """
-
-    def __init__(self, x_train, y_train):
-        self.x_train = x_train
-        self.y_train = y_train
-
-    def cross_validate(self):
-        raise NotImplementedError("Use a subclass with a defined model.")
+from .generic_models import GentunModel
 
 
 class XgboostModel(GentunModel):
@@ -47,18 +35,3 @@ class XgboostModel(GentunModel):
             early_stopping_rounds=self.early_stopping_rounds, nfold=self.nfold
         )
         return cv_result['test-{}-mean'.format(self.eval_metric)][cv_result.index[-1]]
-
-
-if __name__ == '__main__':
-    import pandas as pd
-
-    data = pd.read_csv('../tests/data/winequality-white.csv', delimiter=';')
-    y = data['quality']
-    x = data.drop(['quality'], axis=1)
-    genes = {
-        'eta': 0.3, 'min_child_weight': 1, 'max_depth': 6, 'gamma': 0.0, 'max_delta_step': 0,
-        'subsample': 1.0, 'colsample_bytree': 1.0, 'colsample_bylevel': 1.0, 'lambda': 1.0,
-        'alpha': 0.0, 'scale_pos_weight': 1.0
-    }
-    model = XgboostModel(x, y, genes, nfold=3)
-    print(model.cross_validate())

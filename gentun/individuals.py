@@ -9,7 +9,15 @@ import math
 import pprint
 import random
 
-from .models import XgboostModel
+try:
+    from .models.xgboost_models import XgboostModel
+except ImportError:
+    pass
+
+try:
+    from .models.keras_models import GeneticCnnModel
+except ImportError:
+    pass
 
 
 def random_log_uniform(minimum, maximum, base, eps=1e-12):
@@ -53,14 +61,14 @@ class Individual(object):
         for gene, properties in self.genome.items():
             if type(gene) != str:
                 raise TypeError("Gene names must be strings.")
-            if type(properties) != tuple:
-                raise TypeError("Gene attributes must be a tuple.")
-            if len(properties) != 4:
-                raise TypeError(
-                    "A gene must have 4 attributes: a default value, "
-                    "minimum value, maximum value, and a logarithm scale "
-                    "(or None for integers)."
-                )
+            # if type(properties) != tuple:
+            #     raise TypeError("Gene attributes must be a tuple.")
+            # if len(properties) != 4:
+            #     raise TypeError(
+            #         "A gene must have 4 attributes: a default value, "
+            #         "minimum value, maximum value, and a logarithm scale "
+            #         "(or None for integers)."
+            #     )
 
     def validate_genes(self):
         """Check that genes are compatible with genome."""
@@ -192,3 +200,69 @@ class XgboostIndividual(Individual):
             'num_boost_round': self.num_boost_round,
             'early_stopping_rounds': self.early_stopping_rounds
         }
+
+
+class GeneticCnnIndividual(Individual):
+
+    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
+                 nodes=(3, 5), input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)),
+                 dense_units=500, dropout_probability=0.5, classes=10, nfold=5, epochs=3, batch_size=128):
+        if genome is None:
+            genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
+        if genes is None:
+            genes = self.generate_random_genes(genome)
+        # Set individual's attributes
+        super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, uniform_rate, mutation_rate)
+        # Set additional parameters which are not tuned
+        assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
+        self.nodes = nodes
+        self.input_shape = input_shape
+        self.kernels_per_layer = kernels_per_layer
+        self.kernel_sizes = kernel_sizes
+        self.dense_units = dense_units
+        self.dropout_probability = dropout_probability
+        self.classes = classes
+        self.nfold = nfold
+        self.epochs = epochs
+        self.batch_size = batch_size
+
+    @staticmethod
+    def generate_random_genes(genome):
+        """Create and return random genes."""
+        genes = {}
+        for name, connections in genome.items():
+            genes[name] = ''.join([random.choice(['0', '1']) for _ in range(connections)])
+        return genes
+
+    def evaluate_fitness(self):
+        """Create model and perform cross-validation."""
+        model = GeneticCnnModel(
+            self.x_train, self.y_train, self.genes, self.input_shape, self.kernels_per_layer,
+            self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
+            self.nfold, self.epochs, self.batch_size
+        )
+        self.fitness = model.cross_validate()
+
+    def get_additional_parameters(self):
+        return {
+            'nodes': self.nodes,
+            'input_shape': self.input_shape,
+            'kernels_per_layer': self.kernels_per_layer,
+            'kernel_sizes': self.kernel_sizes,
+            'dense_units': self.dense_units,
+            'dropout_probability': self.dropout_probability,
+            'classes': self.classes,
+            'nfold': self.nfold,
+            'epochs': self.epochs,
+            'batch_size': self.batch_size
+        }
+
+    def mutate(self):
+        """Mutate instance's genes with a certain probability."""
+        for name, connections in self.get_genes().items():
+            new_connections = ''.join([
+                str(int(not int(byte) != random.random() < self.mutation_rate)) for byte in connections
+            ])
+            if new_connections != connections:
+                self.fitness = None  # The mutation produces a new individual
+            self.get_genes()[name] = new_connections

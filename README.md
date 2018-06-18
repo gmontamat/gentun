@@ -22,12 +22,15 @@ far, this project supports parameter tuning for the following models:
 
 - [x] XGBoost regressor (custom gene encoding)
 - [x] XGBoost classifier (custom gene encoding)
-- [ ] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
+- [ ] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras (almost finished)
 
 # Installation
 
-Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Although the module was originally
-written for Python 2.7, only Python 3 is currently supported.
+Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Also, it is better to install
+[xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and [TensorFlow](https://www.tensorflow.org/install/)
+before the setup script tries to do it for you because this offers better customization and also because *pip* may not
+be able to compile those libraries. Although the module was originally written for Python 2.7, only Python 3 is
+currently supported.
 
 ```bash
 $ git clone https://github.com/gmontamat/gentun
@@ -60,6 +63,11 @@ pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_param
 ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
+
+Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default in this
+framework, the fittest individual of the *Population* class is the one with lowest fitness value (so as to minimize
+RMSE or log loss for example). To make the class more flexible, you can pass the argument **minimize=False** to override
+this behaviour.
 
 ## Custom individuals and grid search
 
