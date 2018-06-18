@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     pop = Population(
         GeneticCnnIndividual, x_train, y_train, size=10,
-        additional_parameters={'epochs': 3, 'nfold': 5}
+        additional_parameters={'epochs': 10, 'nfold': 5, 'batch_size': 128}
     )
     ga = GeneticAlgorithm(pop)
     ga.run(10)
