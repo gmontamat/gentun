@@ -19,14 +19,16 @@ if __name__ == '__main__':
     lb.fit(range(max(mnist.target.astype('int')) + 1))
     y_train = lb.transform(mnist.target.astype('int'))
     x_train = mnist.data.reshape(mnist.data.shape[0], 28, 28, 1)
+    x_train = x_train / 255  # Normalize train data
     model = GeneticCnnModel(
         x_train, y_train,
-        {'S_1': '001100', 'S_2': '101100'},
-        (20, 50),
-        ((5, 5), (5, 5)),
-        (28, 28, 1),
-        500,
-        10
+        {'S_1': '000000', 'S_2': '000000'},     # Genes to test
+        (28, 28, 1),                            # Shape of input data
+        (20, 50),                               # Number of kernels per layer
+        ((5, 5), (5, 5)),                       # Sizes of kernels per layer
+        500,                                    # Number of units in Dense layer
+        0.5,                                    # Dropout probability
+        10                                      # Number of classes to predict
     )
     print(model.cross_validate())
     # pop = Population(GeneticCnnIndividual, x_train, y_train, size=10)
