@@ -65,9 +65,9 @@ ga.run(10)
 ```
 
 Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default in this
-framework, the fittest individual of the *Population* class is the one with lowest fitness value (so as to minimize
-RMSE or log loss for example). To make the class more flexible, you can pass the argument **minimize=False** to override
-this behaviour.
+framework, the fittest individual of the *Population* class is the one with lowest fitness value (so as to minimize the
+loss, *rmse* or *binary crossentropy* for example). To make the *Population* class more flexible, you can pass the
+parameter **minimize=False** to override this behaviour and maximize your fitness metric.
 
 ## Custom individuals and grid search
 
