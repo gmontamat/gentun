@@ -16,10 +16,16 @@ K.set_image_data_format('channels_last')
 
 class GeneticCnnModel(GentunModel):
 
-    def __init__(self, x_train, y_train, genes, kernels_per_layer, kernel_sizes,
-                 input_shape, dense_units, classes, plot_model=False):
+    def __init__(self, x_train, y_train, genes, input_shape, kernels_per_layer,
+                 kernel_sizes, dense_units, dropout_probability, classes,
+                 nfold=5, epochs=3, batch_size=128, plot_model=False):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
-        self.model = self.build_model(genes, kernels_per_layer, kernel_sizes, input_shape, dense_units, classes)
+        self.model = self.build_model(
+            genes, input_shape, kernels_per_layer, kernel_sizes, dense_units, dropout_probability, classes
+        )
+        self.nfold = nfold
+        self.epochs = epochs
+        self.batch_size = batch_size
         if plot_model:
             # Draw model to validate gene-to-DAG
             from keras.utils import plot_model
@@ -76,7 +82,8 @@ class GeneticCnnModel(GentunModel):
             return Add()(output_vars)
         return output_vars[0]
 
-    def build_model(self, genes, kernels_per_layer, kernel_sizes, input_shape, dense_units, classes):
+    def build_model(self, genes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
+                    dropout_probability, classes):
         x_input = Input(input_shape)
         x = x_input
         for layer, kernels in enumerate(kernels_per_layer):
@@ -94,21 +101,29 @@ class GeneticCnnModel(GentunModel):
             x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(x)
         x = Flatten()(x)
         x = Dense(dense_units, activation='relu')(x)
-        x = Dropout(0.5)(x)
+        x = Dropout(dropout_probability)(x)
         x = Dense(classes, activation='softmax')(x)
         return Model(inputs=x_input, outputs=x, name='GeneticCNN')
+
+    def reset_weights(self):
+        """Initialize model weights."""
+        session = K.get_session()
+        for layer in self.model.layers:
+            if hasattr(layer, 'kernel_initializer'):
+                layer.kernel.initializer.run(session=session)
 
     def cross_validate(self):
         """Train model using k-fold cross validation and
         return mean value of the loss.
         """
-        # TODO: cross-validation (here we are just doing train/validation split)
-        # K-fold cross validation
-        splits = 5
+        self.model.compile('adam', 'binary_crossentropy')
         loss = .0
-        kfold = KFold(n_splits=splits, shuffle=True)  # TODO: implement stratified k-fold
+        kfold = KFold(n_splits=self.nfold, shuffle=True)  # TODO: implement stratified k-fold
         for train, test in kfold.split(self.x_train):
-            self.model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
-            self.model.fit(self.x_train[train], self.y_train[train], epochs=2, batch_size=128, verbose=0)
-            loss += self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0)[0] / splits
+            self.reset_weights()
+            self.model.fit(
+                self.x_train[train], self.y_train[train], epochs=self.epochs, batch_size=self.batch_size, verbose=1
+            )
+            # print(self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0))
+            loss += self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0) / self.nfold
         return loss
