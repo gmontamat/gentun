@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     model = GeneticCnnModel(
         x_train, y_train,
-        {'S_1': '000000', 'S_2': '000000'},  # Genes to test
+        {'S_1': '000', 'S_2': '0000000000'},  # Genes to test
         (28, 28, 1),  # Shape of input data
         (20, 50),  # Number of kernels per layer
         ((5, 5), (5, 5)),  # Sizes of kernels per layer
