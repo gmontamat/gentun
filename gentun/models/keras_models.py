@@ -116,14 +116,14 @@ class GeneticCnnModel(GentunModel):
         """Train model using k-fold cross validation and
         return mean value of the loss.
         """
-        self.model.compile('adam', 'binary_crossentropy')
+        self.model.compile(optimizer='adam', loss='binary_crossentropy')
         loss = .0
         kfold = KFold(n_splits=self.nfold, shuffle=True)  # TODO: implement stratified k-fold
-        for train, test in kfold.split(self.x_train):
+        for fold, (train, test) in enumerate(kfold.split(self.x_train)):
+            print("KFold {}/{}".format(fold + 1, self.nfold))
             self.reset_weights()
             self.model.fit(
                 self.x_train[train], self.y_train[train], epochs=self.epochs, batch_size=self.batch_size, verbose=1
             )
-            # print(self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0))
             loss += self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0) / self.nfold
         return loss

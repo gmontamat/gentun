@@ -16,13 +16,13 @@ if __name__ == '__main__':
     mnist = fetch_mldata('MNIST original', data_home='./data')
     lb = LabelBinarizer()
     lb.fit(range(max(mnist.target.astype('int')) + 1))
-    y_train = lb.transform(mnist.target.astype('int'))[:1000]
-    x_train = mnist.data.reshape(mnist.data.shape[0], 28, 28, 1)[:1000]
+    y_train = lb.transform(mnist.target.astype('int'))
+    x_train = mnist.data.reshape(mnist.data.shape[0], 28, 28, 1)
     x_train = x_train / 255  # Normalize train data
 
     pop = Population(
         GeneticCnnIndividual, x_train, y_train, size=10,
-        additional_parameters={'epochs': 1, 'nfold': 3}
+        additional_parameters={'epochs': 10, 'nfold': 5, 'batch_size': 128}
     )
     ga = GeneticAlgorithm(pop)
     ga.run(10)
