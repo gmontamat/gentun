@@ -61,14 +61,6 @@ class Individual(object):
         for gene, properties in self.genome.items():
             if type(gene) != str:
                 raise TypeError("Gene names must be strings.")
-            # if type(properties) != tuple:
-            #     raise TypeError("Gene attributes must be a tuple.")
-            # if len(properties) != 4:
-            #     raise TypeError(
-            #         "A gene must have 4 attributes: a default value, "
-            #         "minimum value, maximum value, and a logarithm scale "
-            #         "(or None for integers)."
-            #     )
 
     def validate_genes(self):
         """Check that genes are compatible with genome."""
@@ -204,9 +196,9 @@ class XgboostIndividual(Individual):
 
 class GeneticCnnIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
-                 nodes=(3, 5), input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)),
-                 dense_units=500, dropout_probability=0.5, classes=10, nfold=5, epochs=3, batch_size=128):
+    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015, nodes=(3, 5),
+                 input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)), dense_units=500,
+                 dropout_probability=0.5, classes=10, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         if genome is None:
             genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
         if genes is None:
@@ -224,6 +216,7 @@ class GeneticCnnIndividual(Individual):
         self.classes = classes
         self.nfold = nfold
         self.epochs = epochs
+        self.learning_rate = learning_rate
         self.batch_size = batch_size
 
     @staticmethod
@@ -254,6 +247,7 @@ class GeneticCnnIndividual(Individual):
             'classes': self.classes,
             'nfold': self.nfold,
             'epochs': self.epochs,
+            'learning_rate': self.learning_rate,
             'batch_size': self.batch_size
         }
 
