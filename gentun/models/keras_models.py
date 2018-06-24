@@ -4,10 +4,11 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 """
 
 import keras.backend as K
+import numpy as np
 
 from keras.layers import Input, Conv2D, Activation, Add, MaxPooling2D, Flatten, Dense, Dropout
 from keras.models import Model
-from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 
 from .generic_models import GentunModel
 
@@ -16,12 +17,12 @@ K.set_image_data_format('channels_last')
 
 class GeneticCnnModel(GentunModel):
 
-    def __init__(self, x_train, y_train, genes, input_shape, kernels_per_layer,
-                 kernel_sizes, dense_units, dropout_probability, classes,
-                 nfold=5, epochs=3, batch_size=128, plot_model=False):
+    def __init__(self, x_train, y_train, genes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
+                 dropout_probability, classes, nfold=5, epochs=3, batch_size=128, plot_model=False):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
         self.model = self.build_model(
-            genes, input_shape, kernels_per_layer, kernel_sizes, dense_units, dropout_probability, classes
+            genes, input_shape, kernels_per_layer, kernel_sizes,
+            dense_units, dropout_probability, classes
         )
         self.nfold = nfold
         self.epochs = epochs
@@ -118,12 +119,12 @@ class GeneticCnnModel(GentunModel):
         """
         self.model.compile(optimizer='adam', loss='binary_crossentropy')
         loss = .0
-        kfold = KFold(n_splits=self.nfold, shuffle=True)  # TODO: implement stratified k-fold
-        for fold, (train, test) in enumerate(kfold.split(self.x_train)):
+        kfold = StratifiedKFold(n_splits=self.nfold, shuffle=True)
+        for fold, (train, validation) in enumerate(kfold.split(self.x_train, np.where(self.y_train == 1)[1])):
             print("KFold {}/{}".format(fold + 1, self.nfold))
             self.reset_weights()
             self.model.fit(
                 self.x_train[train], self.y_train[train], epochs=self.epochs, batch_size=self.batch_size, verbose=1
             )
-            loss += self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0) / self.nfold
+            loss += self.model.evaluate(self.x_train[validation], self.y_train[validation], verbose=0) / self.nfold
         return loss
