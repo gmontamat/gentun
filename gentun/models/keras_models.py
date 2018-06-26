@@ -34,10 +34,11 @@ class GeneticCnnModel(GentunModel):
             self.epochs = epochs
             self.learning_rate = learning_rate
         else:
-            raise ValueError("epochs and learning_rate must be either integers or tuples of integers.")
+            print(epochs, learning_rate)
+            raise ValueError("epochs and learning_rate must be both either integers or tuples of integers.")
         self.batch_size = batch_size
 
-    def plot_model(self):
+    def plot(self):
         """Draw model to validate gene-to-DAG."""
         from keras.utils import plot_model
         plot_model(self.model, to_file='{}.png'.format(self.name))
@@ -125,18 +126,18 @@ class GeneticCnnModel(GentunModel):
 
     def cross_validate(self):
         """Train model using k-fold cross validation and
-        return mean value of the loss.
+        return mean value of the validation accuracy.
         """
-        loss = .0
+        acc = .0
         kfold = StratifiedKFold(n_splits=self.nfold, shuffle=True)
         for fold, (train, validation) in enumerate(kfold.split(self.x_train, np.where(self.y_train == 1)[1])):
             print("KFold {}/{}".format(fold + 1, self.nfold))
             self.reset_weights()
             for epochs, learning_rate in zip(self.epochs, self.learning_rate):
                 print("Training {} epochs with learning rate {}".format(epochs, learning_rate))
-                self.model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy')
+                self.model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy', metrics=['accuracy'])
                 self.model.fit(
                     self.x_train[train], self.y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1
                 )
-            loss += self.model.evaluate(self.x_train[validation], self.y_train[validation], verbose=0) / self.nfold
-        return loss
+            acc += self.model.evaluate(self.x_train[validation], self.y_train[validation], verbose=0)[1] / self.nfold
+        return acc
