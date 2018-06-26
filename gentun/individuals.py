@@ -196,7 +196,7 @@ class XgboostIndividual(Individual):
 
 class GeneticCnnIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015, nodes=(3, 5),
+    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
                  input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)), dense_units=500,
                  dropout_probability=0.5, classes=10, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         if genome is None:
@@ -232,7 +232,7 @@ class GeneticCnnIndividual(Individual):
         model = GeneticCnnModel(
             self.x_train, self.y_train, self.genes, self.input_shape, self.kernels_per_layer,
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
-            self.nfold, self.epochs, self.batch_size
+            self.nfold, self.epochs, self.learning_rate, self.batch_size
         )
         self.fitness = model.cross_validate()
 
@@ -250,6 +250,16 @@ class GeneticCnnIndividual(Individual):
             'learning_rate': self.learning_rate,
             'batch_size': self.batch_size
         }
+
+    def reproduce(self, partner):
+        """Mix genes from self and partner randomly."""
+        assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
+        for name in self.get_genes().keys():
+            if random.random() < self.uniform_rate:
+                # Switch stages
+                self.get_genes()[name], partner.get_genes[name] = partner.get_genes[name], self.get_genes()[name]
+                self.fitness = None
+                partner.fitness = None
 
     def mutate(self):
         """Mutate instance's genes with a certain probability."""
