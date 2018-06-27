@@ -123,8 +123,17 @@ class Individual(object):
         return self.fitness is not None
 
     def set_fitness(self, value):
-        """Assign fitness. Only to be used by DistributedPopulation."""
+        """Assign fitness."""
         self.fitness = value
+
+    def copy(self):
+        """Copy instance."""
+        individual_copy = self.__class__(
+            self.x_train, self.y_train, self.genome, self.genes.copy(), self.uniform_rate,
+            self.mutation_rate, **self.get_additional_parameters()
+        )
+        individual_copy.set_fitness(self.fitness)
+        return individual_copy
 
     def __str__(self):
         """Return genes which identify the individual."""
@@ -257,16 +266,16 @@ class GeneticCnnIndividual(Individual):
         for name in self.get_genes().keys():
             if random.random() < self.uniform_rate:
                 # Switch stages
-                self.get_genes()[name], partner.get_genes[name] = partner.get_genes[name], self.get_genes()[name]
-                self.fitness = None
-                partner.fitness = None
+                self.get_genes()[name], partner.get_genes()[name] = partner.get_genes()[name], self.get_genes()[name]
+                self.set_fitness(None)
+                partner.set_fitness(None)
 
     def mutate(self):
         """Mutate instance's genes with a certain probability."""
         for name, connections in self.get_genes().items():
             new_connections = ''.join([
-                str(int((not int(byte)) != (random.random() < self.mutation_rate))) for byte in connections
+                str(int(int(byte) != (random.random() < self.mutation_rate))) for byte in connections
             ])
             if new_connections != connections:
-                self.fitness = None  # The mutation produces a new individual
-            self.get_genes()[name] = new_connections
+                self.set_fitness(None)  # A mutation means the individual has to be re-evaluated
+                self.get_genes()[name] = new_connections

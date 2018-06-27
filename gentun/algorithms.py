@@ -70,15 +70,17 @@ class RussianRouletteGA(GeneticAlgorithm):
         print("Fittest individual is:")
         print(fittest)
         print("Fitness value is: {}\n".format(round(fittest.get_fitness(), 4)))
-        # Russian roulette
+        # Russian roulette selection
         weights = [self.population[i].get_fitness() for i in range(self.population.get_size())]
         min_weight = min(weights)
         weights = [weight - min_weight for weight in weights]
+        if sum(weights) == .0:
+            weights = [1. for _ in range(self.population.get_size())]
         new_population = self.get_population_type()(
-            self.population.get_species(), self.x_train, self.y_train,
-            individual_list=[
-                self.population[random.choice(range(self.population.get_size()), weights=weights)]
-                for _ in range(self.population.get_size())
+            self.population.get_species(), self.x_train, self.y_train, individual_list=[
+                self.population[i].copy() for i in random.choices(
+                    range(self.population.get_size()), weights=weights, k=self.population.get_size()
+                )
             ]
         )
         # Crossover and mutation
