@@ -4,10 +4,12 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 """
 
 import keras.backend as K
+import numpy as np
 
 from keras.layers import Input, Conv2D, Activation, Add, MaxPooling2D, Flatten, Dense, Dropout
+from keras.optimizers import Adam
 from keras.models import Model
-from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 
 from .generic_models import GentunModel
 
@@ -16,20 +18,30 @@ K.set_image_data_format('channels_last')
 
 class GeneticCnnModel(GentunModel):
 
-    def __init__(self, x_train, y_train, genes, input_shape, kernels_per_layer,
-                 kernel_sizes, dense_units, dropout_probability, classes,
-                 nfold=5, epochs=3, batch_size=128, plot_model=False):
+    def __init__(self, x_train, y_train, genes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
+                 dropout_probability, classes, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
         self.model = self.build_model(
-            genes, input_shape, kernels_per_layer, kernel_sizes, dense_units, dropout_probability, classes
+            genes, input_shape, kernels_per_layer, kernel_sizes,
+            dense_units, dropout_probability, classes
         )
+        self.name = '-'.join(gene for gene in genes.values())
         self.nfold = nfold
-        self.epochs = epochs
+        if type(epochs) is int and type(learning_rate) is int:
+            self.epochs = (epochs,)
+            self.learning_rate = (learning_rate,)
+        elif type(epochs) is tuple and type(learning_rate) is tuple:
+            self.epochs = epochs
+            self.learning_rate = learning_rate
+        else:
+            print(epochs, learning_rate)
+            raise ValueError("epochs and learning_rate must be both either integers or tuples of integers.")
         self.batch_size = batch_size
-        if plot_model:
-            # Draw model to validate gene-to-DAG
-            from keras.utils import plot_model
-            plot_model(self.model, to_file='model.png')
+
+    def plot(self):
+        """Draw model to validate gene-to-DAG."""
+        from keras.utils import plot_model
+        plot_model(self.model, to_file='{}.png'.format(self.name))
 
     @staticmethod
     def build_dag(x, connections, kernels):
@@ -114,16 +126,18 @@ class GeneticCnnModel(GentunModel):
 
     def cross_validate(self):
         """Train model using k-fold cross validation and
-        return mean value of the loss.
+        return mean value of the validation accuracy.
         """
-        self.model.compile(optimizer='adam', loss='binary_crossentropy')
-        loss = .0
-        kfold = KFold(n_splits=self.nfold, shuffle=True)  # TODO: implement stratified k-fold
-        for fold, (train, test) in enumerate(kfold.split(self.x_train)):
+        acc = .0
+        kfold = StratifiedKFold(n_splits=self.nfold, shuffle=True)
+        for fold, (train, validation) in enumerate(kfold.split(self.x_train, np.where(self.y_train == 1)[1])):
             print("KFold {}/{}".format(fold + 1, self.nfold))
             self.reset_weights()
-            self.model.fit(
-                self.x_train[train], self.y_train[train], epochs=self.epochs, batch_size=self.batch_size, verbose=1
-            )
-            loss += self.model.evaluate(self.x_train[test], self.y_train[test], verbose=0) / self.nfold
-        return loss
+            for epochs, learning_rate in zip(self.epochs, self.learning_rate):
+                print("Training {} epochs with learning rate {}".format(epochs, learning_rate))
+                self.model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy', metrics=['accuracy'])
+                self.model.fit(
+                    self.x_train[train], self.y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1
+                )
+            acc += self.model.evaluate(self.x_train[validation], self.y_train[validation], verbose=0)[1] / self.nfold
+        return acc

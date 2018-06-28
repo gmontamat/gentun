@@ -22,7 +22,7 @@ far, this project supports parameter tuning for the following models:
 
 - [x] XGBoost regressor (custom gene encoding)
 - [x] XGBoost classifier (custom gene encoding)
-- [ ] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras (almost finished)
+- [ ] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
 
 # Installation
 
@@ -178,6 +178,10 @@ ga.run(10)
 * http://xgboost.readthedocs.io/en/latest/parameter.html
 * http://xgboost.readthedocs.io/en/latest/how_to/param_tuning.html
 * https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
+
+## Papers
+
+* https://arxiv.org/abs/1703.01513
 
 ## Master-Workers model and RabbitMQ
 

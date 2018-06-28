@@ -61,14 +61,6 @@ class Individual(object):
         for gene, properties in self.genome.items():
             if type(gene) != str:
                 raise TypeError("Gene names must be strings.")
-            # if type(properties) != tuple:
-            #     raise TypeError("Gene attributes must be a tuple.")
-            # if len(properties) != 4:
-            #     raise TypeError(
-            #         "A gene must have 4 attributes: a default value, "
-            #         "minimum value, maximum value, and a logarithm scale "
-            #         "(or None for integers)."
-            #     )
 
     def validate_genes(self):
         """Check that genes are compatible with genome."""
@@ -131,8 +123,17 @@ class Individual(object):
         return self.fitness is not None
 
     def set_fitness(self, value):
-        """Assign fitness. Only to be used by DistributedPopulation."""
+        """Assign fitness."""
         self.fitness = value
+
+    def copy(self):
+        """Copy instance."""
+        individual_copy = self.__class__(
+            self.x_train, self.y_train, self.genome, self.genes.copy(), self.uniform_rate,
+            self.mutation_rate, **self.get_additional_parameters()
+        )
+        individual_copy.set_fitness(self.fitness)
+        return individual_copy
 
     def __str__(self):
         """Return genes which identify the individual."""
@@ -204,9 +205,9 @@ class XgboostIndividual(Individual):
 
 class GeneticCnnIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
-                 nodes=(3, 5), input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)),
-                 dense_units=500, dropout_probability=0.5, classes=10, nfold=5, epochs=3, batch_size=128):
+    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
+                 input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)), dense_units=500,
+                 dropout_probability=0.5, classes=10, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         if genome is None:
             genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
         if genes is None:
@@ -224,6 +225,7 @@ class GeneticCnnIndividual(Individual):
         self.classes = classes
         self.nfold = nfold
         self.epochs = epochs
+        self.learning_rate = learning_rate
         self.batch_size = batch_size
 
     @staticmethod
@@ -239,7 +241,7 @@ class GeneticCnnIndividual(Individual):
         model = GeneticCnnModel(
             self.x_train, self.y_train, self.genes, self.input_shape, self.kernels_per_layer,
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
-            self.nfold, self.epochs, self.batch_size
+            self.nfold, self.epochs, self.learning_rate, self.batch_size
         )
         self.fitness = model.cross_validate()
 
@@ -254,15 +256,26 @@ class GeneticCnnIndividual(Individual):
             'classes': self.classes,
             'nfold': self.nfold,
             'epochs': self.epochs,
+            'learning_rate': self.learning_rate,
             'batch_size': self.batch_size
         }
+
+    def reproduce(self, partner):
+        """Mix genes from self and partner randomly."""
+        assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
+        for name in self.get_genes().keys():
+            if random.random() < self.uniform_rate:
+                # Switch stages
+                self.get_genes()[name], partner.get_genes()[name] = partner.get_genes()[name], self.get_genes()[name]
+                self.set_fitness(None)
+                partner.set_fitness(None)
 
     def mutate(self):
         """Mutate instance's genes with a certain probability."""
         for name, connections in self.get_genes().items():
             new_connections = ''.join([
-                str(int((not int(byte)) != (random.random() < self.mutation_rate))) for byte in connections
+                str(int(int(byte) != (random.random() < self.mutation_rate))) for byte in connections
             ])
             if new_connections != connections:
-                self.fitness = None  # The mutation produces a new individual
-            self.get_genes()[name] = new_connections
+                self.set_fitness(None)  # A mutation means the individual has to be re-evaluated
+                self.get_genes()[name] = new_connections

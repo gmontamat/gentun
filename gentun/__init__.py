@@ -1,5 +1,5 @@
 # Make public APIs available at top-level import
-from .algorithms import GeneticAlgorithm
+from .algorithms import GeneticAlgorithm, RussianRouletteGA
 from .populations import Population, GridPopulation
 from .master import DistributedPopulation, DistributedGridPopulation
 from .worker import GentunWorker

@@ -32,7 +32,8 @@ if __name__ == '__main__':
         0.5,  # Dropout probability
         10,  # Number of classes to predict
         nfold=5,
-        epochs=8,
-        batch_size=32
+        epochs=(20, 4, 1),
+        learning_rate=(1e-3, 1e-4, 1e-5),
+        batch_size=128
     )
     print(model.cross_validate())
