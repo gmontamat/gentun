@@ -60,6 +60,9 @@ class Population(object):
     def get_data(self):
         return self.x_train, self.y_train
 
+    def get_minimize(self):
+        return self.minimize
+
     def __getitem__(self, item):
         return self.individuals[item]
 

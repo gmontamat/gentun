@@ -107,6 +107,18 @@ class Individual(object):
             **self.get_additional_parameters()
         )
 
+    def crossover(self, partner):
+        """Mix genes from self and partner randomly.
+        Mutates each individual instead of producing
+        a child."""
+        assert self.__class__ == partner.__class__  # Can only cross if they're the same species
+        for name in self.get_genes().keys():
+            if random.random() < self.uniform_rate:
+                # Switch stages
+                self.get_genes()[name], partner.get_genes()[name] = partner.get_genes()[name], self.get_genes()[name]
+                self.set_fitness(None)
+                partner.set_fitness(None)
+
     def mutate(self):
         """Mutate instance's genes with a certain probability."""
         for name, value in self.get_genes().items():
@@ -238,12 +250,17 @@ class GeneticCnnIndividual(Individual):
 
     def evaluate_fitness(self):
         """Create model and perform cross-validation."""
-        model = GeneticCnnModel(
-            self.x_train, self.y_train, self.genes, self.input_shape, self.kernels_per_layer,
-            self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
-            self.nfold, self.epochs, self.learning_rate, self.batch_size
-        )
-        self.fitness = model.cross_validate()
+        # model = GeneticCnnModel(
+        #     self.x_train, self.y_train, self.genes, self.input_shape, self.kernels_per_layer,
+        #     self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
+        #     self.nfold, self.epochs, self.learning_rate, self.batch_size
+        # )
+        # self.fitness = model.cross_validate()
+        fitness = 0
+        for genes in self.genes.values():
+            for gene in genes:
+                fitness += int(gene)
+        self.fitness = fitness
 
     def get_additional_parameters(self):
         return {
@@ -259,16 +276,6 @@ class GeneticCnnIndividual(Individual):
             'learning_rate': self.learning_rate,
             'batch_size': self.batch_size
         }
-
-    def reproduce(self, partner):
-        """Mix genes from self and partner randomly."""
-        assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
-        for name in self.get_genes().keys():
-            if random.random() < self.uniform_rate:
-                # Switch stages
-                self.get_genes()[name], partner.get_genes()[name] = partner.get_genes()[name], self.get_genes()[name]
-                self.set_fitness(None)
-                partner.set_fitness(None)
 
     def mutate(self):
         """Mutate instance's genes with a certain probability."""

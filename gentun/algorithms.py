@@ -36,7 +36,8 @@ class GeneticAlgorithm(object):
         print(fittest)
         print("Fitness value is: {}\n".format(round(fittest.get_fitness(), 4)))
         new_population = self.get_population_type()(
-            self.population.get_species(), self.x_train, self.y_train, individual_list=[]
+            self.population.get_species(), self.x_train, self.y_train, individual_list=[],
+            minimize=self.population.get_minimize()
         )
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
@@ -50,7 +51,7 @@ class GeneticAlgorithm(object):
         tournament = self.get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[
                 self.population[i] for i in random.sample(range(self.population.get_size()), self.tournament_size)
-            ]
+            ], minimize=self.population.get_minimize()
         )
         return tournament.get_fittest()
 
@@ -86,7 +87,7 @@ class RussianRouletteGA(GeneticAlgorithm):
         # Crossover and mutation
         for i in range(new_population.get_size() // 2):
             if random.random() < self.crossover_probability:
-                new_population[i].reproduce(new_population[i + 1])
+                new_population[i].crossover(new_population[i + 1])
             else:
                 if random.random() < self.mutation_probability:
                     new_population[i].mutate()

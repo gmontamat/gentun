@@ -14,7 +14,7 @@ if __name__ == '__main__':
     import random
     from sklearn.datasets import fetch_mldata
     from sklearn.preprocessing import LabelBinarizer
-    from gentun import Population, GeneticCnnIndividual, RussianRouletteGA
+    from gentun import Population, GeneticCnnIndividual, RussianRouletteGA, GeneticAlgorithm
 
     mnist = fetch_mldata('MNIST original', data_home='./data')
     lb = LabelBinarizer()
