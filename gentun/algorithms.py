@@ -82,7 +82,7 @@ class RussianRouletteGA(GeneticAlgorithm):
                 self.population[i].copy() for i in random.choices(
                     range(self.population.get_size()), weights=weights, k=self.population.get_size()
                 )
-            ]
+            ], minimize=self.population.get_minimize()
         )
         # Crossover and mutation
         for i in range(new_population.get_size() // 2):

@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     pop = Population(
         GeneticCnnIndividual, x_train, y_train, size=20,
-        uniform_rate=0.3, mutation_rate=0.1,
+        crossover_rate=0.3, mutation_rate=0.1,
         additional_parameters={
             'nfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 128
         },

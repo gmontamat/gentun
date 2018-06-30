@@ -42,14 +42,14 @@ class Individual(object):
     genome and a random individual generator.
     """
 
-    def __init__(self, x_train, y_train, genome, genes, uniform_rate, mutation_rate, additional_parameters=None):
+    def __init__(self, x_train, y_train, genome, genes, crossover_rate, mutation_rate, additional_parameters=None):
         self.x_train = x_train
         self.y_train = y_train
         self.genome = genome
         self.validate_genome()
         self.genes = genes
         self.validate_genes()
-        self.uniform_rate = uniform_rate
+        self.crossover_rate = crossover_rate
         self.mutation_rate = mutation_rate
         self.fitness = None  # Until evaluated an individual fitness is unknown
         assert additional_parameters is None
@@ -98,12 +98,12 @@ class Individual(object):
         assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
         child_genes = {}
         for name, value in self.get_genes().items():
-            if random.random() < self.uniform_rate:
-                child_genes[name] = value
-            else:
+            if random.random() < self.crossover_rate:
                 child_genes[name] = partner.get_genes()[name]
+            else:
+                child_genes[name] = value
         return self.__class__(
-            self.x_train, self.y_train, self.genome, child_genes, self.uniform_rate, self.mutation_rate,
+            self.x_train, self.y_train, self.genome, child_genes, self.crossover_rate, self.mutation_rate,
             **self.get_additional_parameters()
         )
 
@@ -113,8 +113,7 @@ class Individual(object):
         a child."""
         assert self.__class__ == partner.__class__  # Can only cross if they're the same species
         for name in self.get_genes().keys():
-            if random.random() < self.uniform_rate:
-                # Switch stages
+            if random.random() < self.crossover_rate:
                 self.get_genes()[name], partner.get_genes()[name] = partner.get_genes()[name], self.get_genes()[name]
                 self.set_fitness(None)
                 partner.set_fitness(None)
@@ -128,7 +127,7 @@ class Individual(object):
                     self.get_genes()[name] = random.randint(minimum, maximum)
                 else:
                     self.get_genes()[name] = round(random_log_uniform(minimum, maximum, log_scale), 4)
-                self.fitness = None  # The mutation produces a new individual
+                self.set_fitness(None)  # The mutation produces a new individual
 
     def get_fitness_status(self):
         """Return True if individual's fitness in known."""
@@ -141,7 +140,7 @@ class Individual(object):
     def copy(self):
         """Copy instance."""
         individual_copy = self.__class__(
-            self.x_train, self.y_train, self.genome, self.genes.copy(), self.uniform_rate,
+            self.x_train, self.y_train, self.genome, self.genes.copy(), self.crossover_rate,
             self.mutation_rate, **self.get_additional_parameters()
         )
         individual_copy.set_fitness(self.fitness)
@@ -154,7 +153,7 @@ class Individual(object):
 
 class XgboostIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.5, mutation_rate=0.015,
+    def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.5, mutation_rate=0.015,
                  booster='gbtree', objective='reg:linear', eval_metric='rmse', nfold=5,
                  num_boost_round=5000, early_stopping_rounds=100):
         if genome is None:
@@ -175,7 +174,7 @@ class XgboostIndividual(Individual):
         if genes is None:
             genes = self.generate_random_genes(genome)
         # Set individual's attributes
-        super(XgboostIndividual, self).__init__(x_train, y_train, genome, genes, uniform_rate, mutation_rate)
+        super(XgboostIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
         # Set additional parameters which are not tuned
         self.booster = booster
         self.objective = objective
@@ -217,7 +216,7 @@ class XgboostIndividual(Individual):
 
 class GeneticCnnIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genome=None, genes=None, uniform_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
+    def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
                  input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)), dense_units=500,
                  dropout_probability=0.5, classes=10, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         if genome is None:
@@ -225,7 +224,7 @@ class GeneticCnnIndividual(Individual):
         if genes is None:
             genes = self.generate_random_genes(genome)
         # Set individual's attributes
-        super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, uniform_rate, mutation_rate)
+        super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
         # Set additional parameters which are not tuned
         assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
         self.nodes = nodes
