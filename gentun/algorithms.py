@@ -65,14 +65,17 @@ class RussianRouletteGA(GeneticAlgorithm):
         self.crossover_probability = crossover_probability
         self.mutation_probability = mutation_probability
 
-    def evolve_population(self):
+    def evolve_population(self, eps=1e-15):
         print("Evaluating generation #{}...".format(self.generation))
         fittest = self.population.get_fittest()
         print("Fittest individual is:")
         print(fittest)
         print("Fitness value is: {}\n".format(round(fittest.get_fitness(), 4)))
         # Russian roulette selection
-        weights = [self.population[i].get_fitness() for i in range(self.population.get_size())]
+        if self.population.get_minimize():
+            weights = [1 / (self.population[i].get_fitness() + eps) for i in range(self.population.get_size())]
+        else:
+            weights = [self.population[i].get_fitness() for i in range(self.population.get_size())]
         min_weight = min(weights)
         weights = [weight - min_weight for weight in weights]
         if sum(weights) == .0:

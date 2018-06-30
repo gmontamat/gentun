@@ -93,7 +93,8 @@ class Individual(object):
 
     def reproduce(self, partner):
         """Mix genes from self and partner randomly and
-        return a new instance of an individual.
+        return a new instance of an individual. Do not
+        mutate parents.
         """
         assert self.__class__ == partner.__class__  # Can only reproduce if they're the same species
         child_genes = {}
@@ -109,8 +110,9 @@ class Individual(object):
 
     def crossover(self, partner):
         """Mix genes from self and partner randomly.
-        Mutates each individual instead of producing
-        a child."""
+        Mutates each parent instead of producing a
+        new instance (child).
+        """
         assert self.__class__ == partner.__class__  # Can only cross if they're the same species
         for name in self.get_genes().keys():
             if random.random() < self.crossover_rate:

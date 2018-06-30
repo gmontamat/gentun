@@ -33,4 +33,5 @@ if __name__ == '__main__':
         minimize=False
     )
     ga = RussianRouletteGA(pop, crossover_probability=0.2, mutation_probability=0.8)
+    # ga = GeneticAlgorithm(pop)
     ga.run(50)
