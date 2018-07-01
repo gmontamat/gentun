@@ -22,6 +22,9 @@ if __name__ == '__main__':
         'max_depth': range(3, 11),
         'colsample_bytree': [0.80, 0.85, 0.90, 0.95, 1.0],
     }
-    pop = GridPopulation(XgboostIndividual, x_train, y_train, genes_grid=grid, additional_parameters={'nfold': 3})
+    pop = GridPopulation(
+        XgboostIndividual, x_train, y_train, genes_grid=grid,
+        additional_parameters={'nfold': 3}, maximize=False
+    )
     ga = GeneticAlgorithm(pop)
     ga.run(10)

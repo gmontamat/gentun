@@ -82,10 +82,12 @@ class DistributedPopulation(Population):
     """
 
     def __init__(self, species, individual_list=None, size=None, crossover_rate=0.5,
-                 mutation_rate=0.015, additional_parameters=None, host='localhost',
-                 port=5672, user='guest', password='guest', rabbit_queue='rpc_queue'):
+                 mutation_rate=0.015, maximize=True, additional_parameters=None,
+                 host='localhost', port=5672, user='guest', password='guest',
+                 rabbit_queue='rpc_queue'):
         super(DistributedPopulation, self).__init__(
-            species, None, None, individual_list, size, crossover_rate, mutation_rate, additional_parameters
+            species, None, None, individual_list, size, crossover_rate,
+            mutation_rate, maximize, additional_parameters
         )
         self.credentials = {
             'host': host,
@@ -128,10 +130,11 @@ class DistributedGridPopulation(DistributedPopulation, GridPopulation):
     """
 
     def __init__(self, species, individual_list=None, genes_grid=None, crossover_rate=0.5,
-                 mutation_rate=0.015, additional_parameters=None, host='localhost',
-                 port=5672, user='guest', password='guest', rabbit_queue='rpc_queue'):
+                 mutation_rate=0.015, maximize=True, additional_parameters=None,
+                 host='localhost', port=5672, user='guest', password='guest',
+                 rabbit_queue='rpc_queue'):
         # size parameter of DistributedPopulation is replaced with genes_grid
         super(DistributedGridPopulation, self).__init__(
-            species, individual_list, genes_grid, crossover_rate, mutation_rate,
+            species, individual_list, genes_grid, crossover_rate, mutation_rate, maximize,
             additional_parameters, host, port, user, password, rabbit_queue
         )

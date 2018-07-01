@@ -64,10 +64,10 @@ ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
 
-Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default in this
-framework, the fittest individual of a population is the one with the lowest fitness value (so as to minimize the loss,
-for example *rmse* or *binary crossentropy*). To make the *Population* class more flexible, you can pass the
-parameter **minimize=False** to override this behaviour and maximize your fitness metric instead.
+Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
+follows the convention. Nonetheless, to make the *Population* class and its variants more flexible, you can set the
+parameter **maximize=False** to override this behavior and minimize your fitness metric (so as to minimize the loss, for
+example *rmse* or *binary crossentropy*).
 
 ## Custom individuals and grid search
 
