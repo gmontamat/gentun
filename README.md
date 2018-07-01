@@ -58,7 +58,10 @@ x_train = data.drop(['quality'], axis=1)
 
 ```python
 # Generate a random population
-pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
+pop = Population(
+    XgboostIndividual, x_train, y_train, size=100,
+    additional_parameters={'nfold': 3}, maximize=False
+)
 # Run the algorithm for ten generations
 ga = GeneticAlgorithm(pop)
 ga.run(10)
@@ -84,7 +87,10 @@ custom_genes = {
     'lambda': 1.0, 'alpha': 0.0, 'scale_pos_weight': 1.0
 }
 # Generate a random population and add a custom individual
-pop = Population(XgboostIndividual, x_train, y_train, size=99, additional_parameters={'nfold': 3})
+pop = Population(
+    XgboostIndividual, x_train, y_train, size=99,
+    additional_parameters={'nfold': 3}, maximize=False
+)
 pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3))
 ```
 
@@ -100,7 +106,7 @@ grid = {
     'colsample_bytree': [0.80, 0.85, 0.90, 0.95, 1.0]
 }
 # Generate a grid of individuals as the population
-pop = GridPopulation(XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3})
+pop = GridPopulation(XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3}, maximize=False)
 ```
 
 Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search.
@@ -155,7 +161,7 @@ acts as the *master* node sending job requests to the *workers* each time an ind
 from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
 
 population = DistributedPopulation(
-    XgboostIndividual, size=100, additional_parameters={'nfold': 3},
+    XgboostIndividual, size=100, additional_parameters={'nfold': 3}, maximize=False,
     host='<rabbitmq_server_ip>', user='<username>', password='<password>'
 )
 # Run the algorithm for ten generations using worker nodes to evaluate individuals
