@@ -14,7 +14,7 @@ if __name__ == '__main__':
     import random
     from sklearn.datasets import fetch_mldata
     from sklearn.preprocessing import LabelBinarizer
-    from gentun import Population, GeneticCnnIndividual, RussianRouletteGA, GeneticAlgorithm
+    from gentun import Population, GeneticCnnIndividual, RussianRouletteGA
 
     mnist = fetch_mldata('MNIST original', data_home='./data')
     lb = LabelBinarizer()
@@ -32,5 +32,4 @@ if __name__ == '__main__':
         }, maximize=True
     )
     ga = RussianRouletteGA(pop, crossover_probability=0.2, mutation_probability=0.8)
-    # ga = GeneticAlgorithm(pop)
     ga.run(50)
