@@ -17,6 +17,9 @@ if __name__ == '__main__':
     data = pd.read_csv('./data/winequality-white.csv', delimiter=';')
     y_train = data['quality']
     x_train = data.drop(['quality'], axis=1)
-    pop = Population(XgboostIndividual, x_train, y_train, size=100, additional_parameters={'nfold': 3})
+    pop = Population(
+        XgboostIndividual, x_train, y_train, size=100,
+        additional_parameters={'nfold': 3}, maximize=False
+    )
     ga = GeneticAlgorithm(pop)
     ga.run(10)

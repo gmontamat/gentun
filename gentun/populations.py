@@ -16,12 +16,12 @@ class Population(object):
     """
 
     def __init__(self, species, x_train, y_train, individual_list=None, size=None,
-                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None,
-                 minimize=True):
+                 crossover_rate=0.5, mutation_rate=0.015, maximize=True,
+                 additional_parameters=None):
         self.x_train = x_train
         self.y_train = y_train
         self.species = species
-        self.minimize = minimize
+        self.maximize = maximize
         if individual_list is None and size is None:
             raise ValueError("Either pass a list of individuals or a population size for a random population.")
         elif individual_list is None:
@@ -30,7 +30,7 @@ class Population(object):
             self.population_size = size
             self.individuals = [
                 self.species(
-                    self.x_train, self.y_train, uniform_rate=uniform_rate,
+                    self.x_train, self.y_train, crossover_rate=crossover_rate,
                     mutation_rate=mutation_rate, **additional_parameters
                 )
                 for _ in range(size)
@@ -53,12 +53,15 @@ class Population(object):
         return self.population_size
 
     def get_fittest(self):
-        if self.minimize:
-            return min(self.individuals, key=operator.methodcaller('get_fitness'))
-        return max(self.individuals, key=operator.methodcaller('get_fitness'))
+        if self.maximize:
+            return max(self.individuals, key=operator.methodcaller('get_fitness'))
+        return min(self.individuals, key=operator.methodcaller('get_fitness'))
 
     def get_data(self):
         return self.x_train, self.y_train
+
+    def get_fitness_criteria(self):
+        return self.maximize
 
     def __getitem__(self, item):
         return self.individuals[item]
@@ -73,8 +76,8 @@ class GridPopulation(Population):
      """
 
     def __init__(self, species, x_train, y_train, individual_list=None, genes_grid=None,
-                 uniform_rate=0.5, mutation_rate=0.015, additional_parameters=None,
-                 minimize=True):
+                 crossover_rate=0.5, mutation_rate=0.015, maximize=True,
+                 additional_parameters=None):
         if individual_list is None and genes_grid is None:
             raise ValueError("Either pass a list of individuals or a grid definition.")
         elif genes_grid is not None:
@@ -87,7 +90,7 @@ class GridPopulation(Population):
                     genes_grid[gene] = [properties[0]]  # Use default value
             individual_list = [
                 species(
-                    x_train, y_train, genes=genes, uniform_rate=uniform_rate,
+                    x_train, y_train, genes=genes, crossover_rate=crossover_rate,
                     mutation_rate=mutation_rate, **additional_parameters
                 )
                 for genes in (
@@ -97,6 +100,6 @@ class GridPopulation(Population):
             ]
             print("Initializing a grid population. Size: {}".format(len(individual_list)))
         super(GridPopulation, self).__init__(
-            species, x_train, y_train, individual_list, None, uniform_rate, mutation_rate,
-            additional_parameters, minimize
+            species, x_train, y_train, individual_list, None, crossover_rate, mutation_rate,
+            maximize, additional_parameters
         )

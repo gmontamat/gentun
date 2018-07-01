@@ -26,11 +26,10 @@ if __name__ == '__main__':
 
     pop = Population(
         GeneticCnnIndividual, x_train, y_train, size=20,
-        uniform_rate=0.3, mutation_rate=0.1,
+        crossover_rate=0.3, mutation_rate=0.1,
         additional_parameters={
-            'nfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 128
-        },
-        minimize=False
+            'nfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 32
+        }, maximize=True
     )
     ga = RussianRouletteGA(pop, crossover_probability=0.2, mutation_probability=0.8)
     ga.run(50)
