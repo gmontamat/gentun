@@ -106,7 +106,10 @@ grid = {
     'colsample_bytree': [0.80, 0.85, 0.90, 0.95, 1.0]
 }
 # Generate a grid of individuals as the population
-pop = GridPopulation(XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3}, maximize=False)
+pop = GridPopulation(
+    XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3},
+    maximize=False
+)
 ```
 
 Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search.
