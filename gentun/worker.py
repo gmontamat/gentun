@@ -36,6 +36,10 @@ class GentunWorker(object):
 
     def on_request(self, channel, method, properties, body):
         i, genes, additional_parameters = json.loads(body)
+        # If an additional parameter is received as a list, convert to tuple
+        for param in additional_parameters.keys():
+            if isinstance(additional_parameters[param], list):
+                additional_parameters[param] = tuple(additional_parameters[param])
         print(" [.] Evaluating individual {}".format(i))
         # print("     ... Genes: {}".format(str(genes)))
         # print("     ... Other: {}".format(str(additional_parameters)))
