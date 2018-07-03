@@ -44,7 +44,7 @@ class GentunWorker(object):
         # print("     ... Genes: {}".format(str(genes)))
         # print("     ... Other: {}".format(str(additional_parameters)))
         # Run model and return fitness metric
-        individual = self.individual(self.x_train, self.y_train, genes, **additional_parameters)
+        individual = self.individual(self.x_train, self.y_train, genes=genes, **additional_parameters)
         fitness = individual.get_fitness()
         # Prepare response for master and send it
         response = json.dumps([i, fitness])
