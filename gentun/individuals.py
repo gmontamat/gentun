@@ -252,7 +252,7 @@ class GeneticCnnIndividual(Individual):
     def evaluate_fitness(self):
         """Create model and perform cross-validation."""
         model = GeneticCnnModel(
-            self.x_train, self.y_train, self.genes, self.input_shape, self.kernels_per_layer,
+            self.x_train, self.y_train, self.genes, self.nodes, self.input_shape, self.kernels_per_layer,
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
             self.nfold, self.epochs, self.learning_rate, self.batch_size
         )

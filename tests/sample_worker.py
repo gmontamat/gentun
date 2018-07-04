@@ -12,10 +12,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 
 if __name__ == '__main__':
-    from gentun import GentunWorker, XgboostModel
+    from gentun import GentunWorker, XgboostIndividual
 
     data = pd.read_csv('../tests/data/winequality-white.csv', delimiter=';')
     y = data['quality']
     x = data.drop(['quality'], axis=1)
-    gw = GentunWorker(XgboostModel, x, y)
+    gw = GentunWorker(XgboostIndividual, x, y)
     gw.work()

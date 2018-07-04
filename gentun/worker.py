@@ -12,9 +12,9 @@ import time
 
 class GentunWorker(object):
 
-    def __init__(self, model, x_train, y_train, host='localhost', port=5672,
+    def __init__(self, individual, x_train, y_train, host='localhost', port=5672,
                  user='guest', password='guest', rabbit_queue='rpc_queue'):
-        self.model = model
+        self.individual = individual
         self.x_train = x_train
         self.y_train = y_train
         self.credentials = pika.PlainCredentials(user, password)
@@ -36,12 +36,16 @@ class GentunWorker(object):
 
     def on_request(self, channel, method, properties, body):
         i, genes, additional_parameters = json.loads(body)
+        # If an additional parameter is received as a list, convert to tuple
+        for param in additional_parameters.keys():
+            if isinstance(additional_parameters[param], list):
+                additional_parameters[param] = tuple(additional_parameters[param])
         print(" [.] Evaluating individual {}".format(i))
         # print("     ... Genes: {}".format(str(genes)))
         # print("     ... Other: {}".format(str(additional_parameters)))
-        # Run model and return cross-validation metric
-        model = self.model(self.x_train, self.y_train, genes, **additional_parameters)
-        fitness = model.cross_validate()
+        # Run model and return fitness metric
+        individual = self.individual(self.x_train, self.y_train, genes=genes, **additional_parameters)
+        fitness = individual.get_fitness()
         # Prepare response for master and send it
         response = json.dumps([i, fitness])
         channel.basic_publish(

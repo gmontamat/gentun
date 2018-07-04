@@ -18,11 +18,11 @@ K.set_image_data_format('channels_last')
 
 class GeneticCnnModel(GentunModel):
 
-    def __init__(self, x_train, y_train, genes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
+    def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
                  dropout_probability, classes, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
         self.model = self.build_model(
-            genes, input_shape, kernels_per_layer, kernel_sizes,
+            genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
             dense_units, dropout_probability, classes
         )
         self.name = '-'.join(gene for gene in genes.values())
@@ -44,9 +44,9 @@ class GeneticCnnModel(GentunModel):
         plot_model(self.model, to_file='{}.png'.format(self.name))
 
     @staticmethod
-    def build_dag(x, connections, kernels):
+    def build_dag(x, nodes, connections, kernels):
         # Get number of nodes (K_s) using the fact that K_s*(K_s-1)/2 == #bits
-        nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
+        # nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
         # Separate bits by whose input they represent (GeneticCNN paper uses a dash)
         ctr = 0
         idx = 0
@@ -94,8 +94,8 @@ class GeneticCnnModel(GentunModel):
             return Add()(output_vars)
         return output_vars[0]
 
-    def build_model(self, genes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
-                    dropout_probability, classes):
+    def build_model(self, genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
+                    dense_units, dropout_probability, classes):
         x_input = Input(input_shape)
         x = x_input
         for layer, kernels in enumerate(kernels_per_layer):
@@ -106,7 +106,7 @@ class GeneticCnnModel(GentunModel):
             connections = genes['S_{}'.format(layer + 1)]
             # If at least one bit is 1, then we need to construct the Directed Acyclic Graph
             if not all([not bool(int(connection)) for connection in connections]):
-                x = self.build_dag(x, connections, kernels)
+                x = self.build_dag(x, nodes[layer], connections, kernels)
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding='same')(x)
                 x = Activation('relu')(x)
