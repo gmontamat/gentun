@@ -62,4 +62,5 @@ class GentunWorker(object):
             print(" [-] Press Ctrl+C to interrupt")
             self.channel.start_consuming()
         except KeyboardInterrupt:
-            print("\nGood bye!")
+            print()
+            print("Good bye!")
