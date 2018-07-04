@@ -22,7 +22,7 @@ far, this project supports parameter tuning for the following models:
 
 - [x] XGBoost regressor (custom gene encoding)
 - [x] XGBoost classifier (custom gene encoding)
-- [ ] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
+- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
 
 # Installation
 
@@ -107,7 +107,8 @@ grid = {
 }
 # Generate a grid of individuals as the population
 pop = GridPopulation(
-    XgboostIndividual, genes_grid=grid, additional_parameters={'nfold': 3},
+    XgboostIndividual, genes_grid=grid,
+    additional_parameters={'nfold': 3},
     maximize=False
 )
 ```
@@ -143,7 +144,7 @@ Next, start the worker nodes. Each node has to have access to the train data. Yo
 long as they have network access to the message broker server.
 
 ```python
-from gentun import GentunWorker, XgboostModel
+from gentun import GentunWorker, XgboostIndividual
 import pandas as pd
 
 data = pd.read_csv('./tests/data/winequality-white.csv', delimiter=';')
@@ -151,14 +152,14 @@ y = data['quality']
 x = data.drop(['quality'], axis=1)
 
 gw = GentunWorker(
-    XgboostModel, x, y, host='<rabbitmq_server_ip>',
+    XgboostIndividual, x, y, host='<rabbitmq_server_ip>',
     user='<username>', password='<password>'
 )
 gw.work()
 ```
 
 Finally, run the genetic algorithm but this time with a *DistributedPopulation* or a *DistributedGridPopulation* which
-acts as the *master* node sending job requests to the *workers* each time an individual needs to be evaluated.
+serves as the *master* node sending job requests to the *workers* each time an individual needs to be evaluated.
 
 ```python
 from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
