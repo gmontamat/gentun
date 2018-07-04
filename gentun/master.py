@@ -32,6 +32,7 @@ class RpcClient(object):
         self.callback_queue = result.method.queue
         self.channel.basic_consume(self.on_response, no_ack=True, queue=self.callback_queue)
         self.rabbit_queue = rabbit_queue
+        self.channel.queue_declare(queue=self.rabbit_queue)
         self.response = None
         self.id = None
         # Local queues shared between threads
@@ -41,6 +42,9 @@ class RpcClient(object):
         heartbeat_thread = threading.Thread(target=self.heartbeat)
         heartbeat_thread.daemon = True
         heartbeat_thread.start()
+
+    def purge(self):
+        self.channel.queue_purge(queue=self.rabbit_queue)
 
     def heartbeat(self):
         """Send heartbeat messages to RabbitMQ server."""
@@ -105,6 +109,8 @@ class DistributedPopulation(Population):
         """Send job requests to RabbitMQ pool so that
         workers evaluate individuals with unknown fitness.
         """
+        # Purge job queue if necessary
+        RpcClient(None, None, **self.credentials).purge()
         jobs = queue.Queue()  # "Counter" of pending jobs, shared between threads
         responses = queue.Queue()  # Collect fitness values from workers
         for i, individual in enumerate(self.individuals):
