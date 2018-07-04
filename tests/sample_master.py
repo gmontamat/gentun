@@ -2,8 +2,7 @@
 """
 Create a 'DistributedPopulation' which generates a local
 queue of jobs to run individuals in parallel. The rabbitmq
-daemon should be running locally and at least one sample
-worker too.
+server should be running locally.
 """
 
 import os

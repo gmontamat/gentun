@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 """
-Implementation of a distributed version of the
-Genetic CNN algorithm on MNIST data. The rabbitmq
-daemon should be running locally and at least one
-sample worker too.
+Implementation of a distributed version of the Genetic CNN
+algorithm on MNIST data. The rabbitmq server should be
+running locally.
 """
 
 import os
