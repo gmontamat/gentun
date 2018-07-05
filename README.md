@@ -38,7 +38,7 @@ $ cd gentun
 $ python setup.py install
 ```
 
-# Sample usage
+# Usage
 
 ## Single machine
 
@@ -69,10 +69,10 @@ ga.run(10)
 
 Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
 follows the convention. Nonetheless, to make the *Population* class and its variants more flexible, you can set the
-parameter **maximize=False** to override this behavior and minimize your fitness metric (so as to minimize the loss, for
+parameter `maximize=False` to override this behavior and minimize your fitness metric (so as to minimize the loss, for
 example *rmse* or *binary crossentropy*).
 
-## Custom individuals and grid search
+### Custom individuals and grid search
 
 It's usually convenient to initialize the genetic algorithm with some known individuals instead of a random population.
 For example, you can add custom individuals to the population before running the genetic algorithm if you already have
@@ -113,35 +113,79 @@ pop = GridPopulation(
 )
 ```
 
-Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search.
+Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search. Note that
+only *XgboostIndividual* is compatible with the *GridPopulation* class.
 
-## Multiple computers
+## Multiple computers - distributed algorithm
 
-You can speed up the algorithm by using several machines. One of them will act as a *master*, generating a population
-and running the genetic algorithm. Each time the *master* needs to evaluate an individual, it will send a request to a
-pool of *workers*, which receive the model's hyperparameters from the individual and perform model fitting using n-fold
-cross-validation. The more *workers* you use, the faster the algorithm will run.
+You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *master*,
+generating a population and running the genetic algorithm. Each time this *master* needs to evaluate an individual, it
+will send a request to a pool of *workers*, which receive the model's hyperparameters and perform model fitting using
+n-fold cross-validation. The more *workers* you use, the faster the algorithm will run.
 
-First, you need to setup a [RabbitMQ](https://www.rabbitmq.com/download.html) message broker server. It will handle
-communications between the *master* and all the *workers* via a queueing system.
+### Basic RabbitMQ installation and setup
+
+First, you need to install and run [RabbitMQ](https://www.rabbitmq.com/download.html), a message broker server. It will
+handle communications between the *master* and all the *worker* nodes via a queueing system.
 
 ```bash
 $ sudo apt-get install rabbitmq-server
+$ sudo service rabbitmq-server start
 ```
 
-Start the message server and add a user with privileges to communicate the master and worker nodes. The default guest
-user can only be used to access RabbitMQ locally, so the first time you start it, you should add a new user and set its
-privileges as shown below:
+Next, you should add a user with write privileges for the *master* node. The default guest user can only be used to
+access RabbitMQ locally, it is advisable to remove this user.
 
 ```bash
-$ sudo service rabbitmq-server start
-$ sudo rabbitmqctl add_user <username> <password>
-$ sudo rabbitmqctl set_user_tags <username> administrator
-$ sudo rabbitmqctl set_permissions -p / <username> ".*" ".*" ".*"
+$ sudo rabbitmqctl add_user <master_user> <master_password>
+$ sudo rabbitmqctl set_permissions -p / <master_user> ".*" ".*" ".*"
 ```
 
-Next, start the worker nodes. Each node has to have access to the train data. You can use as many nodes as desired as
-long as they have network access to the message broker server.
+Also, add a user with fewer privileges to be used by the *worker* nodes. You need to define the name of the queue used
+by the  *master* node to send job requests, passed by the `rabbit_queue` parameter, whose default value is
+**rpc_queue**.
+
+```bash
+$ sudo rabbitmqctl add_user <worker_user> <worker_password>
+$ sudo rabbitmqctl set_permissions -p / <worker_user> "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)"
+```
+
+Optionally, you can enable an HTTP admin page to configure and monitor RabbitMQ. You can monitor queues and handle user
+permissions with a more intuitive web UI.
+
+```bash
+$ sudo rabbitmq-plugins enable rabbitmq_management
+```
+
+Once enabled, navigate to `<rabbitmq_server_ip>:15672` in your browser to use the web UI. Finally, restart the server to
+reflect these changes.
+
+```bash
+$ sudo service rabbitmq-server restart
+```
+
+### Running the distributed genetic algorithm
+
+To run the distributed genetic algorithm, define either a *DistributedPopulation* or a *DistributedGridPopulation* which
+will serve as the *master* node. It will send job requests to the message broker each time a set of individuals needs to
+be evaluated and will wait until all jobs are completed to produce the next generation.
+
+```python
+from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
+
+population = DistributedPopulation(
+    XgboostIndividual, size=100, additional_parameters={'nfold': 3}, maximize=False,
+    host='<rabbitmq_server_ip>', user='<master_user>', password='<master_password>',
+    rabbit_queue='<rabbit_queue>'
+)
+# Run the algorithm for ten generations using worker nodes to evaluate individuals
+ga = GeneticAlgorithm(population)
+ga.run(10)
+```
+
+The worker nodes are defined using the *GentunWorker* class and passing the corresponding individual to it. Each node
+has to have access to the train data. You can use as many nodes as desired as long as they have network access to the
+message broker server.
 
 ```python
 from gentun import GentunWorker, XgboostIndividual
@@ -153,24 +197,10 @@ x = data.drop(['quality'], axis=1)
 
 gw = GentunWorker(
     XgboostIndividual, x, y, host='<rabbitmq_server_ip>',
-    user='<username>', password='<password>'
+    user='<worker_user>', password='<worker_password>',
+    rabbit_queue='<rabbit_queue>'
 )
 gw.work()
-```
-
-Finally, run the genetic algorithm but this time with a *DistributedPopulation* or a *DistributedGridPopulation* which
-serves as the *master* node sending job requests to the *workers* each time an individual needs to be evaluated.
-
-```python
-from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
-
-population = DistributedPopulation(
-    XgboostIndividual, size=100, additional_parameters={'nfold': 3}, maximize=False,
-    host='<rabbitmq_server_ip>', user='<username>', password='<password>'
-)
-# Run the algorithm for ten generations using worker nodes to evaluate individuals
-ga = GeneticAlgorithm(population)
-ga.run(10)
 ```
 
 **NOTE:** Future versions will adopt [Apache Kafka](https://kafka.apache.org/) as a message broker in favor of RabbitMQ.
@@ -191,7 +221,7 @@ ga.run(10)
 
 ## Papers
 
-* https://arxiv.org/abs/1703.01513
+* Lingxi Xie and Alan L. Yuille, [Genetic CNN](https://arxiv.org/abs/1703.01513)
 
 ## Master-Workers model and RabbitMQ
 

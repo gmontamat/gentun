@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Create a worker which loads 'wine-quality' data and waits
-for a job. The rabbitmq daemon should be running locally.
+for a job. The rabbitmq server should be running locally.
 """
 
 import os
