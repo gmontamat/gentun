@@ -85,7 +85,7 @@ class GridPopulation(Population):
             if not set(genes_grid.keys()).issubset(set(genome.keys())):
                 raise ValueError("Some grid parameters do not belong to the species' genome")
             # Fill genes_grid with default parameters
-            for gene, properties in genome.iteritems():
+            for gene, properties in genome.items():
                 if gene not in genes_grid:
                     genes_grid[gene] = [properties[0]]  # Use default value
             individual_list = [
@@ -95,7 +95,7 @@ class GridPopulation(Population):
                 )
                 for genes in (
                     dict(zip(genes_grid, x))
-                    for x in itertools.product(*genes_grid.itervalues())
+                    for x in itertools.product(*genes_grid.values())
                 )
             ]
             print("Initializing a grid population. Size: {}".format(len(individual_list)))
