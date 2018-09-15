@@ -3,9 +3,9 @@
 The purpose of this project is to provide a simple framework for hyperparameter tuning of machine learning models such
 as Neural Networks and Gradient Boosted Trees using a genetic algorithm. Measuring the fitness of an individual of a
 given population implies training the machine learning model using a particular set of parameters which define the
-individual's genes. This is a time consuming process, therefore, a master-workers approach is used to allow several
-clients (workers) perform the model fitting and cross-validation of individuals passed by a server (master). Offspring
-generation by reproduction and mutation is handled by the server.
+individual's genes. This is a time consuming process, therefore, a server-client approach is used to allow multiple
+clients perform the model fitting and cross-validation of individuals passed by a server. Offspring generation by
+reproduction and mutation is handled by the server.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ XGBoost's Notes on Parameter Tuning
@@ -14,7 +14,7 @@ generation by reproduction and mutation is handled by the server.
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN](https://arxiv.org/abs/1703.01513) paper
 
-# Supported gene encodings (work in progress)
+# Supported gene encodings
 
 We encourage you to submit your own individual-model pairs to enhance the project. You can base your work on the
 *XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes. So
@@ -29,7 +29,7 @@ far, this project supports parameter tuning for the following models:
 Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Also, it is better to install
 [xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and [TensorFlow](https://www.tensorflow.org/install/)
 before the setup script tries to do it for you because this offers better customization and also because *pip* may not
-be able to compile those libraries. Although the module was originally written for Python 2.7, only Python 3 is
+be able to compile those libraries. Although the module was originally written for Python 2.7, only Python 3.5+ is
 currently supported.
 
 ```bash
@@ -66,6 +66,10 @@ pop = Population(
 ga = GeneticAlgorithm(pop)
 ga.run(10)
 ```
+
+As seen above, once the individual is defined and its encoding implemented, experimenting with the genetic algorithm is
+simple. See for example how easily can the GeneticCNN algorithm be
+[implemented on the MNIST handwritten digits set](tests/test_mnist.py).
 
 Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
 follows the convention. Nonetheless, to make the *Population* class and its variants more flexible, you can set the
@@ -118,36 +122,35 @@ only *XgboostIndividual* is compatible with the *GridPopulation* class.
 
 ## Multiple computers - distributed algorithm
 
-You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *master*,
-generating a population and running the genetic algorithm. Each time this *master* needs to evaluate an individual, it
-will send a request to a pool of *workers*, which receive the model's hyperparameters and perform model fitting using
-n-fold cross-validation. The more *workers* you use, the faster the algorithm will run.
+You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *server*,
+generating a population and running the genetic algorithm. Each time this *server* needs to evaluate an individual, it
+will send a request to a pool of *clients*, which receive the model's hyperparameters and perform model fitting using
+n-fold cross-validation. The more *clients* you use, the faster the algorithm will run.
 
 ### Basic RabbitMQ installation and setup
 
 First, you need to install and run [RabbitMQ](https://www.rabbitmq.com/download.html), a message broker server. It will
-handle communications between the *master* and all the *worker* nodes via a queueing system.
+handle communications between the *server* and all the *client* nodes via a queueing system.
 
 ```bash
 $ sudo apt-get install rabbitmq-server
 $ sudo service rabbitmq-server start
 ```
 
-Next, you should add a user with write privileges for the *master* node. The default guest user can only be used to
-access RabbitMQ locally, it is advisable to remove this user.
+Next, you should add a user with write privileges for the *server*. The default guest user can only be used to access
+RabbitMQ locally, it is advisable to remove this user.
 
 ```bash
-$ sudo rabbitmqctl add_user <master_user> <master_password>
-$ sudo rabbitmqctl set_permissions -p / <master_user> ".*" ".*" ".*"
+$ sudo rabbitmqctl add_user <server_username> <server_password>
+$ sudo rabbitmqctl set_permissions -p / <server_username> ".*" ".*" ".*"
 ```
 
-Also, add a user with fewer privileges to be used by the *worker* nodes. You need to define the name of the queue used
-by the  *master* node to send job requests, passed by the `rabbit_queue` parameter, whose default value is
-**rpc_queue**.
+Also, add a user with fewer privileges to be used by the *client* nodes. You need to name the queue used by the *server*
+to send job requests, which is defined by the `rabbit_queue` parameter, whose default value is **rpc_queue**.
 
 ```bash
-$ sudo rabbitmqctl add_user <worker_user> <worker_password>
-$ sudo rabbitmqctl set_permissions -p / <worker_user> "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)"
+$ sudo rabbitmqctl add_user <client_username> <client_password>
+$ sudo rabbitmqctl set_permissions -p / <client_username> "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)"
 ```
 
 Optionally, you can enable an HTTP admin page to configure and monitor RabbitMQ. You can monitor queues and handle user
@@ -167,43 +170,43 @@ $ sudo service rabbitmq-server restart
 ### Running the distributed genetic algorithm
 
 To run the distributed genetic algorithm, define either a *DistributedPopulation* or a *DistributedGridPopulation* which
-will serve as the *master* node. It will send job requests to the message broker each time a set of individuals needs to
-be evaluated and will wait until all jobs are completed to produce the next generation.
+will serve as the *server* node. It will send job requests to the message broker each time a set of individuals needs to
+be evaluated and will wait until all jobs are completed to produce the next generation of individuals.
 
 ```python
 from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
 
 population = DistributedPopulation(
     XgboostIndividual, size=100, additional_parameters={'nfold': 3}, maximize=False,
-    host='<rabbitmq_server_ip>', user='<master_user>', password='<master_password>',
+    host='<rabbitmq_server_ip>', user='<server_username>', password='<server_password>',
     rabbit_queue='<rabbit_queue>'
 )
-# Run the algorithm for ten generations using worker nodes to evaluate individuals
+# Run the algorithm for ten generations using client nodes to evaluate individuals
 ga = GeneticAlgorithm(population)
 ga.run(10)
 ```
 
-The worker nodes are defined using the *GentunWorker* class and passing the corresponding individual to it. Each node
+The client nodes are defined using the *GentunClient* class and passing the corresponding individual to it. Each node
 has to have access to the train data. You can use as many nodes as desired as long as they have network access to the
 message broker server.
 
 ```python
-from gentun import GentunWorker, XgboostIndividual
+from gentun import GentunClient, XgboostIndividual
 import pandas as pd
 
 data = pd.read_csv('./tests/data/winequality-white.csv', delimiter=';')
 y = data['quality']
 x = data.drop(['quality'], axis=1)
 
-gw = GentunWorker(
+gw = GentunClient(
     XgboostIndividual, x, y, host='<rabbitmq_server_ip>',
-    user='<worker_user>', password='<worker_password>',
+    user='<client_username>', password='<client_password>',
     rabbit_queue='<rabbit_queue>'
 )
 gw.work()
 ```
 
-**NOTE:** Future versions will adopt [Apache Kafka](https://kafka.apache.org/) as a message broker in favor of RabbitMQ.
+**NOTE:** Future versions may adopt [Apache Kafka](https://kafka.apache.org/) as a message broker in favor of RabbitMQ.
 
 # References
 
@@ -223,6 +226,6 @@ gw.work()
 
 * Lingxi Xie and Alan L. Yuille, [Genetic CNN](https://arxiv.org/abs/1703.01513)
 
-## Master-Workers model and RabbitMQ
+## Server-client model and RabbitMQ
 
 * https://www.rabbitmq.com/tutorials/tutorial-six-python.html
