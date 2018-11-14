@@ -23,14 +23,15 @@ far, this project supports parameter tuning for the following models:
 - [x] XGBoost regressor (custom gene encoding)
 - [x] XGBoost classifier (custom gene encoding)
 - [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
+- [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
 
 # Installation
 
-Using a [virtual environment](https://virtualenv.pypa.io) is highly recommended. Also, it is better to install
-[xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and [TensorFlow](https://www.tensorflow.org/install/)
-before the setup script tries to do it for you because this offers better customization and also because *pip* may not
-be able to compile those libraries. Although the module was originally written for Python 2.7, only Python 3.5+ is
-currently supported.
+Using a [virtual environment](https://docs.python.org/3.6/tutorial/venv.html) is highly recommended. Also, it is better
+to install [xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and
+[TensorFlow](https://www.tensorflow.org/install/) before the setup script tries to do it for you because this offers
+better customization and also because *pip* may not be able to compile those libraries. Although the module was
+originally written for Python 2.7, __only Python 3.6 is currently supported__.
 
 ```bash
 $ git clone https://github.com/gmontamat/gentun
@@ -206,8 +207,6 @@ gw = GentunClient(
 gw.work()
 ```
 
-**NOTE:** Future versions may adopt [Apache Kafka](https://kafka.apache.org/) as a message broker in favor of RabbitMQ.
-
 # References
 
 ## Genetic algorithms
@@ -225,6 +224,7 @@ gw.work()
 ## Papers
 
 * Lingxi Xie and Alan L. Yuille, [Genetic CNN](https://arxiv.org/abs/1703.01513)
+* Masanori Suganuma, Shinichi Shirakawa, and Tomoharu Nagao, [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/abs/1704.00764)
 
 ## Server-client model and RabbitMQ
 
