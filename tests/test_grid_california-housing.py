@@ -10,7 +10,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
 if __name__ == '__main__':
     from sklearn.datasets import fetch_california_housing
     from gentun import GeneticAlgorithm, GridPopulation, XgboostIndividual
@@ -18,6 +17,7 @@ if __name__ == '__main__':
     data = fetch_california_housing()
     y_train = data.target
     x_train = data.data
+
     grid = {
         'eta': [0.001, 0.005, 0.01, 0.015, 0.2],
         'max_depth': range(3, 11),
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     }
     pop = GridPopulation(
         XgboostIndividual, x_train, y_train, genes_grid=grid,
-        additional_parameters={'nfold': 3}, maximize=False
+        additional_parameters={'kfold': 3}, maximize=False
     )
     ga = GeneticAlgorithm(pop)
     ga.run(10)

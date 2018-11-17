@@ -22,16 +22,15 @@ if __name__ == '__main__':
     n = train_images.shape[0]
     lb = LabelBinarizer()
     lb.fit(range(10))
-
-    selection = random.sample(range(n), 10000)
-    y_train = lb.transform(train_labels[selection])
+    selection = random.sample(range(n), 10000)  # Use only a subsample
+    y_train = lb.transform(train_labels[selection])  # One-hot encodings
     x_train = train_images.reshape(n, 28, 28, 1)[selection]
     x_train = x_train / 255  # Normalize train data
 
     pop = Population(
         GeneticCnnIndividual, x_train, y_train, size=20, crossover_rate=0.3, mutation_rate=0.1,
         additional_parameters={
-            'nfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 32
+            'kfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 32
         }, maximize=True
     )
     ga = RussianRouletteGA(pop, crossover_probability=0.2, mutation_probability=0.8)
