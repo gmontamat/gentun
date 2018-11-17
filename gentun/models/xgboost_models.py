@@ -34,4 +34,4 @@ class XgboostModel(GentunModel):
             self.params, d_train, num_boost_round=self.num_boost_round,
             early_stopping_rounds=self.early_stopping_rounds, nfold=self.nfold
         )
-        return cv_result['test-{}-mean'.format(self.eval_metric)][cv_result.index[-1]]
+        return cv_result['test-{}-mean'.format(self.eval_metric)][-1]
