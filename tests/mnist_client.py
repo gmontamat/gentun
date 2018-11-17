@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
-Create a client which loads MNIST data and waits for a
-job. The rabbitmq server should be running locally.
+Create a client which loads MNIST data and waits for jobs
+to evaluate models. The rabbitmq service should be running
+in 'localhost'.
 """
 
 import os
@@ -28,5 +29,5 @@ if __name__ == '__main__':
     x_train = train_images.reshape(n, 28, 28, 1)[selection]
     x_train = x_train / 255  # Normalize train data
 
-    gw = GentunClient(GeneticCnnIndividual, x_train, y_train)
-    gw.work()
+    gc = GentunClient(GeneticCnnIndividual, x_train, y_train, host='localhost', user='guest', password='guest')
+    gc.work()

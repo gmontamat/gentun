@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 Create a client which loads California Housing data and
-waits for a job. The rabbitmq server should be running
-locally.
+waits for jobs to evaluate models. The rabbitmq service
+should be running in 'localhost'.
 """
 
 import os
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     from gentun import GentunClient, XgboostIndividual
 
     data = fetch_california_housing()
-    y = data.target
-    x = data.data
-    gw = GentunClient(XgboostIndividual, x, y)
-    gw.work()
+    y_train = data.target
+    x_train = data.data
+    gc = GentunClient(XgboostIndividual, x_train, y_train, host='localhost', user='guest', password='guest')
+    gc.work()
