@@ -46,15 +46,15 @@ $ python setup.py install
 The genetic algorithm can be run on a single computer, as shown in the following example:
 
 ```python
-import pandas as pd
+from sklearn.datasets import fetch_california_housing
 from gentun import GeneticAlgorithm, Population, XgboostIndividual
 ```
 
 ```python
 # Load features and response variable from train set
-data = pd.read_csv('./tests/data/winequality-white.csv', delimiter=';')
-y_train = data['quality']
-x_train = data.drop(['quality'], axis=1)
+data = fetch_california_housing()
+y_train = data.target
+x_train = data.data
 ```
 
 ```python
@@ -192,15 +192,15 @@ has to have access to the train data. You can use as many nodes as desired as lo
 message broker server.
 
 ```python
+from sklearn.datasets import fetch_california_housing
 from gentun import GentunClient, XgboostIndividual
-import pandas as pd
 
-data = pd.read_csv('./tests/data/winequality-white.csv', delimiter=';')
-y = data['quality']
-x = data.drop(['quality'], axis=1)
+data = fetch_california_housing()
+y_train = data.target
+x_train = data.data
 
 gw = GentunClient(
-    XgboostIndividual, x, y, host='<rabbitmq_server_ip>',
+    XgboostIndividual, x_train, y_train, host='<rabbitmq_server_ip>',
     user='<client_username>', password='<client_password>',
     rabbit_queue='<rabbit_queue>'
 )
