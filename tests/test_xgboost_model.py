@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Test the XgboostModel using the wine quality dataset
+Test the XgboostModel using the California Housing data
 """
 
 import os
@@ -9,12 +9,12 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if __name__ == '__main__':
-    import pandas as pd
+    from sklearn.datasets import fetch_california_housing
     from gentun import XgboostModel
 
-    data = pd.read_csv('./data/winequality-white.csv', delimiter=';')
-    y = data['quality']
-    x = data.drop(['quality'], axis=1)
+    data = fetch_california_housing()
+    y = data.target
+    x = data.data
     genes = {
         'eta': 0.3, 'min_child_weight': 1, 'max_depth': 6, 'gamma': 0.0, 'max_delta_step': 0,
         'subsample': 1.0, 'colsample_bytree': 1.0, 'colsample_bylevel': 1.0, 'lambda': 1.0,
