@@ -9,6 +9,7 @@ Keras==2.2.0
 Keras-Applications==1.0.2
 Keras-Preprocessing==1.0.1
 Markdown==2.6.11
+mnist==0.2.2
 numpy==1.14.4
 pandas==0.23.0
 pika==0.12.0

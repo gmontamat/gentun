@@ -11,17 +11,21 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if __name__ == '__main__':
+    import mnist
     import random
-    from sklearn.datasets import fetch_mldata
+
     from sklearn.preprocessing import LabelBinarizer
     from gentun import Population, GeneticCnnIndividual, RussianRouletteGA
 
-    mnist = fetch_mldata('MNIST original', data_home='./data')
+    train_images = mnist.train_images()
+    train_labels = mnist.train_labels()
+    n = train_images.shape[0]
     lb = LabelBinarizer()
-    lb.fit(range(max(mnist.target.astype('int')) + 1))
-    selection = random.sample(range(mnist.data.shape[0]), 10000)
-    y_train = lb.transform(mnist.target.astype('int'))[selection]
-    x_train = mnist.data.reshape(mnist.data.shape[0], 28, 28, 1)[selection]
+    lb.fit(range(10))
+
+    selection = random.sample(range(n), 10000)
+    y_train = lb.transform(train_labels[selection])
+    x_train = train_images.reshape(n, 28, 28, 1)[selection]
     x_train = x_train / 255  # Normalize train data
 
     pop = Population(
