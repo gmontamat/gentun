@@ -22,7 +22,7 @@ far, this project supports parameter tuning for the following models:
 
 - [x] XGBoost regressor (custom gene encoding)
 - [x] XGBoost classifier (custom gene encoding)
-- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) using Keras
+- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Keras
 - [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
 
 # Installation
