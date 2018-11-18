@@ -36,7 +36,7 @@ if __name__ == '__main__':
         500,  # Number of units in Dense layer
         0.5,  # Dropout probability
         10,  # Number of classes to predict
-        nfold=5,
+        kfold=5,
         epochs=(20, 4, 1),
         learning_rate=(1e-3, 1e-4, 1e-5),
         batch_size=128

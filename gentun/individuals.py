@@ -156,7 +156,7 @@ class Individual(object):
 class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.5, mutation_rate=0.015,
-                 booster='gbtree', objective='reg:linear', eval_metric='rmse', nfold=5,
+                 booster='gbtree', objective='reg:linear', eval_metric='rmse', kfold=5,
                  num_boost_round=5000, early_stopping_rounds=100):
         if genome is None:
             genome = {
@@ -181,7 +181,7 @@ class XgboostIndividual(Individual):
         self.booster = booster
         self.objective = objective
         self.eval_metric = eval_metric
-        self.nfold = nfold
+        self.kfold = kfold
         self.num_boost_round = num_boost_round
         self.early_stopping_rounds = early_stopping_rounds
 
@@ -200,7 +200,7 @@ class XgboostIndividual(Individual):
         """Create model and perform cross-validation."""
         model = XgboostModel(
             self.x_train, self.y_train, self.genes, booster=self.booster, objective=self.objective,
-            eval_metric=self.eval_metric, nfold=self.nfold, num_boost_round=self.num_boost_round,
+            eval_metric=self.eval_metric, kfold=self.kfold, num_boost_round=self.num_boost_round,
             early_stopping_rounds=self.early_stopping_rounds
         )
         self.fitness = model.cross_validate()
@@ -210,7 +210,7 @@ class XgboostIndividual(Individual):
             'booster': self.booster,
             'objective': self.objective,
             'eval_metric': self.eval_metric,
-            'nfold': self.nfold,
+            'kfold': self.kfold,
             'num_boost_round': self.num_boost_round,
             'early_stopping_rounds': self.early_stopping_rounds
         }
@@ -220,7 +220,7 @@ class GeneticCnnIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
                  input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)), dense_units=500,
-                 dropout_probability=0.5, classes=10, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
+                 dropout_probability=0.5, classes=10, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         if genome is None:
             genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
         if genes is None:
@@ -236,7 +236,7 @@ class GeneticCnnIndividual(Individual):
         self.dense_units = dense_units
         self.dropout_probability = dropout_probability
         self.classes = classes
-        self.nfold = nfold
+        self.kfold = kfold
         self.epochs = epochs
         self.learning_rate = learning_rate
         self.batch_size = batch_size
@@ -254,7 +254,7 @@ class GeneticCnnIndividual(Individual):
         model = GeneticCnnModel(
             self.x_train, self.y_train, self.genes, self.nodes, self.input_shape, self.kernels_per_layer,
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
-            self.nfold, self.epochs, self.learning_rate, self.batch_size
+            self.kfold, self.epochs, self.learning_rate, self.batch_size
         )
         self.fitness = model.cross_validate()
 
@@ -267,7 +267,7 @@ class GeneticCnnIndividual(Individual):
             'dense_units': self.dense_units,
             'dropout_probability': self.dropout_probability,
             'classes': self.classes,
-            'nfold': self.nfold,
+            'kfold': self.kfold,
             'epochs': self.epochs,
             'learning_rate': self.learning_rate,
             'batch_size': self.batch_size

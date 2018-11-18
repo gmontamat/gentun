@@ -19,14 +19,14 @@ K.set_image_data_format('channels_last')
 class GeneticCnnModel(GentunModel):
 
     def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
-                 dropout_probability, classes, nfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
+                 dropout_probability, classes, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
         super(GeneticCnnModel, self).__init__(x_train, y_train)
         self.model = self.build_model(
             genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
             dense_units, dropout_probability, classes
         )
         self.name = '-'.join(gene for gene in genes.values())
-        self.nfold = nfold
+        self.kfold = kfold
         if type(epochs) is int and type(learning_rate) is int:
             self.epochs = (epochs,)
             self.learning_rate = (learning_rate,)
@@ -129,9 +129,9 @@ class GeneticCnnModel(GentunModel):
         return mean value of the validation accuracy.
         """
         acc = .0
-        kfold = StratifiedKFold(n_splits=self.nfold, shuffle=True)
+        kfold = StratifiedKFold(n_splits=self.kfold, shuffle=True)
         for fold, (train, validation) in enumerate(kfold.split(self.x_train, np.where(self.y_train == 1)[1])):
-            print("KFold {}/{}".format(fold + 1, self.nfold))
+            print("KFold {}/{}".format(fold + 1, self.kfold))
             self.reset_weights()
             for epochs, learning_rate in zip(self.epochs, self.learning_rate):
                 print("Training {} epochs with learning rate {}".format(epochs, learning_rate))
@@ -139,5 +139,5 @@ class GeneticCnnModel(GentunModel):
                 self.model.fit(
                     self.x_train[train], self.y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1
                 )
-            acc += self.model.evaluate(self.x_train[validation], self.y_train[validation], verbose=0)[1] / self.nfold
+            acc += self.model.evaluate(self.x_train[validation], self.y_train[validation], verbose=0)[1] / self.kfold
         return acc

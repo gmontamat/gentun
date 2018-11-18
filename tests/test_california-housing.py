@@ -9,7 +9,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
 if __name__ == '__main__':
     from sklearn.datasets import fetch_california_housing
     from gentun import GeneticAlgorithm, Population, XgboostIndividual
@@ -17,9 +16,10 @@ if __name__ == '__main__':
     data = fetch_california_housing()
     y_train = data.target
     x_train = data.data
+
     pop = Population(
         XgboostIndividual, x_train, y_train, size=100,
-        additional_parameters={'nfold': 3}, maximize=False
+        additional_parameters={'kfold': 3}, maximize=False
     )
     ga = GeneticAlgorithm(pop)
     ga.run(10)

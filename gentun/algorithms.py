@@ -30,6 +30,8 @@ class GeneticAlgorithm(object):
             self.generation += 1
 
     def evolve_population(self):
+        if self.population.get_size() < self.tournament_size:
+            raise ValueError("Population size is smaller than tournament size.")
         print("Evaluating generation #{}...".format(self.generation))
         fittest = self.population.get_fittest()
         print("Fittest individual is:")

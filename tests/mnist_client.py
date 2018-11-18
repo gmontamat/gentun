@@ -10,7 +10,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
 if __name__ == '__main__':
     import mnist
     import random
@@ -23,9 +22,8 @@ if __name__ == '__main__':
     n = train_images.shape[0]
     lb = LabelBinarizer()
     lb.fit(range(10))
-
-    selection = random.sample(range(n), 10000)
-    y_train = lb.transform(train_labels[selection])
+    selection = random.sample(range(n), 10000)  # Use only a subsample
+    y_train = lb.transform(train_labels[selection])  # One-hot encodings
     x_train = train_images.reshape(n, 28, 28, 1)[selection]
     x_train = x_train / 255  # Normalize train data
 

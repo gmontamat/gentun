@@ -20,8 +20,7 @@ We encourage you to submit your own individual-model pairs to enhance the projec
 *XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes. So
 far, this project supports parameter tuning for the following models:
 
-- [x] XGBoost regressor (custom gene encoding)
-- [x] XGBoost classifier (custom gene encoding)
+- [x] XGBoost regressor and classifier (custom gene encoding)
 - [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Keras
 - [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
 
@@ -61,7 +60,7 @@ x_train = data.data
 # Generate a random population
 pop = Population(
     XgboostIndividual, x_train, y_train, size=100,
-    additional_parameters={'nfold': 3}, maximize=False
+    additional_parameters={'kfold': 3}, maximize=False
 )
 # Run the algorithm for ten generations
 ga = GeneticAlgorithm(pop)
@@ -94,9 +93,9 @@ custom_genes = {
 # Generate a random population and add a custom individual
 pop = Population(
     XgboostIndividual, x_train, y_train, size=99,
-    additional_parameters={'nfold': 3}, maximize=False
+    additional_parameters={'kfold': 3}, maximize=False
 )
-pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, nfold=3))
+pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, kfold=3))
 ```
 
 Moreover, you can create a grid by defining which values you want to evaluate per gene and the *GridPopulation* class
@@ -113,7 +112,7 @@ grid = {
 # Generate a grid of individuals as the population
 pop = GridPopulation(
     XgboostIndividual, genes_grid=grid,
-    additional_parameters={'nfold': 3},
+    additional_parameters={'kfold': 3},
     maximize=False
 )
 ```
@@ -126,7 +125,7 @@ only *XgboostIndividual* is compatible with the *GridPopulation* class.
 You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *server*,
 generating a population and running the genetic algorithm. Each time this *server* needs to evaluate an individual, it
 will send a request to a pool of *clients*, which receive the model's hyperparameters and perform model fitting using
-n-fold cross-validation. The more *clients* you use, the faster the algorithm will run.
+k-fold cross-validation. The more *clients* you use, the faster the algorithm will run.
 
 ### Basic RabbitMQ installation and setup
 
@@ -178,7 +177,7 @@ be evaluated and will wait until all jobs are completed to produce the next gene
 from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
 
 population = DistributedPopulation(
-    XgboostIndividual, size=100, additional_parameters={'nfold': 3}, maximize=False,
+    XgboostIndividual, size=100, additional_parameters={'kfold': 3}, maximize=False,
     host='<rabbitmq_server_ip>', user='<server_username>', password='<server_password>',
     rabbit_queue='<rabbit_queue>'
 )
@@ -199,12 +198,12 @@ data = fetch_california_housing()
 y_train = data.target
 x_train = data.data
 
-gw = GentunClient(
+gc = GentunClient(
     XgboostIndividual, x_train, y_train, host='<rabbitmq_server_ip>',
     user='<client_username>', password='<client_password>',
     rabbit_queue='<rabbit_queue>'
 )
-gw.work()
+gc.work()
 ```
 
 # References

@@ -10,12 +10,11 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
 if __name__ == '__main__':
     from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
 
     pop = DistributedPopulation(
-        XgboostIndividual, size=100, additional_parameters={'nfold': 3}, maximize=False,
+        XgboostIndividual, size=100, additional_parameters={'kfold': 3}, maximize=False,
         host='localhost', user='guest', password='guest'
     )
     ga = GeneticAlgorithm(pop)
