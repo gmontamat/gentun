@@ -1,14 +1,15 @@
 # gentun: genetic algorithm for hyperparameter tuning
 
-The purpose of this project is to provide a simple framework for hyperparameter tuning of machine learning models such
+The purpose of this project is to provide a simple framework for
+[hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models such
 as Neural Networks and Gradient Boosted Trees using a genetic algorithm. Measuring the fitness of an individual of a
-given population implies training the machine learning model using a particular set of parameters which define the
-individual's genes. This is a time consuming process, therefore, a server-client approach is used to allow multiple
-clients perform the model fitting and cross-validation of individuals passed by a server. Offspring generation by
-reproduction and mutation is handled by the server.
+given population implies training a model using a particular set of hyperparameters defined by te individual's genes.
+This is a time-consuming process, therefore, a client-server approach is used to allow multiple clients perform the
+model fitting and cross-validation of individuals passed by a server. Offspring generation by reproduction and mutation
+is handled by the server.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
-~ XGBoost's Notes on Parameter Tuning
+~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/latest/tutorials/param_tuning.html) on Parameter Tuning
 
 *"[...] The number of possible network structures increases exponentially with the number of layers in the network,
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
