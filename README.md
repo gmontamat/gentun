@@ -3,10 +3,10 @@
 The purpose of this project is to provide a simple framework for
 [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models such
 as Neural Networks and Gradient Boosted Trees using a genetic algorithm. Measuring the fitness of an individual of a
-given population implies training a model using a particular set of hyperparameters defined by te individual's genes.
-This is a time-consuming process, therefore, a client-server approach is used to allow multiple clients perform the
-model fitting and cross-validation of individuals passed by a server. Offspring generation by reproduction and mutation
-is handled by the server.
+given population implies training a model using a particular set of hyperparameters defined by its genes. This is a
+time-consuming process, therefore, a client-server approach is used to allow multiple clients perform the model fitting
+and cross-validation of individuals passed by a server. Offspring generation by reproduction and mutation is handled by
+the server.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/latest/tutorials/param_tuning.html) on Parameter Tuning
