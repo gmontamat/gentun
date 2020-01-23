@@ -1,0 +1,2 @@
+max-line-length = 100
+extend-ignore   = E203  # ignore "whitespace before ':', useful for data structure aligning

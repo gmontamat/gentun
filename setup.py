@@ -1,26 +1,45 @@
-"""
-Module setup for the 'gentun' package.
+#!/usr/bin/env python
 
-See:
-https://github.com/gmontamat/gentun
-"""
+"""The setup script."""
 
 from setuptools import setup, find_packages
-from os import path
+from pip._internal.req import parse_requirements
+from pip._internal.download import PipSession
 
-here = path.abspath(path.dirname(__file__))
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
 
-with open(path.join(here, 'README.md')) as f:
-    long_description = f.read()
+with open('HISTORY.rst') as history_file:
+    history = history_file.read()
+
+parsed_requirements = parse_requirements(
+    'requirements/prod.txt',
+    session=PipSession()
+)
+
+
+parsed_test_requirements = parse_requirements(
+    'requirements/test.txt',
+    session=PipSession()
+)
+
+
+parsed_extra_requirements = parse_requirements(
+    'requirements/extras.txt',
+    session=PipSession()
+)
+
+
+requirements = [str(ir.req) for ir in parsed_requirements]
+test_requirements = [str(tr.req) for tr in parsed_test_requirements]
+extra_requirements = [str(tr.req) for tr in parsed_extra_requirements]
+
 
 setup(
-    name='gentun',
-    version='0.0.1',
-    description='Hyperparameter tuning for machine learning models using a distributed genetic algorithm',
-    long_description=long_description,
-    url='https://github.com/gmontamat/gentun',
-    author='Gustavo Montamat',
-    # author_email='',
+    author="Gustavo Montamat",
+    url="https://github.com/gmontamat/gentun",
+    author_email='',
+    python_requires='>=3.6',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
@@ -29,12 +48,16 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
+    description="Hyperparameter tuning for machine learning models using a distributed genetic algorithm",
+    install_requires=requirements,
+    license="Apache Software License 2.0",
+    long_description=readme + '\n\n' + history,
+    include_package_data=True,
+    name='gentun',
     keywords='gentun machine-learning parameter-tuning xgboost keras',
-    packages=find_packages(exclude=['tests']),
-    install_requires=['mnist', 'pika', 'scikit-learn', 'tqdm'],
-    extras_require={
-        'xgboost': ['xgboost'],
-        'keras': ['tensorflow', 'keras'],
-        'full': ['xgboost', 'tensorflow', 'keras'],
-    },
+    packages=find_packages(include=['gentun', 'gentun.*']),
+    test_suite='tests',
+    tests_require=test_requirements,
+    version='0.0.1',
+    zip_safe=False,
 )

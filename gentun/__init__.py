@@ -1,4 +1,8 @@
 # Make public APIs available at top-level import
+__version__ = '0.0.1'
+__email__ = ''
+__author__ = 'Gustavo Montamat'
+
 from .algorithms import GeneticAlgorithm, RussianRouletteGA
 from .populations import Population, GridPopulation
 from .server import DistributedPopulation, DistributedGridPopulation

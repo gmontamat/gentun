@@ -1,0 +1,5 @@
+-r prod.txt
+-r extras.txt
+pytest>=4.6.5
+pytest-runner>=5.1
+pytest-cov
