@@ -185,6 +185,7 @@ class XgboostIndividual(Individual):
         self.num_boost_round = num_boost_round
         self.early_stopping_rounds = early_stopping_rounds
         self.nthread = nthread
+        self.best_ntree_limit = self.num_boost_round
 
     @staticmethod
     def generate_random_genes(genome):
@@ -205,6 +206,7 @@ class XgboostIndividual(Individual):
             early_stopping_rounds=self.early_stopping_rounds, nthread=self.nthread
         )
         self.fitness = model.cross_validate()
+        self.best_ntree_limit = model.best_ntree_limit
 
     def get_additional_parameters(self):
         return {

@@ -28,6 +28,7 @@ class XgboostModel(GentunModel):
         self.kfold = kfold
         self.num_boost_round = num_boost_round
         self.early_stopping_rounds = early_stopping_rounds
+        self.best_ntree_limit = None
 
     def cross_validate(self):
         """Train model using k-fold cross validation and
@@ -39,4 +40,5 @@ class XgboostModel(GentunModel):
             self.params, d_train, num_boost_round=self.num_boost_round,
             early_stopping_rounds=self.early_stopping_rounds, nfold=self.kfold
         )
+        self.best_ntree_limit = len(cv_result)
         return cv_result['test-{}-mean'.format(self.eval_metric)].values[-1]
