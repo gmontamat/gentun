@@ -19,18 +19,21 @@ class GeneticAlgorithm(object):
         self.tournament_size = tournament_size
         self.elitism = elitism
         self.generation = 1
+        self.fittest = None
 
     def _get_population_type(self):
         return self.population.__class__
 
+    def _evaluate_population_fitness(self):
+        print("Evaluating generation #{}...".format(self.generation))
+        self.fittest = self.population.get_fittest()
+        print("Fittest individual is:")
+        print(self.fittest)
+        print("Fitness value is: {}\n".format(round(self.fittest.get_fitness(), 4)))
+
     def _evolve_population(self):
         if self.population.get_size() < self.tournament_size:
             raise ValueError("Population size is smaller than tournament size.")
-        print("Evaluating generation #{}...".format(self.generation))
-        fittest = self.population.get_fittest()
-        print("Fittest individual is:")
-        print(fittest)
-        print("Fitness value is: {}\n".format(round(fittest.get_fitness(), 4)))
         new_population = self._get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[],
             maximize=self.population.get_fitness_criteria()
@@ -53,15 +56,14 @@ class GeneticAlgorithm(object):
 
     def run(self, max_generations):
         print("Starting genetic algorithm...\n")
-        while self.generation <= max_generations:
+        while self.generation < max_generations:
+            self._evaluate_population_fitness()
             self._evolve_population()
             self.generation += 1
+        self._evaluate_population_fitness()
 
     def get_fittest(self):
-        return self.population.get_fittest()
-
-    def get_fittest_genes(self):
-        return self.get_fittest().genes
+        return self.fittest
 
 
 class RussianRouletteGA(GeneticAlgorithm):
@@ -74,12 +76,6 @@ class RussianRouletteGA(GeneticAlgorithm):
         self.mutation_probability = mutation_probability
 
     def _evolve_population(self, eps=1e-15):
-        print("Evaluating generation #{}...".format(self.generation))
-        fittest = self.population.get_fittest()
-        print("Fittest individual is:")
-        print(fittest)
-        print("Fitness value is: {}\n".format(round(fittest.get_fitness(), 4)))
-        # Russian roulette selection
         if self.population.get_fitness_criteria():
             weights = [self.population[i].get_fitness() for i in range(self.population.get_size())]
         else:
