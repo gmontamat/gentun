@@ -1,3 +1,4 @@
-.viewcode-block:target {
+.viewcode-block:target, .viewcode-block {
     background-color: rgba(39, 40, 34, 0.94) !important;
+    color: rgba(39, 40, 34, 0.94) !important;
 }
