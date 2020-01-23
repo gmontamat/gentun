@@ -5,6 +5,8 @@ Genetic algorithm class
 
 import random
 
+from tqdm.auto import trange
+
 
 class GeneticAlgorithm(object):
     """Evolve a population iteratively to find better
@@ -19,17 +21,13 @@ class GeneticAlgorithm(object):
         self.tournament_size = tournament_size
         self.elitism = elitism
         self.generation = 1
-        self.fittest = None
+        self.fittest_per_gen = []
 
     def _get_population_type(self):
         return self.population.__class__
 
     def _evaluate_population_fitness(self):
-        print("Evaluating generation #{}...".format(self.generation))
-        self.fittest = self.population.get_fittest()
-        print("Fittest individual is:")
-        print(self.fittest)
-        print("Fitness value is: {}\n".format(round(self.fittest.get_fitness(), 4)))
+        self.fittest_per_gen.append(self.population.get_fittest())
 
     def _evolve_population(self):
         if self.population.get_size() < self.tournament_size:
@@ -56,14 +54,16 @@ class GeneticAlgorithm(object):
 
     def run(self, max_generations):
         print("Starting genetic algorithm...\n")
-        while self.generation < max_generations:
+        t = trange(self.generation, max_generations + 1, desc='Running genetic algorithm')
+        for i in t:
             self._evaluate_population_fitness()
-            self._evolve_population()
-            self.generation += 1
-        self._evaluate_population_fitness()
+            t.set_postfix_str(f"max_fitness={round(self.fittest_per_gen[-1].fitness, 4)}")
+            self.generation = i
+            if i < max_generations:
+                self._evolve_population()
 
     def get_fittest(self):
-        return self.fittest
+        return self.fittest_per_gen[-1]
 
 
 class RussianRouletteGA(GeneticAlgorithm):

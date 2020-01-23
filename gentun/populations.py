@@ -4,7 +4,8 @@ Population class
 """
 
 import itertools
-import operator
+
+from tqdm.auto import tqdm
 
 
 class Population(object):
@@ -53,9 +54,10 @@ class Population(object):
         return self.population_size
 
     def get_fittest(self):
-        if self.maximize:
-            return max(self.individuals, key=operator.methodcaller('get_fitness'))
-        return min(self.individuals, key=operator.methodcaller('get_fitness'))
+        fitness_values = [(x, x.get_fitness()) for x in tqdm(self.individuals, leave=False,
+                                                             desc='Evaluating population')]
+        best = max if self.maximize else min
+        return best(fitness_values, key=lambda x: x[1])[0]
 
     def get_data(self):
         return self.x_train, self.y_train
