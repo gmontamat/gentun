@@ -36,7 +36,6 @@ class Population(object):
                 )
                 for _ in range(size)
             ]
-            print("Initializing a random population. Size: {}".format(size))
         else:
             assert all([type(individual) is self.species for individual in individual_list])
             self.population_size = len(individual_list)
@@ -54,10 +53,14 @@ class Population(object):
         return self.population_size
 
     def get_fittest(self):
-        fitness_values = [(x, x.get_fitness()) for x in tqdm(self.individuals, leave=False,
-                                                             desc='Evaluating population')]
+        t = tqdm(self.individuals, leave=False, desc="Evaluating individuals")
+        outputs = []
+        for individual in t:
+            fitness = individual.get_fitness()
+            outputs.append((individual, fitness))
+            t.set_postfix_str(f"fitness={round(fitness, 4)}")
         best = max if self.maximize else min
-        return best(fitness_values, key=lambda x: x[1])[0]
+        return best(outputs, key=lambda x: x[1])[0]
 
     def get_data(self):
         return self.x_train, self.y_train

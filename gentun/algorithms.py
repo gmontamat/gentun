@@ -53,8 +53,7 @@ class GeneticAlgorithm(object):
         return tournament.get_fittest()
 
     def run(self, max_generations):
-        print("Starting genetic algorithm...\n")
-        t = trange(self.generation, max_generations + 1, desc='Running genetic algorithm')
+        t = trange(self.generation, max_generations + 1, desc="Running genetic algorithm")
         for i in t:
             self._evaluate_population_fitness()
             t.set_postfix_str(f"max_fitness={round(self.fittest_per_gen[-1].fitness, 4)}")
