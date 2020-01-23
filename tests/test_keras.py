@@ -1,10 +1,17 @@
-import mnist
-import random
+import pytest
 
-from sklearn.preprocessing import LabelBinarizer
-from gentun import GeneticCnnModel, Population, GeneticCnnIndividual, RussianRouletteGA
+run_keras = True
+try:
+    import mnist
+    import random
+
+    from sklearn.preprocessing import LabelBinarizer
+    from gentun import GeneticCnnModel, Population, GeneticCnnIndividual, RussianRouletteGA
+except ImportError:
+    run_keras = False
 
 
+@pytest.mark.skipif(not run_keras, reason='Extras not installed.')
 def test_keras_model():
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()
@@ -35,6 +42,7 @@ def test_keras_model():
     print(model.cross_validate())
 
 
+@pytest.mark.skipif(not run_keras, reason='Extras not installed.')
 def test_keras_mnist():
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()

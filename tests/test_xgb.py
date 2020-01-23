@@ -1,7 +1,13 @@
-from sklearn.datasets import fetch_california_housing
-from gentun import XgboostModel, GeneticAlgorithm, Population, GridPopulation, XgboostIndividual
+import pytest
 
+run_xgb = True
+try:
+    from sklearn.datasets import fetch_california_housing
+    from gentun import XgboostModel, GeneticAlgorithm, Population, GridPopulation, XgboostIndividual
+except ImportError:
+    run_xgb = False
 
+@pytest.mark.skipif(not run_xgb, reason='Extras not installed.')
 def test_xgboost_model():
     data = fetch_california_housing()
     y_train = data.target
@@ -16,13 +22,14 @@ def test_xgboost_model():
     print(model.cross_validate())
 
 
+@pytest.mark.skipif(not run_xgb, reason='Extras not installed.')
 def test_california_housing_xgb():
     data = fetch_california_housing()
     y_train = data.target
     x_train = data.data
 
     pop = Population(
-        XgboostIndividual, x_train, y_train, size=10,
+        XgboostIndividual, x_train, y_train, size=5,
         additional_parameters={'kfold': 3,
                                'num_boost_round': 10}, maximize=False
     )
@@ -30,15 +37,16 @@ def test_california_housing_xgb():
     ga.run(3)
 
 
+@pytest.mark.skipif(not run_xgb, reason='Extras not installed.')
 def test_california_housing_xgb_grid():
     data = fetch_california_housing()
     y_train = data.target
     x_train = data.data
 
     grid = {
-        'eta': [0.001, 0.005, 0.01, 0.015, 0.2],
-        'max_depth': range(3, 11),
-        'colsample_bytree': [0.80, 0.85, 0.90, 0.95, 1.0],
+        'eta': [0.1, 0.2],
+        'max_depth': range(3, 5),
+        'colsample_bytree': [0.80, 0.85],
     }
     pop = GridPopulation(
         XgboostIndividual, x_train, y_train, genes_grid=grid,

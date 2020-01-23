@@ -1,12 +1,19 @@
-import mnist
-import random
+import pytest
 
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.datasets import fetch_california_housing
-from gentun import GentunClient, GeneticAlgorithm, XgboostIndividual
-from gentun import RussianRouletteGA, DistributedPopulation, GeneticCnnIndividual
+run_distributed = True
+try:
+    import mnist
+    import random
+
+    from sklearn.preprocessing import LabelBinarizer
+    from sklearn.datasets import fetch_california_housing
+    from gentun import GentunClient, GeneticAlgorithm, XgboostIndividual, GeneticCnnIndividual
+    from gentun import RussianRouletteGA, DistributedPopulation
+except ImportError:
+    run_distributed = False
 
 
+@pytest.mark.skipif(not run_distributed, reason='Extras not installed.')
 def test_sample_client():
     data = fetch_california_housing()
     y_train = data.target
@@ -16,6 +23,7 @@ def test_sample_client():
     gc.work()
 
 
+@pytest.mark.skipif(not run_distributed, reason='Extras not installed.')
 def test_sample_server():
     pop = DistributedPopulation(
         XgboostIndividual, size=100, additional_parameters={'kfold': 3}, maximize=False,
@@ -25,6 +33,7 @@ def test_sample_server():
     ga.run(10)
 
 
+@pytest.mark.skipif(not run_distributed, reason='Extras not installed.')
 def test_mnist_client():
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()
@@ -41,6 +50,7 @@ def test_mnist_client():
     gc.work()
 
 
+@pytest.mark.skipif(not run_distributed, reason='Extras not installed.')
 def test_mnist_server():
     pop = DistributedPopulation(
         GeneticCnnIndividual, size=20, crossover_rate=0.3, mutation_rate=0.1,
