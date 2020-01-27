@@ -9,6 +9,8 @@ import math
 import pprint
 import random
 
+import numpy as np
+
 try:
     from .models.xgboost_models import XgboostModel
 except ImportError:
@@ -157,7 +159,7 @@ class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.5, mutation_rate=0.015,
                  booster='gbtree', objective='reg:linear', eval_metric='rmse', kfold=5,
-                 num_boost_round=5000, early_stopping_rounds=100, nthread=8):
+                 num_boost_round=5000, early_stopping_rounds=100, missing=np.nan, nthread=8):
         if genome is None:
             genome = {
                 # name: (default, min, max, logarithmic-scale-base)
@@ -184,6 +186,7 @@ class XgboostIndividual(Individual):
         self.kfold = kfold
         self.num_boost_round = num_boost_round
         self.early_stopping_rounds = early_stopping_rounds
+        self.missing = missing
         self.nthread = nthread
         self.best_ntree_limit = self.num_boost_round
 
@@ -203,7 +206,7 @@ class XgboostIndividual(Individual):
         model = XgboostModel(
             self.x_train, self.y_train, self.genes, booster=self.booster, objective=self.objective,
             eval_metric=self.eval_metric, kfold=self.kfold, num_boost_round=self.num_boost_round,
-            early_stopping_rounds=self.early_stopping_rounds, nthread=self.nthread
+            early_stopping_rounds=self.early_stopping_rounds, missing=self.missing, nthread=self.nthread
         )
         self.fitness = model.cross_validate()
         self.best_ntree_limit = model.best_ntree_limit
