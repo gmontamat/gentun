@@ -3,8 +3,15 @@
 """The setup script."""
 
 from setuptools import setup, find_packages
-from pip._internal.req import parse_requirements
-from pip._internal.download import PipSession
+try:
+    # pip >=20
+    from pip._internal.network.session import PipSession
+    from pip._internal.req import parse_requirements
+except ImportError:
+    # 10.0.0 <= pip <= 19.3.1
+    from pip._internal.download import PipSession
+    from pip._internal.req import parse_requirements
+
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
