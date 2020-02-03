@@ -2,3 +2,4 @@
 xgboost
 tensorflow
 keras
+mnist
