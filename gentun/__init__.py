@@ -3,6 +3,8 @@ __version__ = '0.0.1'
 __email__ = ''
 __author__ = 'Gustavo Montamat'
 
+import warnings
+
 from .algorithms import GeneticAlgorithm, RussianRouletteGA
 from .populations import Population, GridPopulation
 from .server import DistributedPopulation, DistributedGridPopulation
@@ -13,11 +15,13 @@ try:
     from .individuals import XgboostIndividual
     from .models.xgboost_models import XgboostModel
 except ImportError:
-    print("Warning: install xgboost to use XgboostIndividual and XgboostModel.")
+    warnings.warn("Warning: install xgboost to use XgboostIndividual and XgboostModel.",
+                  ImportWarning)
 
 # Keras individuals and models
 try:
     from .individuals import GeneticCnnIndividual
     from .models.keras_models import GeneticCnnModel
 except ImportError:
-    print("Warning: install Keras and TensorFlow to use GeneticCnnIndividual and GeneticCnnModel.")
+    warnings.warn("Warning: install Keras and TensorFlow to use GeneticCnnIndividual and GeneticCnnModel.",
+                  ImportWarning)
