@@ -14,10 +14,9 @@ class XgboostModel(GentunModel):
 
     def __init__(self, x_train, y_train, hyperparameters,
                  booster='gbtree', objective='reg:linear',
-                 eval_metric='rmse', kfold=5,
+                 eval_metric='rmse', kfold=5, num_class=None,
                  num_boost_round=5000, early_stopping_rounds=100,
-                 missing=np.nan,
-                 nthread=8):
+                 missing=np.nan, nthread=8):
         super(XgboostModel, self).__init__(x_train, y_train)
         self.nthread = min(os.cpu_count(), nthread)
         self.params = {
@@ -27,9 +26,12 @@ class XgboostModel(GentunModel):
             'nthread': self.nthread,
             'silent': 1
         }
+        if num_class is not None:
+            self.params['num_class'] = num_class
         self.params.update(hyperparameters)
         self.eval_metric = eval_metric
         self.kfold = kfold
+        self.num_class = num_class
         self.num_boost_round = num_boost_round
         self.early_stopping_rounds = early_stopping_rounds
         self.missing = missing
