@@ -59,40 +59,43 @@ class Population(object):
     def _get_fitness(individual: Individual):
         return individual, individual.get_fitness()
 
+    def _get_fittest_parallel(self):
+        pool = Pool(self.n_workers)
+        pbar = tqdm(total=len(self.individuals), desc='Evaluating individuals', leave=False)
+
+        def update(*a):
+            pbar.update()
+            pbar.set_postfix_str(f"fitness={round(a[0][1], 4)}")
+
+        jobs = [pool.apply_async(Population._get_fitness, args=(i,), callback=update)
+                for i in self.individuals]
+        outputs = [p.get() for p in jobs]
+
+        for i, res in enumerate(outputs):
+            new_individual, _ = res
+            self.individuals[i] = new_individual
+
+        pool.close()
+        pool.join()
+        pbar.close()
+
+        best = max if self.maximize else min
+        return best(outputs, key=lambda x: x[1])[0]
+
+    def _get_fittest_serial(self):
+        outputs = []
+        for individual in self.individuals:
+            fitness = individual.get_fitness()
+            outputs.append((individual, fitness))
+
+        best = max if self.maximize else min
+        return best(outputs, key=lambda x: x[1])[0]
+
     def get_fittest(self):
-
-        if self.individuals[-1].fitness is None:
-
-            pool = Pool(self.n_workers)
-            pbar = tqdm(total=len(self.individuals), desc='Evaluating individuals', leave=False)
-
-            def update(*a):
-                pbar.update()
-                pbar.set_postfix_str(f"fitness={round(a[0][1], 4)}")
-
-            jobs = [pool.apply_async(Population._get_fitness, args=(i,), callback=update)
-                    for i in self.individuals]
-            outputs = [p.get() for p in jobs]
-
-            for i,res in enumerate(outputs):
-                new_individual, _ = res
-                self.individuals[i] = new_individual
-
-            pool.close()
-            pool.join()
-            pbar.close()
-
-            best = max if self.maximize else min
-            return best(outputs, key=lambda x: x[1])[0]
-
+        if self.individuals[-1].fitness is None and self.n_workers != 1:
+            return self._get_fittest_parallel()
         else:
-            outputs = []
-            for individual in self.individuals:
-                fitness = individual.get_fitness()
-                outputs.append((individual, fitness))
-
-            best = max if self.maximize else min
-            return best(outputs, key=lambda x: x[1])[0]
+            return self._get_fittest_serial()
 
     def get_data(self):
         return self.x_train, self.y_train
