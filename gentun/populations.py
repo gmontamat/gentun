@@ -6,6 +6,8 @@ Population class
 import itertools
 
 from tqdm.auto import tqdm
+from multiprocessing import Pool
+from gentun.individuals import Individual
 
 
 class Population(object):
@@ -18,10 +20,11 @@ class Population(object):
 
     def __init__(self, species, x_train, y_train, individual_list=None, size=None,
                  crossover_rate=0.5, mutation_rate=0.015, maximize=True,
-                 additional_parameters=None):
+                 additional_parameters=None, n_workers=1):
         self.x_train = x_train
         self.y_train = y_train
         self.species = species
+        self.n_workers = n_workers
         self.maximize = maximize
         if individual_list is None and size is None:
             raise ValueError("Either pass a list of individuals or a population size for a random population.")
@@ -52,15 +55,44 @@ class Population(object):
     def get_size(self):
         return self.population_size
 
+    @staticmethod
+    def _get_fitness(individual: Individual):
+        return individual, individual.get_fitness()
+
     def get_fittest(self):
-        t = tqdm(self.individuals, leave=False, desc="Evaluating individuals")
-        outputs = []
-        for individual in t:
-            fitness = individual.get_fitness()
-            outputs.append((individual, fitness))
-            t.set_postfix_str(f"fitness={round(fitness, 4)}")
-        best = max if self.maximize else min
-        return best(outputs, key=lambda x: x[1])[0]
+
+        if self.individuals[-1].fitness is None:
+
+            pool = Pool(self.n_workers)
+            pbar = tqdm(total=len(self.individuals), desc='Evaluating individuals', leave=False)
+
+            def update(*a):
+                pbar.update()
+                pbar.set_postfix_str(f"fitness={round(a[0][1], 4)}")
+
+            jobs = [pool.apply_async(Population._get_fitness, args=(i,), callback=update)
+                    for i in self.individuals]
+            outputs = [p.get() for p in jobs]
+
+            for i,res in enumerate(outputs):
+                new_individual, _ = res
+                self.individuals[i] = new_individual
+
+            pool.close()
+            pool.join()
+            pbar.close()
+
+            best = max if self.maximize else min
+            return best(outputs, key=lambda x: x[1])[0]
+
+        else:
+            outputs = []
+            for individual in self.individuals:
+                fitness = individual.get_fitness()
+                outputs.append((individual, fitness))
+
+            best = max if self.maximize else min
+            return best(outputs, key=lambda x: x[1])[0]
 
     def get_data(self):
         return self.x_train, self.y_train

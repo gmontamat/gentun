@@ -34,7 +34,7 @@ class GeneticAlgorithm(object):
             raise ValueError("Population size is smaller than tournament size.")
         new_population = self._get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[],
-            maximize=self.population.get_fitness_criteria()
+            maximize=self.population.get_fitness_criteria(), n_workers=self.population.n_workers
         )
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
@@ -48,7 +48,7 @@ class GeneticAlgorithm(object):
         tournament = self._get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[
                 self.population[i] for i in random.sample(range(self.population.get_size()), self.tournament_size)
-            ], maximize=self.population.get_fitness_criteria()
+            ], maximize=self.population.get_fitness_criteria(), n_workers=self.population.n_workers
         )
         return tournament.get_fittest()
 
