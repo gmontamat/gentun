@@ -5,9 +5,10 @@ Credits
 Development Lead
 ----------------
 
-* Gustavo Montamat <''>
+* Lukas Lüftinger
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Gustavo Montamat
+* Peter Májek
