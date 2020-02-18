@@ -158,8 +158,9 @@ class Individual(object):
 class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.5, mutation_rate=0.015,
-                 booster='gbtree', objective='reg:linear', eval_metric='rmse', kfold=5, num_class=None,
-                 num_boost_round=5000, early_stopping_rounds=100, missing=np.nan, nthread=8):
+                 y_weights=None, booster='gbtree', objective='reg:linear', eval_metric='rmse',
+                 kfold=5, num_class=None, num_boost_round=5000, early_stopping_rounds=100,
+                 missing=np.nan, nthread=8):
         if genome is None:
             genome = {
                 # name: (default, min, max, logarithmic-scale-base)
@@ -180,6 +181,7 @@ class XgboostIndividual(Individual):
         # Set individual's attributes
         super(XgboostIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
         # Set additional parameters which are not tuned
+        self.y_weights = y_weights
         self.booster = booster
         self.objective = objective
         self.eval_metric = eval_metric
@@ -190,6 +192,8 @@ class XgboostIndividual(Individual):
         self.missing = missing
         self.nthread = nthread
         self.best_ntree_limit = self.num_boost_round
+        self.cv_true_values = None
+        self.oof_dict = None
 
     @staticmethod
     def generate_random_genes(genome):
@@ -206,17 +210,15 @@ class XgboostIndividual(Individual):
         """Create model and perform cross-validation."""
         model = XgboostModel(
             self.x_train, self.y_train, self.genes,
-            **self.get_additional_parameters()
-            # booster=self.booster, objective=self.objective,
-            # eval_metric=self.eval_metric, kfold=self.kfold, num_boost_round=self.num_boost_round,
-            # early_stopping_rounds=self.early_stopping_rounds, missing=self.missing, nthread=self.nthread,
-            # num_class=self.num_class
+            **self.get_additional_parameters(),
         )
         self.fitness = model.cross_validate()
         self.best_ntree_limit = model.best_ntree_limit
+        self.oof_dict = model.oof_dict
 
     def get_additional_parameters(self):
         return {
+            'y_weights': self.y_weights,
             'booster': self.booster,
             'objective': self.objective,
             'eval_metric': self.eval_metric,
