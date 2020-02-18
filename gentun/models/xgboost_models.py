@@ -6,6 +6,7 @@ import os
 
 import numpy as np
 import xgboost as xgb
+from sklearn.model_selection import StratifiedKFold
 
 from .generic_models import GentunModel
 
@@ -56,17 +57,23 @@ class XgboostModel(GentunModel):
         """Train model using k-fold cross validation and
         return mean value of validation metric.
         """
-        d_train = xgb.DMatrix(self.x_train, label=self.y_train,
-                              weight=self.y_weights,
-                              missing=self.missing,
-                              nthread=self.nthread)
-        # xgb calls its k-fold cross-validation parameter 'nfold'
+        d_train = xgb.DMatrix(
+            self.x_train,
+            label=self.y_train,
+            weight=self.y_weights,
+            missing=self.missing,
+            nthread=self.nthread
+        )
         oof_history = {}
+        skf = StratifiedKFold(n_splits=self.kfold, shuffle=True)
+        splits = list(skf.split(X=np.zeros_like(self.y_train), y=self.y_train))
         cv_result = xgb.cv(
-            self.params, d_train, num_boost_round=self.num_boost_round,
-            early_stopping_rounds=self.early_stopping_rounds, nfold=self.kfold,
+            params=self.params, dtrain=d_train,
+            nfold=self.kfold, folds=splits,
+            early_stopping_rounds=self.early_stopping_rounds,
+            num_boost_round=self.num_boost_round,
             callbacks=[XgboostModel.oof_getter_callback(oof_history)]
         )
         self.best_ntree_limit = len(cv_result)
-        self.oof_dict = oof_history['cv'][self.best_ntree_limit]
+        self.oof_dict = oof_history['cv'][self.best_ntree_limit - 1]
         return cv_result['test-{}-mean'.format(self.eval_metric)].values[-1]

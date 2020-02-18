@@ -14,7 +14,6 @@ class GeneticAlgorithm(object):
     fittest individual of a generation will be part of the
     next one.
     """
-
     def __init__(self, population, tournament_size=5, elitism=True):
         self.population = population
         self.x_train, self.y_train = self.population.get_data()
@@ -60,15 +59,16 @@ class GeneticAlgorithm(object):
             self.generation = i
             if i < max_generations:
                 self._evolve_population()
+        return self  # allow chaining with instantiation
 
     def get_fittest(self):
         return self.fittest_per_gen[-1]
 
 
 class RussianRouletteGA(GeneticAlgorithm):
-    """Simpler genetic algorithm used in the Genetic CNN paper.
     """
-
+    Simpler genetic algorithm used in the Genetic CNN paper.
+    """
     def __init__(self, population, crossover_probability=0.2, mutation_probability=0.8):
         super(RussianRouletteGA, self).__init__(population)
         self.crossover_probability = crossover_probability
