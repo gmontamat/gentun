@@ -83,11 +83,17 @@ class Population(object):
         return best(outputs, key=lambda x: x[1])[0]
 
     def _get_fittest_serial(self):
+        if self.individuals[-1].fitness is None:
+            t = tqdm(self.individuals, leave=False, desc="Evaluating individuals")
+        else:
+            t = self.individuals
+
         outputs = []
-        for individual in self.individuals:
+        for individual in t:
             fitness = individual.get_fitness()
             outputs.append((individual, fitness))
-
+            if self.individuals[-1].fitness is None:
+                t.set_postfix_str(f"fitness={round(fitness, 4)}")
         best = max if self.maximize else min
         return best(outputs, key=lambda x: x[1])[0]
 
