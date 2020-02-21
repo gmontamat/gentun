@@ -186,7 +186,7 @@ class Individual(ABC):
 class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None,
-                 crossover_rate=0.5, mutation_rate=0.015, 
+                 crossover_rate=0.5, mutation_rate=0.015,
                  fixed_genes=None, model: XgboostModel = None):
         if genome is None:
             genome = {
@@ -286,7 +286,7 @@ class XgboostIndividual(Individual):
 
     @staticmethod
     def update_individuals_from_remote_data(individuals: List[XgboostIndividual], outputs: np.memmap,
-                                            ntree_limits: np.memmap, cv_preds: np.memmap, cv_trues: np.memmap):
+                                           ntree_limits: np.memmap, cv_preds: np.memmap, cv_trues: np.memmap, *args):
 
         super(XgboostIndividual, XgboostIndividual).update_individuals_from_remote_data(individuals, outputs)
 
