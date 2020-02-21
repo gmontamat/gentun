@@ -232,12 +232,9 @@ class XgboostIndividual(Individual):
     def evaluate_fitness(self):
         """perform cross-validation."""
         self.model.update(self.genes)
-        #print("here1")
         self.fitness = self.model.cross_validate()
         self.best_ntree_limit = self.model.best_ntree_limit
         self.oof_dict = self.model.oof_dict
-        #self.fitness = np.random.randint(0,100)
-        #time.sleep(10)
 
     def get_additional_parameters(self):
         return {
