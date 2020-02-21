@@ -104,7 +104,7 @@ class Population(object):
             for individual in my_individuals:
                 individual.clear_large_data()
             args = my_individuals, q, indices[i], *mem_maps
-            workers.append(mp.Process(target=Individual.evaluate_fitness_and_return_results, args=args))
+            workers.append(mp.Process(target=self.individuals[0].evaluate_fitness_and_return_results, args=args))
 
         for worker in workers:
             worker.start()
@@ -113,6 +113,8 @@ class Population(object):
 
         q.put(None)  # finish the queue
         proc.join()  # finish the progressbarprocess
+
+        self.individuals[0].update_individuals_from_remote_data(self.individuals, *mem_maps)
 
         best = np.argmax if self.maximize else np.argmin
         return self.individuals[best(mem_maps[0])]
