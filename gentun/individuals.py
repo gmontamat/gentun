@@ -157,7 +157,8 @@ class Individual(object):
 
 class XgboostIndividual(Individual):
 
-    def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.5, mutation_rate=0.015,
+    def __init__(self, x_train, y_train, genome=None, genes=None,
+                 crossover_rate=0.5, mutation_rate=0.015, fixed_genes=None,
                  y_weights=None, booster='gbtree', objective='reg:linear', eval_metric='rmse',
                  kfold=5, num_class=None, num_boost_round=5000, early_stopping_rounds=100,
                  missing=np.nan, nthread=8):
@@ -178,6 +179,10 @@ class XgboostIndividual(Individual):
             }
         if genes is None:
             genes = self.generate_random_genes(genome)
+
+        # overwrite random genes with fixed ones
+        if fixed_genes is not None:
+            genes = {**genes, **fixed_genes}
         # Set individual's attributes
         super(XgboostIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
         # Set additional parameters which are not tuned
