@@ -4,11 +4,43 @@ Population class
 """
 
 import itertools
+from tempfile import NamedTemporaryFile
+from typing import List
+import numpy as np
 
 from tqdm.auto import tqdm
-from multiprocessing import Pool
-from gentun.individuals import Individual
+import multiprocessing as mp
+from gentun.individuals import Individual, XgboostIndividual
 
+
+def _tqdm_listener(queue: mp.Queue, total: int, desc: str, unit: str):
+    """
+      a process to start a tqdm and update it whenever a message on queue is received
+
+    :param queue: a message queue
+    :param total: total jobs to be done
+    :param desc: progressbar description
+    :param unit: progressbar unit
+    :return:
+    """
+
+    progressbar = tqdm(total=total, desc=desc, unit=unit)
+    for fitness in iter(queue.get, None):
+        progressbar.update()
+        progressbar.set_postfix_str(f"fitness={round(fitness, 4)}")
+
+def split_list(a:List, n:int) -> List[List]:
+    """
+    Split the list a into n approximately equally long lists
+
+    :param a: a list to split
+    :param n: number of parts the list shall be split into
+    :return: a list of lists
+    """
+    assert n>0
+
+    k, m = divmod(len(a), n)
+    return [a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n)]
 
 class Population(object):
     """Group of individuals of the same species, that is,
@@ -55,32 +87,35 @@ class Population(object):
     def get_size(self):
         return self.population_size
 
-    @staticmethod
-    def _get_fitness(individual: Individual):
-        return individual, individual.get_fitness()
-
     def _get_fittest_parallel(self):
-        pool = Pool(self.n_workers)
-        pbar = tqdm(total=len(self.individuals), desc='Evaluating individuals', leave=False)
+        n = len(self.individuals)
 
-        def update(*a):
-            pbar.update()
-            pbar.set_postfix_str(f"fitness={round(a[0][1], 4)}")
+        q = mp.Queue()
+        proc = mp.Process(target=_tqdm_listener, args=(q, n, 'Evaluating individuals', 'ind.'))
+        proc.start()
 
-        jobs = [pool.apply_async(Population._get_fitness, args=(i,), callback=update)
-                for i in self.individuals]
-        outputs = [p.get() for p in jobs]
+        mem_maps = self.individuals[0].prepare_result_memmaps(n_workers=n,
+                                                              n_colums=self.y_train.shape[0])
 
-        for i, res in enumerate(outputs):
-            new_individual, _ = res
-            self.individuals[i] = new_individual
+        indices = split_list(list(range(n)), self.n_workers)
+        workers = []
+        for i in range(self.n_workers):
+            my_individuals = [self.individuals[j] for j in indices[i]]
+            for individual in my_individuals:
+                individual.clear_large_data()
+            args = my_individuals, q, indices[i], *mem_maps
+            workers.append(mp.Process(target=Individual.evaluate_fitness_and_return_results, args=args))
 
-        pool.close()
-        pool.join()
-        pbar.close()
+        for worker in workers:
+            worker.start()
+        for worker in workers:
+            worker.join()
 
-        best = max if self.maximize else min
-        return best(outputs, key=lambda x: x[1])[0]
+        q.put(None)  # finish the queue
+        proc.join()  # finish the progressbarprocess
+
+        best = np.argmax if self.maximize else np.argmin
+        return self.individuals[best(mem_maps[0])]
 
     def _get_fittest_serial(self):
         if self.individuals[-1].fitness is None:
@@ -98,7 +133,7 @@ class Population(object):
         return best(outputs, key=lambda x: x[1])[0]
 
     def get_fittest(self):
-        if self.individuals[-1].fitness is None and self.n_workers != 1:
+        if self.individuals[-1].get_fitness_status==False and self.n_workers != 1:
             return self._get_fittest_parallel()
         else:
             return self._get_fittest_serial()

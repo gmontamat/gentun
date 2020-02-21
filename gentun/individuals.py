@@ -5,13 +5,19 @@ its characteristic genes, generation, crossover and
 mutation processes.
 """
 
+from __future__ import annotations
 import math
 import pprint
 import random
+import multiprocessing as mp
+from abc import ABC, abstractmethod
+from tempfile import NamedTemporaryFile
+from typing import List, Tuple
 
 import numpy as np
 
 try:
+    from .populations import split_list
     from .models.xgboost_models import XgboostModel
 except ImportError:
     pass
@@ -37,14 +43,14 @@ def random_log_uniform(minimum, maximum, base, eps=1e-12):
     return maximum - base ** random.uniform(math.log(eps, base), math.log(maximum - minimum, base))
 
 
-class Individual(object):
+class Individual(ABC):
     """Basic definition of an individual containing
     reproduction and mutation methods. Do not instantiate,
     use a subclass which extends this object by defining a
     genome and a random individual generator.
     """
 
-    def __init__(self, x_train, y_train, genome, genes, crossover_rate, mutation_rate, additional_parameters=None):
+    def __init__(self, x_train: np.memmap, y_train, genome, genes, crossover_rate, mutation_rate, additional_parameters=None):
         self.x_train = x_train
         self.y_train = y_train
         self.genome = genome
@@ -78,14 +84,18 @@ class Individual(object):
         return self.genome
 
     @staticmethod
+    @abstractmethod
     def generate_random_genes(genome):
-        raise NotImplementedError("Use a subclass with genes definition.")
+        pass
 
+
+    @abstractmethod
     def evaluate_fitness(self):
-        raise NotImplementedError("Use a subclass with genes definition.")
+        pass
 
+    @abstractmethod
     def get_additional_parameters(self):
-        raise NotImplementedError("Use a subclass with genes definition.")
+        pass
 
     def get_fitness(self):
         """Compute individual's fitness if necessary and return it."""
@@ -154,14 +164,30 @@ class Individual(object):
         """Return genes which identify the individual."""
         return pprint.pformat(self.genes)
 
+    def clear_large_data(self):
+        """To be overwritten in children"""
+
+    @staticmethod
+    def evaluate_fitness_and_return_results(individuals: List[Individual], queue: mp.Queue, indices: List[int], *args):
+        for individual in enumerate(individuals):
+            queue.put(individual.get_fitness())
+
+    def prepare_data_sharing(self, n_workers: int, *args) -> Tuple:
+        with NamedTemporaryFile(prefix='gentun-results-') as memfile:
+            outputs = np.memmap(filename=memfile.name, shape=(n_workers,), mode='w+', dtype=np.float)
+
+        return outputs,
+
+    @staticmethod
+    def update_individuals_from_remote_data(individuals: List[Individual], outputs: np.memmap, *args):
+        for i, individual in enumerate(individuals):
+            individual.set_fitness(outputs[i])
 
 class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None,
-                 crossover_rate=0.5, mutation_rate=0.015, fixed_genes=None,
-                 y_weights=None, booster='gbtree', objective='reg:linear', eval_metric='rmse',
-                 kfold=5, num_class=None, num_boost_round=5000, early_stopping_rounds=100,
-                 missing=np.nan, nthread=8):
+                 crossover_rate=0.5, mutation_rate=0.015, 
+                 fixed_genes=None, model: XgboostModel = None):
         if genome is None:
             genome = {
                 # name: (default, min, max, logarithmic-scale-base)
@@ -185,20 +211,12 @@ class XgboostIndividual(Individual):
             genes = {**genes, **fixed_genes}
         # Set individual's attributes
         super(XgboostIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
-        # Set additional parameters which are not tuned
-        self.y_weights = y_weights
-        self.booster = booster
-        self.objective = objective
-        self.eval_metric = eval_metric
-        self.kfold = kfold
-        self.num_boost_round = num_boost_round
-        self.num_class = num_class
-        self.early_stopping_rounds = early_stopping_rounds
-        self.missing = missing
-        self.nthread = nthread
-        self.best_ntree_limit = self.num_boost_round
-        self.cv_true_values = None
-        self.oof_dict = None
+
+        assert model is not None, 'Model has to be provided'
+        self.model = model
+        self.best_ntree_limit = None
+        self.oof_dict = {}
+
 
     @staticmethod
     def generate_random_genes(genome):
@@ -212,28 +230,71 @@ class XgboostIndividual(Individual):
         return genes
 
     def evaluate_fitness(self):
-        """Create model and perform cross-validation."""
-        model = XgboostModel(
-            self.x_train, self.y_train, self.genes,
-            **self.get_additional_parameters(),
-        )
-        self.fitness = model.cross_validate()
-        self.best_ntree_limit = model.best_ntree_limit
-        self.oof_dict = model.oof_dict
+        """perform cross-validation."""
+        self.model.update(self.genes)
+        #print("here1")
+        self.fitness = self.model.cross_validate()
+        self.best_ntree_limit = self.model.best_ntree_limit
+        self.oof_dict = self.model.oof_dict
+        #self.fitness = np.random.randint(0,100)
+        #time.sleep(10)
 
     def get_additional_parameters(self):
         return {
-            'y_weights': self.y_weights,
-            'booster': self.booster,
-            'objective': self.objective,
-            'eval_metric': self.eval_metric,
-            'kfold': self.kfold,
-            'num_boost_round': self.num_boost_round,
-            'early_stopping_rounds': self.early_stopping_rounds,
-            'missing': self.missing,
-            'nthread': self.nthread,
-            'num_class': self.num_class
+            'model': self.model,
         }
+
+    def clear_large_data(self):
+        self.model.d_train = None
+
+    @staticmethod
+    def evaluate_fitness_and_return_results(individuals: List[Individual], queue: mp.Queue, indices: List[int],
+                                            outputs: np.memmap, ntree_limits: np.memmap, cv_preds: np.memmap,
+                                            cv_trues: np.memmap, model: XgboostModel, *args):
+        for i, result_index in enumerate(indices):
+            individuals[i].model = model
+            fitness = individuals[i].get_fitness()
+            outputs[result_index] = fitness
+            ntree_limits[result_index] = individuals[i].best_ntree_limit
+
+            start = 0
+            for x in individuals[i].oof_dict['cv_preds']:
+                cv_preds[result_index, start:start + len(x)] = x
+                start += len(x)
+
+            start = 0
+            for x in individuals[i].oof_dict['cv_trues']:
+                cv_trues[result_index, start:start + len(x)] = x
+                start += len(x)
+
+            queue.put(fitness)
+
+    def prepare_data_sharing(self, n_workers: int, n_colums: int) -> Tuple:
+        with NamedTemporaryFile(prefix='gentun-results-') as memfile:
+            outputs = np.memmap(filename=memfile.name, shape=(n_workers,), mode='w+', dtype=np.float)
+
+        with NamedTemporaryFile(prefix='gentun-tree-limits-') as memfile2:
+            ntree_limits = np.memmap(filename=memfile2.name, shape=(n_workers,), mode='w+', dtype=np.int)
+
+        with NamedTemporaryFile(prefix='gentun-cv_preds-') as memfile3:
+            cv_preds = np.memmap(filename=memfile3.name, shape=(n_workers, n_colums), mode='w+', dtype=np.float)
+
+        with NamedTemporaryFile(prefix='gentun-cv_trues-') as memfile4:
+            cv_trues = np.memmap(filename=memfile4.name, shape=(n_workers, n_colums), mode='w+', dtype=np.int)
+
+        return  outputs, ntree_limits, cv_preds, cv_trues, self.model
+
+    @staticmethod
+    def update_individuals_from_remote_data(individuals: List[XgboostIndividual], outputs: np.memmap,
+                                            ntree_limits: np.memmap, cv_preds: np.memmap, cv_trues: np.memmap):
+
+        super(XgboostIndividual, XgboostIndividual).update_individuals_from_remote_data(individuals, outputs)
+
+        for i, individual in enumerate(individuals):
+            individual.best_ntree_limit = ntree_limits[i]
+            individual.oof_dict['cv_preds']= split_list(cv_preds[i,:], individual.model.kfold)
+            individual.oof_dict['cv_trues'] = split_list(cv_trues[i, :], individual.model.kfold)
+
 
 
 class GeneticCnnIndividual(Individual):
