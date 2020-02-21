@@ -4,13 +4,11 @@ Population class
 """
 
 import itertools
-from tempfile import NamedTemporaryFile
 from typing import List
 import numpy as np
 
 from tqdm.auto import tqdm
 import multiprocessing as mp
-from gentun.individuals import Individual, XgboostIndividual
 
 
 def _tqdm_listener(queue: mp.Queue, total: int, desc: str, unit: str):
@@ -94,7 +92,7 @@ class Population(object):
         proc = mp.Process(target=_tqdm_listener, args=(q, n, 'Evaluating individuals', 'ind.'))
         proc.start()
 
-        mem_maps = self.individuals[0].prepare_result_memmaps(n_workers=n,
+        mem_maps = self.individuals[0].prepare_data_sharing(n_workers=n,
                                                               n_colums=self.y_train.shape[0])
 
         indices = split_list(list(range(n)), self.n_workers)
@@ -135,7 +133,7 @@ class Population(object):
         return best(outputs, key=lambda x: x[1])[0]
 
     def get_fittest(self):
-        if self.individuals[-1].get_fitness_status==False and self.n_workers != 1:
+        if self.individuals[-1].get_fitness_status()==False and self.n_workers != 1:
             return self._get_fittest_parallel()
         else:
             return self._get_fittest_serial()

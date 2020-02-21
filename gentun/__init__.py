@@ -6,7 +6,7 @@ __author__ = 'Gustavo Montamat'
 import warnings
 
 from .algorithms import GeneticAlgorithm, RussianRouletteGA
-from .populations import Population, GridPopulation
+from .populations import Population, GridPopulation, split_list
 from .server import DistributedPopulation, DistributedGridPopulation
 from .client import GentunClient
 

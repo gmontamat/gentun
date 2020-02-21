@@ -13,11 +13,11 @@ import multiprocessing as mp
 from abc import ABC, abstractmethod
 from tempfile import NamedTemporaryFile
 from typing import List, Tuple
+from .populations import split_list
 
 import numpy as np
 
 try:
-    from .populations import split_list
     from .models.xgboost_models import XgboostModel
 except ImportError:
     pass
@@ -234,7 +234,7 @@ class XgboostIndividual(Individual):
         self.model.update(self.genes)
         self.fitness = self.model.cross_validate()
         self.best_ntree_limit = self.model.best_ntree_limit
-        self.oof_dict = self.model.oof_dict
+        self.oof_dict = self.model.oof_dict.copy()
 
     def get_additional_parameters(self):
         return {
