@@ -64,7 +64,7 @@ class XgboostModel(GentunModel):
             nthread=1
             # for whatever reason, creation of DMatrix got deadlocked when
             # attempted on multiple processes on xgboost v. 1.0.0
-            # with nthread=2, checking xgboost source code in core.py
+            # with nthread>=2, checking xgboost source code in core.py
             #         if nthread is None:
             #             _check_call(_LIB.XGDMatrixCreateFromMat(....
             #          else:
