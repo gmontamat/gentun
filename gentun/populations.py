@@ -158,11 +158,11 @@ class GridPopulation(Population):
 
     def __init__(self, species, x_train, y_train, individual_list=None, genes_grid=None,
                  crossover_rate=0.5, mutation_rate=0.015, maximize=True,
-                 additional_parameters=None):
+                 additional_parameters=None, n_workers=1):
         if individual_list is None and genes_grid is None:
             raise ValueError("Either pass a list of individuals or a grid definition.")
         elif genes_grid is not None:
-            genome = species(None, None).get_genome()  # Get species' genome
+            genome = species(None, None, **additional_parameters).get_genome()  # Get species' genome
             if not set(genes_grid.keys()).issubset(set(genome.keys())):
                 raise ValueError("Some grid parameters do not belong to the species' genome")
             # Fill genes_grid with default parameters
@@ -182,5 +182,5 @@ class GridPopulation(Population):
             print("Initializing a grid population. Size: {}".format(len(individual_list)))
         super(GridPopulation, self).__init__(
             species, x_train, y_train, individual_list, None, crossover_rate, mutation_rate,
-            maximize, additional_parameters
+            maximize, additional_parameters, n_workers=n_workers
         )

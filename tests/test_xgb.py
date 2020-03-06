@@ -18,7 +18,8 @@ def test_xgboost_model():
         'subsample': 1.0, 'colsample_bytree': 1.0, 'colsample_bylevel': 1.0, 'lambda': 1.0,
         'alpha': 0.0, 'scale_pos_weight': 1.0
     }
-    model = XgboostModel(x_train, y_train, genes, kfold=3, num_boost_round=10)
+    model = XgboostModel(x_train, y_train, kfold=3, num_boost_round=10)
+    model.update(genes)
     print(model.cross_validate())
 
 
@@ -28,10 +29,12 @@ def test_california_housing_xgb():
     y_train = data.target
     x_train = data.data
 
+    model = XgboostModel(x_train, y_train, kfold=3, num_boost_round=10)
+
     pop = Population(
         XgboostIndividual, x_train, y_train, size=5,
-        additional_parameters={'kfold': 3,
-                               'num_boost_round': 10}, maximize=False
+        additional_parameters={'model': model},
+        maximize=False
     )
     ga = GeneticAlgorithm(pop)
     ga.run(3)
@@ -48,10 +51,12 @@ def test_california_housing_xgb_grid():
         'max_depth': range(3, 5),
         'colsample_bytree': [0.80, 0.85],
     }
+
+    model = XgboostModel(x_train, y_train, kfold=3, num_boost_round=10)
+
     pop = GridPopulation(
         XgboostIndividual, x_train, y_train, genes_grid=grid,
-        additional_parameters={'kfold': 3,
-                               'num_boost_round': 10}, maximize=False
+        additional_parameters={'model': model}, maximize=False
     )
     ga = GeneticAlgorithm(pop)
     ga.run(3)

@@ -3,10 +3,11 @@
 Machine Learning models compatible with the Genetic Algorithm implemented using xgboost
 """
 import os
+from typing import Tuple
 
 import numpy as np
 import xgboost as xgb
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 
 from .generic_models import GentunModel
 
@@ -30,7 +31,7 @@ class XgboostModel(GentunModel):
                  y_weights=None, booster='gbtree', objective='reg:linear',
                  eval_metric='rmse', kfold=5, num_class=None,
                  num_boost_round=5000, early_stopping_rounds=100,
-                 missing=np.nan, nthread=8):
+                 missing=np.nan, nthread=8, feval = None, maximize = False, disable_default_eval_metric: bool = False):
         super(XgboostModel, self).__init__(x_train, y_train)
         self.y_weights = y_weights
         self.nthread = min(os.cpu_count(), nthread)
@@ -41,9 +42,17 @@ class XgboostModel(GentunModel):
             'nthread': self.nthread,
             'silent': 1
         }
+
+        if disable_default_eval_metric:
+            self.params['disable_default_eval_metric']=1
+
         if num_class is not None:
             self.params['num_class'] = num_class
         self.eval_metric = eval_metric
+        self.feval = feval
+        self.maximize = maximize
+        if self.feval is not None:
+            del self.params['eval_metric']
         self.kfold = kfold
         self.num_class = num_class
         self.num_boost_round = num_boost_round
@@ -80,17 +89,19 @@ class XgboostModel(GentunModel):
         return mean value of validation metric.
         """
         oof_history = {}
-        skf = StratifiedKFold(n_splits=self.kfold, shuffle=True)
+        if self.y_train[0].dtype.kind == 'f':  # continuous labels
+            skf = KFold(n_splits=self.kfold, shuffle=True)
+        else: # categorical labels
+            skf = StratifiedKFold(n_splits=self.kfold, shuffle=True)
+
         splits = list(skf.split(X=np.zeros_like(self.y_train), y=self.y_train))
 
         if self.d_train is None:
             self.d_train = self._create_dmatrix()
         cv_result = xgb.cv(
-            params=self.params, dtrain=self.d_train,
-            nfold=self.kfold, folds=splits,
-            early_stopping_rounds=self.early_stopping_rounds,
-            num_boost_round=self.num_boost_round,
-            callbacks=[XgboostModel.oof_getter_callback(oof_history)]
+            params=self.params, dtrain=self.d_train, nfold=self.kfold, folds=splits,
+            early_stopping_rounds=self.early_stopping_rounds, num_boost_round=self.num_boost_round, feval= self.feval,
+            maximize=self.maximize, callbacks=[XgboostModel.oof_getter_callback(oof_history)]
         )
         self.best_ntree_limit = len(cv_result)
         self.oof_dict = oof_history['cv'][self.best_ntree_limit - 1]
