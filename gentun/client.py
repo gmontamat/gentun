@@ -57,7 +57,7 @@ class GentunClient(object):
     def work(self):
         try:
             self.channel.basic_qos(prefetch_count=1)
-            self.channel.basic_consume(self.on_request, queue=self.rabbit_queue)
+            self.channel.basic_consume(queue=self.rabbit_queue, on_message_callback=self.on_request)
             print(" [x] Awaiting master's requests")
             print(" [-] Press Ctrl+C to interrupt")
             self.channel.start_consuming()

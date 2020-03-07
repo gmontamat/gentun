@@ -28,9 +28,9 @@ class RpcClient(object):
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
         # Set queue for jobs and callback queue for responses
-        result = self.channel.queue_declare(exclusive=True)
+        result = self.channel.queue_declare(queue='', exclusive=True)
         self.callback_queue = result.method.queue
-        self.channel.basic_consume(self.on_response, no_ack=True, queue=self.callback_queue)
+        self.channel.basic_consume(queue=self.callback_queue, on_message_callback=self.on_response, auto_ack=True)
         self.rabbit_queue = rabbit_queue
         self.channel.queue_declare(queue=self.rabbit_queue)
         self.response = None
