@@ -31,10 +31,10 @@ setup(
     ],
     keywords='gentun machine-learning parameter-tuning xgboost keras',
     packages=find_packages(exclude=['tests']),
-    install_requires=['mnist', 'pika', 'scikit-learn'],
+    install_requires=['pika', 'scikit-learn'],
     extras_require={
         'xgboost': ['xgboost'],
-        'keras': ['tensorflow', 'keras'],
-        'full': ['xgboost', 'tensorflow', 'keras'],
+        'tensorflow': ['tensorflow'],
+        'full': ['xgboost', 'tensorflow'],
     },
 )
