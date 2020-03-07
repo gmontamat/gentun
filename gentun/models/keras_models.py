@@ -3,13 +3,14 @@
 Machine Learning models compatible with the Genetic Algorithm implemented using Keras
 """
 
-import keras.backend as K
 import numpy as np
 
-from keras.layers import Input, Conv2D, Activation, Add, MaxPooling2D, Flatten, Dense, Dropout
-from keras.optimizers import Adam
-from keras.models import Model
 from sklearn.model_selection import StratifiedKFold
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.utils import plot_model
 
 from .generic_models import GentunModel
 
@@ -40,7 +41,6 @@ class GeneticCnnModel(GentunModel):
 
     def plot(self):
         """Draw model to validate gene-to-DAG."""
-        from keras.utils import plot_model
         plot_model(self.model, to_file='{}.png'.format(self.name))
 
     @staticmethod
@@ -110,7 +110,7 @@ class GeneticCnnModel(GentunModel):
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding='same')(x)
                 x = Activation('relu')(x)
-            x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(x)
+            x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(x)
         x = Flatten()(x)
         x = Dense(dense_units, activation='relu')(x)
         x = Dropout(dropout_probability)(x)
