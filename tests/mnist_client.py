@@ -11,14 +11,13 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if __name__ == '__main__':
-    import mnist
     import random
 
+    from tensorflow.keras.datasets import mnist
     from sklearn.preprocessing import LabelBinarizer
     from gentun import GentunClient, GeneticCnnIndividual
 
-    train_images = mnist.train_images()
-    train_labels = mnist.train_labels()
+    (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
     n = train_images.shape[0]
     lb = LabelBinarizer()
     lb.fit(range(10))
