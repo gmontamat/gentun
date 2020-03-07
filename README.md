@@ -2,11 +2,11 @@
 
 The purpose of this project is to provide a simple framework for
 [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models such
-as Neural Networks and Gradient Boosted Trees using a genetic algorithm. Measuring the fitness of an individual of a
+as Neural Networks and Gradient Boosting Trees using a genetic algorithm. Measuring the fitness of an individual of a
 given population implies training a model using a particular set of hyperparameters defined by its genes. This is a
 time-consuming process, therefore, a client-server approach can be used to allow multiple clients perform model training
-and cross-validation of individuals passed by a server. Offspring generation by reproduction and mutation is handled by
-the server.
+and cross-validation to evaluate individuals passed by a server. Offspring generation by reproduction and mutation is
+handled by the server.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/latest/tutorials/param_tuning.html) on Parameter Tuning
@@ -15,17 +15,17 @@ the server.
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN](https://arxiv.org/abs/1703.01513) paper
 
-# Supported gene encodings
+## Supported gene encodings
 
-We encourage you to submit your own individual-model pairs to enhance the project. You can base your work on the
-*XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes. So
-far, this project supports parameter tuning for the following models:
+Feel free to to submit your own individual-model pairs to enhance the project. You can use as an example the
+*XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes.
+So far, this project supports parameter tuning for the following models:
 
 - [x] XGBoost regressor and classifier (custom gene encoding)
 - [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Keras
 - [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
 
-# Installation
+## Installation
 
 Using a [virtual environment](https://docs.python.org/3.6/tutorial/venv.html) is highly recommended. Also, it is better
 to install [xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and
@@ -39,9 +39,9 @@ $ cd gentun
 $ python setup.py install
 ```
 
-# Usage
+## Usage
 
-## Single machine
+### Single machine
 
 The genetic algorithm can be run on a single computer, as shown in the following example:
 
@@ -121,14 +121,14 @@ pop = GridPopulation(
 Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search. Note that
 only *XgboostIndividual* is compatible with the *GridPopulation* class.
 
-## Multiple computers - distributed algorithm
+### Multiple computers - distributed algorithm
 
 You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *server*,
 generating a population and running the genetic algorithm. Each time this *server* needs to evaluate an individual, it
 will send a request to a pool of *clients*, which receive the model's hyperparameters and perform model fitting using
 k-fold cross-validation. The more *clients* you use, the faster the algorithm will run.
 
-### Basic RabbitMQ installation and setup
+#### Basic RabbitMQ installation and setup
 
 First, you need to install and run [RabbitMQ](https://www.rabbitmq.com/download.html), a message broker server. It will
 handle communications between the *server* and all the *client* nodes via a queueing system.
@@ -168,7 +168,7 @@ reflect these changes.
 $ sudo service rabbitmq-server restart
 ```
 
-### Running the distributed genetic algorithm
+#### Running the distributed genetic algorithm
 
 To run the distributed genetic algorithm, define either a *DistributedPopulation* or a *DistributedGridPopulation* which
 will serve as the *server* node. It will send job requests to the message broker each time a set of individuals needs to
@@ -207,25 +207,25 @@ gc = GentunClient(
 gc.work()
 ```
 
-# References
+## References
 
-## Genetic algorithms
+### Genetic algorithms
 
 * Artificial Intelligence: A Modern Approach. 3rd edition. Section 4.1.4
 * https://github.com/DEAP/deap
 * http://www.theprojectspot.com/tutorial-post/creating-a-genetic-algorithm-for-beginners/3
 
-## XGBoost parameter tuning
+### XGBoost parameter tuning
 
 * http://xgboost.readthedocs.io/en/latest/parameter.html
 * http://xgboost.readthedocs.io/en/latest/how_to/param_tuning.html
 * https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
 
-## Papers
+### Papers
 
 * Lingxi Xie and Alan L. Yuille, [Genetic CNN](https://arxiv.org/abs/1703.01513)
 * Masanori Suganuma, Shinichi Shirakawa, and Tomoharu Nagao, [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/abs/1704.00764)
 
-## Server-client model and RabbitMQ
+### Server-client model and RabbitMQ
 
 * https://www.rabbitmq.com/tutorials/tutorial-six-python.html
