@@ -16,4 +16,4 @@ try:
     from .individuals import GeneticCnnIndividual
     from .models.keras_models import GeneticCnnModel
 except ImportError:
-    print("Warning: install Keras and TensorFlow to use GeneticCnnIndividual and GeneticCnnModel.")
+    print("Warning: install tensorflow to use GeneticCnnIndividual and GeneticCnnModel.")
