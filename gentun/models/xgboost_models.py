@@ -103,6 +103,9 @@ class XgboostModel(GentunModel):
             early_stopping_rounds=self.early_stopping_rounds, num_boost_round=self.num_boost_round, feval= self.feval,
             maximize=self.maximize, callbacks=[XgboostModel.oof_getter_callback(oof_history)]
         )
-        self.best_ntree_limit = len(cv_result)
+        if self.maximize:
+            self.best_ntree_limit = cv_result['test-{}-mean'.format(self.eval_metric)].argmax() + 1
+        else:
+            self.best_ntree_limit = cv_result['test-{}-mean'.format(self.eval_metric)].argmin() + 1
         self.oof_dict = oof_history['cv'][self.best_ntree_limit - 1]
-        return cv_result['test-{}-mean'.format(self.eval_metric)].values[-1]
+        return cv_result['test-{}-mean'.format(self.eval_metric)][self.best_ntree_limit - 1]
