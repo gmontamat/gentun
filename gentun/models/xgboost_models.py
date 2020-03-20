@@ -3,7 +3,7 @@
 Machine Learning models compatible with the Genetic Algorithm implemented using xgboost
 """
 import os
-from typing import Tuple
+from typing import Tuple, Optional, List
 
 import numpy as np
 import xgboost as xgb
@@ -31,7 +31,8 @@ class XgboostModel(GentunModel):
                  y_weights=None, booster='gbtree', objective='reg:linear',
                  eval_metric='rmse', kfold=5, num_class=None,
                  num_boost_round=5000, early_stopping_rounds=100,
-                 missing=np.nan, nthread=8, feval = None, maximize = False, disable_default_eval_metric: bool = False):
+                 missing=np.nan, nthread=8, feval = None, maximize = False, disable_default_eval_metric: bool = False,
+                 splits:Optional[List[np.ndarray]] = None):
         super(XgboostModel, self).__init__(x_train, y_train)
         self.y_weights = y_weights
         self.nthread = min(os.cpu_count(), nthread)
@@ -62,6 +63,7 @@ class XgboostModel(GentunModel):
         self.oof_dict = None
 
         self.d_train = None
+        self.splits = splits
 
     def _create_dmatrix(self):
         #print(f'NNN {self.nthread}')
@@ -89,12 +91,16 @@ class XgboostModel(GentunModel):
         return mean value of validation metric.
         """
         oof_history = {}
-        if self.y_train[0].dtype.kind == 'f':  # continuous labels
-            skf = KFold(n_splits=self.kfold, shuffle=True)
-        else: # categorical labels
-            skf = StratifiedKFold(n_splits=self.kfold, shuffle=True)
 
-        splits = list(skf.split(X=np.zeros_like(self.y_train), y=self.y_train))
+        if self.splits is None:
+            if self.y_train[0].dtype.kind == 'f':  # continuous labels
+                skf = KFold(n_splits=self.kfold, shuffle=True)
+            else: # categorical labels
+                skf = StratifiedKFold(n_splits=self.kfold, shuffle=True)
+
+            splits = list(skf.split(X=np.zeros_like(self.y_train), y=self.y_train))
+        else:
+            splits = self.splits
 
         if self.d_train is None:
             self.d_train = self._create_dmatrix()
