@@ -83,6 +83,9 @@ class Individual(ABC):
         """Return individual's genome."""
         return self.genome
 
+    def set_genes(self, new_genes):
+        self.genes = new_genes
+
     @staticmethod
     @abstractmethod
     def generate_random_genes(genome):
@@ -215,8 +218,17 @@ class XgboostIndividual(Individual):
         assert model is not None, 'Model has to be provided'
         self.model = model
         self.best_ntree_limit = None
+        self.fixed_genes = fixed_genes
         self.oof_dict = {}
 
+    def mutate(self):
+        """Mutate instance's genes with a certain probability."""
+        super(XgboostIndividual, self).mutate()
+        # overwrite random genes with fixed ones
+        if self.fixed_genes is not None:
+            genes = self.get_genes()
+            new_genes = {**genes, **self.fixed_genes}
+            self.set_genes(new_genes=new_genes)
 
     @staticmethod
     def generate_random_genes(genome):
