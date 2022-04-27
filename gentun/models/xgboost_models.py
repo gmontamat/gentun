@@ -12,21 +12,22 @@ from sklearn.model_selection import StratifiedKFold, KFold
 from .generic_models import GentunModel
 
 
-class XgboostModel(GentunModel):
-    @staticmethod
-    def oof_getter_callback(out_dict):
-        """Obtain preds and true values for each tree out of fold prediction in the xgb.cv function."""
-        def callback(env):
-            cv_preds = []
-            cv_trues = []
-            for i in range(len(env.cvfolds)):
-                cv_preds.append(np.array(env.cvfolds[i].bst.predict(env.cvfolds[i].dtest)))
-                cv_trues.append(np.array(env.cvfolds[i].dtest.get_label()))
-            where_to_add = out_dict.setdefault('cv', [])
-            where_to_add.append({'cv_preds': cv_preds,
-                                 'cv_trues': cv_trues})
-        return callback
+class OofGetterCallback(xgb.callback.TrainingCallback):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.eval_history = {}
 
+    def after_iteration(self, model, epoch, evals_log):
+        cv_preds = []
+        cv_trues = []
+        for i in range(len(model.cvfolds)):
+            cv_preds.append(np.array(model.cvfolds[i].bst.predict(model.cvfolds[i].dtest)))
+            cv_trues.append(np.array(model.cvfolds[i].dtest.get_label()))
+        where_to_add = self.eval_history.setdefault('cv', [])
+        where_to_add.append({'cv_preds': cv_preds, 'cv_trues': cv_trues})
+
+
+class XgboostModel(GentunModel):
     def __init__(self, x_train, y_train,
                  y_weights=None, booster='gbtree', objective='reg:linear',
                  eval_metric='rmse', kfold=5, num_class=None,
@@ -90,7 +91,7 @@ class XgboostModel(GentunModel):
         """Train model using k-fold cross validation and
         return mean value of validation metric.
         """
-        oof_history = {}
+        ogc = OofGetterCallback()
 
         if self.splits is None:
             if self.y_train[0].dtype.kind == 'f':  # continuous labels
@@ -107,11 +108,11 @@ class XgboostModel(GentunModel):
         cv_result = xgb.cv(
             params=self.params, dtrain=self.d_train, nfold=self.kfold, folds=splits,
             early_stopping_rounds=self.early_stopping_rounds, num_boost_round=self.num_boost_round, feval= self.feval,
-            maximize=self.maximize, callbacks=[XgboostModel.oof_getter_callback(oof_history)]
+            maximize=self.maximize, callbacks=[ogc]
         )
         if self.maximize:
             self.best_ntree_limit = cv_result['test-{}-mean'.format(self.eval_metric)].argmax() + 1
         else:
             self.best_ntree_limit = cv_result['test-{}-mean'.format(self.eval_metric)].argmin() + 1
-        self.oof_dict = oof_history['cv'][self.best_ntree_limit - 1]
+        self.oof_dict = ogc.eval_history['cv'][self.best_ntree_limit - 1]
         return cv_result['test-{}-mean'.format(self.eval_metric)][self.best_ntree_limit - 1]
