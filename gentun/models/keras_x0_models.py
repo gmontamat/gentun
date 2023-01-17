@@ -20,7 +20,7 @@ class GeneticCnnX0Model(GentunModel):
 
     def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
                  dropout_probability, classes, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
-        super(GeneticCnnModel, self).__init__(x_train, y_train)
+        super(GeneticCnnX0Model, self).__init__(x_train, y_train)
         self.model = self.build_model(
             genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
             dense_units, dropout_probability, classes
