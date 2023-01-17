@@ -16,17 +16,37 @@ from .generic_models import GentunModel
 K.set_image_data_format('channels_last')
 
 
-class GeneticCnnX0Model(GentunModel):
+class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
+    """
+    Model of Neural Network leyars proposed in article:
+    NSGA-Net: Neural Architecture Search using Multi-Objective Genetic Algorithm
+    by Zhichao Lu, Ian Whalen, Vishnu Boddeti, Yashesh Dhebar, Kalyanmoy Deb, Erik Goodman and Wolfgang Banzhaf: 
+    https://arxiv.org/pdf/1703.01513.pdf 
 
-    def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
-                 dropout_probability, classes, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
-        super(GeneticCnnX0Model, self).__init__(x_train, y_train)
-        self.model = self.build_model(
-            genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
-            dense_units, dropout_probability, classes
-        )
-        self.name = '-'.join(gene for gene in genes.values())
-        self.kfold = kfold
+    It is variation of model of Neural Network leyars proposed in article: 
+    Genetic CNN 
+    by Lingxi Xie, Alan Yuille: 
+    https://arxiv.org/pdf/1703.01513.pdf 
+    """
+
+    def __init__(
+        self, 
+        x_train,  # TODO: add typing
+        y_train,  # TODO: add typing
+        genes: dict, 
+        nodes: tuple, 
+        input_shape: tuple, 
+        kernels_per_layer: tuple, 
+        kernel_sizes: tuple, 
+        dense_units: int,
+        dropout_probability: float, 
+        classes: int, 
+        kfold: int = 5, 
+        epochs: tuple = (3,), 
+        learning_rate: tuple = (1e-3,), 
+        batch_size: int = 32
+    ):
+        # Validate if we can proceed and set model's attributes
         if type(epochs) is int and type(learning_rate) is int:
             self.epochs = (epochs,)
             self.learning_rate = (learning_rate,)
@@ -36,15 +56,25 @@ class GeneticCnnX0Model(GentunModel):
         else:
             print(epochs, learning_rate)
             raise ValueError("epochs and learning_rate must be both either integers or tuples of integers.")
+
+        # Set model's attributes
+        super(GeneticCnnX0Model, self).__init__(x_train, y_train)
+        self.model = self.build_model(
+            genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
+            dense_units, dropout_probability, classes
+        )
+        self.name = '-'.join(gene for gene in genes.values())
+        self.kfold = kfold
+
         self.batch_size = batch_size
 
-    def plot(self):
+    def plot(self) -> None:
         """Draw model to validate gene-to-DAG."""
         from keras.utils import plot_model
         plot_model(self.model, to_file='{}.png'.format(self.name))
 
     @staticmethod
-    def build_dag(x, nodes, connections, kernels):
+    def build_dag(x, nodes, connections, kernels):  # TODO: add typing
         # Get number of nodes (K_s) using the fact that K_s*(K_s-1)/2 == #bits
         # nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
         # Separate bits by whose input they represent (GeneticCNN paper uses a dash)
@@ -95,7 +125,7 @@ class GeneticCnnX0Model(GentunModel):
         return output_vars[0]
 
     def build_model(self, genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
-                    dense_units, dropout_probability, classes):
+                    dense_units, dropout_probability, classes):  # TODO: add typing
         x_input = Input(input_shape)
         x = x_input
         for layer, kernels in enumerate(kernels_per_layer):
@@ -117,14 +147,14 @@ class GeneticCnnX0Model(GentunModel):
         x = Dense(classes, activation='softmax')(x)
         return Model(inputs=x_input, outputs=x, name='GeneticCNN')
 
-    def reset_weights(self):
+    def reset_weights(self) -> None:
         """Initialize model weights."""
         session = K.get_session()
         for layer in self.model.layers:
             if hasattr(layer, 'kernel_initializer'):
                 layer.kernel.initializer.run(session=session)
 
-    def cross_validate(self):
+    def cross_validate(self):  # TODO: add typing
         """Train model using k-fold cross validation and
         return mean value of the validation accuracy.
         """

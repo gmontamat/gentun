@@ -291,12 +291,12 @@ class GeneticCnnIndividual(Individual):
 
 class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https://arxiv.org/pdf/1810.03522.pdf
     """
-    Encoding of Neural Network leyars proposed in article:
+    Individual of individauls for Neural Network leyars proposed in article:
     NSGA-Net: Neural Architecture Search using Multi-Objective Genetic Algorithm
     by Zhichao Lu, Ian Whalen, Vishnu Boddeti, Yashesh Dhebar, Kalyanmoy Deb, Erik Goodman and Wolfgang Banzhaf: 
     https://arxiv.org/pdf/1703.01513.pdf 
 
-    It is variation of encoding of Neural Network leyars proposed in article: 
+    It is variation of individual of Neural Network leyars proposed in article: 
     Genetic CNN 
     by Lingxi Xie, Alan Yuille: 
     https://arxiv.org/pdf/1703.01513.pdf 
@@ -321,6 +321,9 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         learning_rate: float = (1e-3,), 
         batch_size: int = 32
     ):
+        # Validate if we can proceed
+        assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
+
         # Set genomes and genes if none (we need to have something to work with)
         if genome is None:
             genome = self.generate_random_genome(nodes)
@@ -330,10 +333,6 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         # Set individual's attributes
         super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
 
-        # Set additional parameters which are not tuned
-        assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
-
-        # Set genetic algorithms parameters
         self.nodes = nodes
         self.input_shape = input_shape
         self.kernels_per_layer = kernels_per_layer
