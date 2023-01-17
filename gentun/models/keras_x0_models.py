@@ -16,7 +16,7 @@ from .generic_models import GentunModel
 K.set_image_data_format('channels_last')
 
 
-class GeneticCnnModel(GentunModel):
+class GeneticCnnX0Model(GentunModel):
 
     def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
                  dropout_probability, classes, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
