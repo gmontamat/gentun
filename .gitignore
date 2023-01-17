@@ -124,3 +124,4 @@ dmypy.json
 
 # Custom ignored files
 .idea/
+nas_venv/
