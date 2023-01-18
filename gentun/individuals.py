@@ -306,11 +306,11 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         x_train,  # TODO: add typing
         y_train,  # TODO: add typing
         genome: dict = None,  # genome is other name for individual
-        genes: dict = None,  # TODO: rename to chromosome?
+        genes: dict = None,  # genes is the same thing as chromosome
         crossover_rate: float = 0.3, 
         mutation_rate: float = 0.1, 
-        nodes: tuple = (3, 5),
-        input_shape: tuple = (28, 28, 1), 
+        nodes_per_stage: tuple = (3, 5),  # TODO: what is node?
+        input_shape: tuple = (28, 28, 1),  # default value for digit recognition example for CAFIR10 (state of art example) 
         kernels_per_layer: tuple = (20, 50), 
         kernel_sizes: tuple = ((5, 5), (5, 5)), 
         dense_units: int = 500,
@@ -322,18 +322,18 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         batch_size: int = 32
     ):
         # Validate if we can proceed
-        assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
+        assert len(nodes_per_stage) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
 
         # Set genomes and genes if none (we need to have something to work with)
         if genome is None:
-            genome = self.generate_random_genome(nodes)
+            genome = self.generate_random_genome(nodes_per_stage)
         if genes is None:
             genes = self.generate_random_genes(genome)
 
         # Set individual's attributes
         super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
 
-        self.nodes = nodes
+        self.nodes_per_stage = nodes_per_stage
         self.input_shape = input_shape
         self.kernels_per_layer = kernels_per_layer
         self.kernel_sizes = kernel_sizes
@@ -346,46 +346,78 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         self.batch_size = batch_size
 
     @staticmethod
-    def generate_random_genome(nodes) -> dict:
+    def generate_random_genome(nodes_per_stage: tuple) -> dict:
         """
         Create and return random genome.
+        Genome containing string with stage name and number (template: stage_i) and
+        number of bits to encode connections between layers.
+        Stage is one computational block.
+        We are calculating number of bits based on node number for each state using formula:
+        1/2K_s*(K_s - 1) where K_s is number of nodes for stage.
+
+        Example:
+        For two stage network S=2 and nodes=(3,5) we will create pairs:
+        Stage_1: 3
+        Stage_2: 5
+        and after calculation of number of bits, we will have:
+        Stage_1: 3
+        Stage_2: 10
         
         Friendly reminder:
-        Genome is other name for individual.
-
-        Idea of how it works:
-        To create genome ...
+        1. Genome is other name for individual.
+        2. Remember we are operating on computational blocks. They are set of convolution layers ended with pool layer.
+        3. More details in article Genetic CNN by Lingxi Xie, Alan Yuille, section 3.1 Binary Network Representation
         """
-        return {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
+        return {'Stage_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes_per_stage)}
     
     @staticmethod
-    def generate_random_genes(genome) -> dict:
+    def generate_random_genes(genome: dict) -> dict:
         """
         Create and return random genes.
+        We are calculating number of bits based on node number for each state using formula:
+        1/2K_s*(K_s - 1) where K_s is number of nodes for stage.
+
+        Example:
+        For two stage network S=2 and nodes_per_stage=(3,5) we will create pairs:
+        Stage_1: 3
+        Stage_2: 5
+        and after calculation of number of bits, we will have:
+        Stage_1: 3
+        Stage_2: 10
+        and after coding genes we will get (example):
+        Stage_1: 100
+        Stage_2: 1101100000
+
+        So for first stage with 3 nodes node_1, node_2 and node_3
+        the first bit represents the connection between (node_1, node_2),
+        then the following two bits represent the connection between (node_1, node_3) and (node_2, node_3), etc.
+        if the code corresponding to (node_1, node_2) is 1.
+        As effect if there is an edge connecting node_1 and node_2, i.e., 
+        node_2 takes the output of node_1 as a part of the element-wise summation, and vice versa.
         
         Friendly reminder:
-        Chromosome is a set og genes. So refereing to genes we refering to chromosome.
-
-        Idea of how it works:
-        To create gene ...
+        1. Chromosome is a set og genes. So refereing to genes we refering to chromosome.
+        2. More details in article Genetic CNN by Lingxi Xie, Alan Yuille, section 3.1 Binary Network Representation
         """
         genes = {}
         for name, connections in genome.items():
             genes[name] = ''.join([random.choice(['0', '1']) for _ in range(connections)])
         return genes
 
-    def evaluate_fitness(self):
+    def evaluate_fitness(self) -> None:
         """Create model and perform cross-validation."""
         model = GeneticCnnX0Model(
-            self.x_train, self.y_train, self.genes, self.nodes, self.input_shape, self.kernels_per_layer,
+            self.x_train, self.y_train, self.genes, self.nodes_per_stage, self.input_shape, self.kernels_per_layer,
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
             self.kfold, self.epochs, self.learning_rate, self.batch_size
         )
+        
         self.fitness = model.cross_validate()
 
-    def get_additional_parameters(self):
+    def get_additional_parameters(self) -> dict:
+        """Return dictionary with all individual's parameters."""
         return {
-            'nodes': self.nodes,
+            'nodes_per_stage': self.nodes_per_stage,
             'input_shape': self.input_shape,
             'kernels_per_layer': self.kernels_per_layer,
             'kernel_sizes': self.kernel_sizes,
@@ -398,7 +430,7 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
             'batch_size': self.batch_size
         }
 
-    def mutate(self):
+    def mutate(self) -> None:
         """Mutate instance's genes with a certain probability."""
         for name, connections in self.get_genes().items():
             new_connections = ''.join([

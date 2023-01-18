@@ -34,7 +34,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
         x_train,  # TODO: add typing
         y_train,  # TODO: add typing
         genes: dict, 
-        nodes: tuple, 
+        nodes_per_stage: tuple, 
         input_shape: tuple, 
         kernels_per_layer: tuple, 
         kernel_sizes: tuple, 
@@ -60,7 +60,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
         # Set model's attributes
         super(GeneticCnnX0Model, self).__init__(x_train, y_train)
         self.model = self.build_model(
-            genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
+            genes, nodes_per_stage, input_shape, kernels_per_layer, kernel_sizes,
             dense_units, dropout_probability, classes
         )
         self.name = '-'.join(gene for gene in genes.values())
@@ -74,7 +74,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
         plot_model(self.model, to_file='{}.png'.format(self.name))
 
     @staticmethod
-    def build_dag(x, nodes, connections, kernels):  # TODO: add typing
+    def build_dag(x, nodes_per_stage, connections, kernels):  # TODO: add typing
         # Get number of nodes (K_s) using the fact that K_s*(K_s-1)/2 == #bits
         # nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
         # Separate bits by whose input they represent (GeneticCNN paper uses a dash)
@@ -87,7 +87,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
             idx += ctr
         # Get outputs by node (dummy output ignored)
         outputs = []
-        for node in range(nodes - 1):
+        for node in range(nodes_per_stage - 1):
             node_outputs = []
             for i, node_connections in enumerate(separated_connections[node:]):
                 if node_connections[node] == '1':
@@ -96,7 +96,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
         outputs.append([])
         # Get inputs by node (dummy input, x, ignored)
         inputs = [[]]
-        for node in range(1, nodes):
+        for node in range(1, nodes_per_stage):
             node_inputs = []
             for i, connection in enumerate(separated_connections[node - 1]):
                 if connection == '1':
@@ -104,7 +104,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
             inputs.append(node_inputs)
         # Build DAG
         output_vars = []
-        all_vars = [None] * nodes
+        all_vars = [None] * nodes_per_stage
         for i, (ins, outs) in enumerate(zip(inputs, outputs)):
             if ins or outs:
                 if not ins:
@@ -124,7 +124,7 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
             return Add()(output_vars)
         return output_vars[0]
 
-    def build_model(self, genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
+    def build_model(self, genes, nodes_per_stage, input_shape, kernels_per_layer, kernel_sizes,
                     dense_units, dropout_probability, classes):  # TODO: add typing
         x_input = Input(input_shape)
         x = x_input
@@ -133,10 +133,10 @@ class GeneticCnnX0Model(GentunModel):  # TODO: add typing and docstring
             x = Conv2D(kernels, kernel_size=kernel_sizes[layer], strides=(1, 1), padding='same')(x)
             x = Activation('relu')(x)
             # Decode internal connections
-            connections = genes['S_{}'.format(layer + 1)]
+            connections = genes['Stage_{}'.format(layer + 1)]
             # If at least one bit is 1, then we need to construct the Directed Acyclic Graph
             if not all([not bool(int(connection)) for connection in connections]):
-                x = self.build_dag(x, nodes[layer], connections, kernels)
+                x = self.build_dag(x, nodes_per_stage[layer], connections, kernels)
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding='same')(x)
                 x = Activation('relu')(x)
