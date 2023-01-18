@@ -397,7 +397,8 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         
         Friendly reminder:
         1. Chromosome is a set og genes. So refereing to genes we refering to chromosome.
-        2. More details in article Genetic CNN by Lingxi Xie, Alan Yuille, section 3.1 Binary Network Representation
+        2. Convolution layers may be not connect linear.
+        3. More details in article Genetic CNN by Lingxi Xie, Alan Yuille, section 3.1 Binary Network Representation
         """
         genes = {}
         for name, connections in genome.items():
@@ -411,7 +412,7 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
             self.kfold, self.epochs, self.learning_rate, self.batch_size
         )
-        
+
         self.fitness = model.cross_validate()
 
     def get_additional_parameters(self) -> dict:
