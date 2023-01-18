@@ -300,6 +300,18 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
     Genetic CNN 
     by Lingxi Xie, Alan Yuille: 
     https://arxiv.org/pdf/1703.01513.pdf 
+
+    Notes:
+    A node in this situation represents the neural network layer. 
+
+    In this implementation, this is only the convolution-type layer are allowed as a realization of a node.
+
+    The nodes within each stage are ordered, and we only allow connections from a lower-numbered node to a highernumbered node.
+    Example: node_1 may be connected to node_2 and/or node_3. Node_2 can be connected to node_3 but not to node_1.
+
+    To make created architecture valid there is the default input node (node_0), receives data from the previous stage, 
+    performs convolution, and sends its output to every node without a predecessor, e.g., node_1. 
+    User never interact node_0. 
     """
     def __init__(
         self, 
@@ -309,7 +321,7 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
         genes: dict = None,  # genes is the same thing as chromosome
         crossover_rate: float = 0.3, 
         mutation_rate: float = 0.1, 
-        nodes_per_stage: tuple = (3, 5),  # TODO: what is node?
+        nodes_per_stage: tuple = (3, 5),  # these values are only example values for easier usage
         input_shape: tuple = (28, 28, 1),  # default value for digit recognition example for CAFIR10 (state of art example) 
         kernels_per_layer: tuple = (20, 50), 
         kernel_sizes: tuple = ((5, 5), (5, 5)), 
@@ -331,7 +343,7 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
             genes = self.generate_random_genes(genome)
 
         # Set individual's attributes
-        super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
+        super(GeneticCnnX0Individual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
 
         self.nodes_per_stage = nodes_per_stage
         self.input_shape = input_shape
