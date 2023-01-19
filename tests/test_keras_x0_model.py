@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Test the GeneticCnnModel using the MNIST dataset
+Test the GeneticCnnX0Model using the MNIST dataset
 """
 
 import os
@@ -9,11 +9,11 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if __name__ == '__main__':
-    import mnist
+    import mnist  # TODO: change it to CIFAR10
     import random
 
     from sklearn.preprocessing import LabelBinarizer
-    from gentun import GeneticCnnModel
+    from gentun import GeneticCnnX0Model
 
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     x_train = train_images.reshape(n, 28, 28, 1)[selection]
     x_train = x_train / 255  # Normalize train data
 
-    model = GeneticCnnModel(
+    model = GeneticCnnX0Model(
         x_train, y_train,
         {'Stage_1': '000', 'Stage_2': '0000000000'},  # Genes to test
         (3, 5),  # Number of nodes per DAG (corresponds to gene bytes)
