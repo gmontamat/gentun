@@ -8,6 +8,7 @@ mutation processes.
 import math
 import pprint
 import random
+import numpy
 
 try:
     from .models.xgboost_models import XgboostModel
@@ -20,7 +21,7 @@ except ImportError:
     pass
 
 try:
-    from .models.keras_with_skip_models import GeneticCnnWithSkipModel
+    from .models.genetic_cnn_with_skip_model import GeneticCnnWithSkipModel
 except ImportError:
     pass
 
@@ -289,7 +290,7 @@ class GeneticCnnIndividual(Individual):
                 self.get_genes()[name] = new_connections
 
 
-class GeneticCnnWithSkipIndividual(Individual):  # TODO: rewrite it according to https://arxiv.org/pdf/1810.03522.pdf
+class GeneticCnnWithSkipIndividual(Individual):
     """
     Individual of individauls for Neural Network leyars proposed in article:
     NSGA-Net: Neural Architecture Search using Multi-Objective Genetic Algorithm
@@ -321,8 +322,8 @@ class GeneticCnnWithSkipIndividual(Individual):  # TODO: rewrite it according to
     """
     def __init__(
         self, 
-        x_train,  # TODO: add typing
-        y_train,  # TODO: add typing
+        x_train: numpy.ndarray,
+        y_train: numpy.ndarray,
         genome: dict = None,
         genes: str = None,
         crossover_rate: float = 0.3, 
@@ -344,8 +345,8 @@ class GeneticCnnWithSkipIndividual(Individual):  # TODO: rewrite it according to
         (GA) - means term is related to genetic algorithms.
         (NN) - means term is related to neural networks.
 
-        :param x_train (): data input set. # TODO: add typing
-        :param y_train (): data output set.  # TODO: add typing
+        :param x_train (numpy.ndarray): data input set.
+        :param y_train (numpy.ndarray): data output set.
         :param genome (dict): stage with a number of nodes for it. Basing on that we will create neural network architecture. Genome is other name for individual.
         :param genes (str): string containing 0 and 1 to represent connections between nodes. Genes is the same thing as chromosome.
         :param crossover_rate (float): probability of crossover (GA). Crossover operation crossover two individuals. Default value is only example for easier class usage.

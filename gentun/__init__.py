@@ -21,6 +21,6 @@ except ImportError:
 # Keras X0 individuals and models
 try:
     from .individuals import GeneticCnnWithSkipIndividual
-    from .models.keras_with_skip_models import GeneticCnnWithSkipModel
+    from .models.genetic_cnn_with_skip_model import GeneticCnnWithSkipModel
 except ImportError:
     print("Warning: install Keras and TensorFlow to use GeneticCnnIndividual and GeneticCnnModel.")
