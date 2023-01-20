@@ -15,7 +15,7 @@ if __name__ == '__main__':
     import random
 
     from sklearn.preprocessing import LabelBinarizer
-    from gentun import Population, GeneticCnnX0Individual, NSGAnet
+    from gentun import Population, GeneticCnnWithSkipIndividual, NSGAnet
 
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     x_train = x_train / 255  # Normalize train data
 
     pop = Population(
-        GeneticCnnX0Individual, x_train, y_train, size=20, crossover_rate=0.3, mutation_rate=0.1,
+        GeneticCnnWithSkipIndividual, x_train, y_train, size=20, crossover_rate=0.3, mutation_rate=0.1,
         additional_parameters={
             'kfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 32
         }, maximize=True

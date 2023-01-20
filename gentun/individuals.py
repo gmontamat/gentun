@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 try:
-    from .models.keras_x0_models import GeneticCnnX0Model
+    from .models.keras_with_skip_models import GeneticCnnWithSkipModel
 except ImportError:
     pass
 
@@ -289,7 +289,7 @@ class GeneticCnnIndividual(Individual):
                 self.get_genes()[name] = new_connections
 
 
-class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https://arxiv.org/pdf/1810.03522.pdf
+class GeneticCnnWithSkipIndividual(Individual):  # TODO: rewrite it according to https://arxiv.org/pdf/1810.03522.pdf
     """
     Individual of individauls for Neural Network leyars proposed in article:
     NSGA-Net: Neural Architecture Search using Multi-Objective Genetic Algorithm
@@ -372,7 +372,7 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
             genes = self.generate_random_genes(genome)
 
         # Set individual's attributes
-        super(GeneticCnnX0Individual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
+        super(GeneticCnnWithSkipIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
 
         self.nodes_per_stage = nodes_per_stage
         self.input_shape = input_shape
@@ -458,7 +458,7 @@ class GeneticCnnX0Individual(Individual):  # TODO: rewrite it according to https
 
     def evaluate_fitness(self) -> None:
         """Create model and perform cross-validation."""
-        model = GeneticCnnX0Model(
+        model = GeneticCnnWithSkipModel(
             self.x_train, self.y_train, self.genes, self.nodes_per_stage, self.input_shape, self.kernels_per_layer,
             self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
             self.kfold, self.epochs, self.learning_rate, self.batch_size
