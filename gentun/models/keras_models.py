@@ -8,7 +8,7 @@ import numpy as np
 
 from keras.layers import Input, Conv2D, Activation, Add, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
-from keras.models import Model
+from tensorflow.keras.models import Model
 from sklearn.model_selection import StratifiedKFold
 
 from .generic_models import GentunModel
@@ -120,9 +120,14 @@ class GeneticCnnModel(GentunModel):
     def reset_weights(self):
         """Initialize model weights."""
         session = K.get_session()
-        for layer in self.model.layers:
-            if hasattr(layer, 'kernel_initializer'):
-                layer.kernel.initializer.run(session=session)
+        for layer in self.model.layers: 
+            for layer_type in layer.__dict__:
+                layer_type_arg = getattr(layer, layer_type)
+
+                if hasattr(layer_type_arg,'kernel_initializer'):
+                    initializer_method = getattr(layer_type_arg, 'kernel_initializer')
+                    initializer_method.run(session=session)
+                    print('reinitializing layer {}.{}'.format(layer.name, layer_type))
 
     def cross_validate(self):
         """Train model using k-fold cross validation and

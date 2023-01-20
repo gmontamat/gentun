@@ -1,3 +1,5 @@
+tensorflow==1.15.4
+scikit-learn==0.20.3
 absl-py==0.7.1
 astor==0.7.1
 gast==0.2.2
@@ -13,11 +15,9 @@ numpy==1.16.3
 pika==1.0.1
 protobuf==3.7.1
 PyYAML==5.4
-scikit-learn==0.20.3
 scipy==1.2.1
 six==1.12.0
 tensorboard==1.13.1
-tensorflow==1.15.4
 tensorflow-estimator==1.13.0
 termcolor==1.1.0
 Werkzeug==0.15.3
