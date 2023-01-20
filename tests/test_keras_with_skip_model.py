@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if __name__ == '__main__':
-    import mnist  # TODO: change it to CIFAR10
+    import mnist
     import random
 
     from sklearn.preprocessing import LabelBinarizer
