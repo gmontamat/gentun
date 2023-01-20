@@ -15,7 +15,9 @@ if __name__ == '__main__':
     import random
 
     from sklearn.preprocessing import LabelBinarizer
-    from gentun import Population, GeneticCnnWithSkipIndividual, NSGAnet
+    from gentun import Population
+    from gentun.individuals.genetic_cnn_with_skip_individual import GeneticCnnWithSkipIndividual
+    from gentun.genetic_algorithms.nsga_net import NSGANet
 
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()

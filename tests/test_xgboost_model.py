@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 if __name__ == '__main__':
     from sklearn.datasets import fetch_california_housing
-    from gentun import XgboostModel
+    from gentun.models.xgboost_models import XgboostModel
 
     data = fetch_california_housing()
     y_train = data.target

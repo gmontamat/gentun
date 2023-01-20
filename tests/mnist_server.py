@@ -11,7 +11,9 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if __name__ == '__main__':
-    from gentun import RussianRouletteGA, DistributedPopulation, GeneticCnnIndividual
+    from gentun import DistributedPopulation
+    from gentun.genetic_algorithms.russian_roulette_genetic_algorithm import RussianRouletteGA
+    from gentun.individuals.genetic_cnn_individual import GeneticCnnIndividual
 
     pop = DistributedPopulation(
         GeneticCnnIndividual, size=20, crossover_rate=0.3, mutation_rate=0.1,

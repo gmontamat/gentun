@@ -17,7 +17,8 @@ if __name__ == '__main__':
     import random
 
     from sklearn.preprocessing import LabelBinarizer
-    from gentun import Population, GeneticCnnWithSkipIndividual
+    from gentun.populations import Population
+    from gentun.individuals.genetic_cnn_with_skip_individual import GeneticCnnWithSkipIndividual
 
     train_images = mnist.train_images()
     train_labels = mnist.train_labels()
@@ -43,4 +44,3 @@ if __name__ == '__main__':
     assert(population.get_data() == (x_train, y_train))
     assert(population.get_fitness_criteria() == True)
     assert(population.get_fittest() == max(population.individuals, key=operator.methodcaller('get_fitness')))
-
