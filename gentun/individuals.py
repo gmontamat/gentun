@@ -177,7 +177,7 @@ class Individual(ABC):
 
     def prepare_data_sharing(self, n_workers: int, *args) -> Tuple:
         with NamedTemporaryFile(prefix='gentun-results-') as memfile:
-            outputs = np.memmap(filename=memfile.name, shape=(n_workers,), mode='w+', dtype=np.float)
+            outputs = np.memmap(filename=memfile.name, shape=(n_workers,), mode='w+', dtype=np.float64)
 
         return outputs,
 
@@ -280,16 +280,16 @@ class XgboostIndividual(Individual):
 
     def prepare_data_sharing(self, n_workers: int, n_colums: int) -> Tuple:
         with NamedTemporaryFile(prefix='gentun-results-') as memfile:
-            outputs = np.memmap(filename=memfile.name, shape=(n_workers,), mode='w+', dtype=np.float)
+            outputs = np.memmap(filename=memfile.name, shape=(n_workers,), mode='w+', dtype=np.float64)
 
         with NamedTemporaryFile(prefix='gentun-tree-limits-') as memfile2:
-            ntree_limits = np.memmap(filename=memfile2.name, shape=(n_workers,), mode='w+', dtype=np.int)
+            ntree_limits = np.memmap(filename=memfile2.name, shape=(n_workers,), mode='w+', dtype=np.int64)
 
         with NamedTemporaryFile(prefix='gentun-cv_preds-') as memfile3:
-            cv_preds = np.memmap(filename=memfile3.name, shape=(n_workers, n_colums), mode='w+', dtype=np.float)
+            cv_preds = np.memmap(filename=memfile3.name, shape=(n_workers, n_colums), mode='w+', dtype=np.float64)
 
         with NamedTemporaryFile(prefix='gentun-cv_trues-') as memfile4:
-            cv_trues = np.memmap(filename=memfile4.name, shape=(n_workers, n_colums), mode='w+', dtype=np.int)
+            cv_trues = np.memmap(filename=memfile4.name, shape=(n_workers, n_colums), mode='w+', dtype=np.int64)
 
         return  outputs, ntree_limits, cv_preds, cv_trues, self.model
 
