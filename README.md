@@ -1,12 +1,19 @@
+# things TODO:
+  - get rid of duality individual/model (individual should adapt to any model)
+  - use redis instead of rabbitmq
+  - adapt to python3.10 (print format, linting, typing suggestions)
+  - check models
+  - simplify dataset retrieval for mnist, fashion mnist and others
+
+
 # gentun: genetic algorithm for hyperparameter tuning
 
-The purpose of this project is to provide a simple framework for
-[hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models such
-as Neural Networks and Gradient Boosting Trees using a genetic algorithm. Measuring the fitness of an individual of a
-given population implies training a model using a particular set of hyperparameters defined by its genes. This is a
-time-consuming process, therefore, a client-server approach can be used to allow multiple clients perform model training
-and cross-validation to evaluate individuals passed by a server. Offspring generation by reproduction and mutation is
-handled by the server.
+The goal of this project is to create a simple framework
+for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
+like Neural Networks and Gradient Boosting Trees, using a genetic algorithm. Evaluating the fitness of an individual in
+a population involves training a model with a specific set of hyperparameters, which is a time-consuming process. To
+address this, we employ a client-server approach. Multiple clients can handle model training and cross-validation of
+individuals provided by the server. The server manages the generation of offspring through reproduction and mutation.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/latest/tutorials/param_tuning.html) on Parameter Tuning
@@ -15,9 +22,9 @@ handled by the server.
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN](https://arxiv.org/abs/1703.01513) paper
 
-## Supported gene encodings
+## TODO: Supported gene encodings
 
-Feel free to to submit your own individual-model pairs to enhance the project. You can use as an example the
+Feel free to submit your own custom models to enhance the project. You can use as an example the
 *XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes.
 So far, this project supports parameter tuning for the following models:
 
@@ -27,16 +34,8 @@ So far, this project supports parameter tuning for the following models:
 
 ## Installation
 
-Using a [virtual environment](https://docs.python.org/3.6/tutorial/venv.html) is highly recommended. Also, it is better
-to install [xgboost](https://xgboost.readthedocs.io/en/latest/build.html) and
-[TensorFlow](https://www.tensorflow.org/install/) before the setup script tries to do it for you because this offers
-better customization and also because *pip* may not be able to compile those libraries. Although the module was
-originally written for Python 2.7, __only Python 3.6 is currently supported__.
-
 ```bash
-$ git clone https://github.com/gmontamat/gentun
-$ cd gentun
-$ python setup.py install
+pip install gentun
 ```
 
 ## Usage
@@ -128,44 +127,10 @@ generating a population and running the genetic algorithm. Each time this *serve
 will send a request to a pool of *clients*, which receive the model's hyperparameters and perform model fitting using
 k-fold cross-validation. The more *clients* you use, the faster the algorithm will run.
 
-#### Basic RabbitMQ installation and setup
+#### Redis setup
 
-First, you need to install and run [RabbitMQ](https://www.rabbitmq.com/download.html), a message broker server. It will
-handle communications between the *server* and all the *client* nodes via a queueing system.
-
-```bash
-$ sudo apt-get install rabbitmq-server
-$ sudo service rabbitmq-server start
-```
-
-Next, you should add a user with write privileges for the *server*. The default guest user can only be used to access
-RabbitMQ locally, it is advisable to remove this user.
-
-```bash
-$ sudo rabbitmqctl add_user <server_username> <server_password>
-$ sudo rabbitmqctl set_permissions -p / <server_username> ".*" ".*" ".*"
-```
-
-Also, add a user with fewer privileges to be used by the *client* nodes. You need to name the queue used by the *server*
-to send job requests, which is defined by the `rabbit_queue` parameter, whose default value is **rpc_queue**.
-
-```bash
-$ sudo rabbitmqctl add_user <client_username> <client_password>
-$ sudo rabbitmqctl set_permissions -p / <client_username> "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)" "(<rabbit_queue>|amq\.default)"
-```
-
-Optionally, you can enable an HTTP admin page to configure and monitor RabbitMQ. You can monitor queues and handle user
-permissions with a more intuitive web UI.
-
-```bash
-$ sudo rabbitmq-plugins enable rabbitmq_management
-```
-
-Once enabled, navigate to `<rabbitmq_server_ip>:15672` in your browser to use the web UI. Finally, restart the server to
-reflect these changes.
-
-```bash
-$ sudo service rabbitmq-server restart
+```shell
+docker run -d --name gentun-redis -p 6379:6379 redis
 ```
 
 #### Running the distributed genetic algorithm
@@ -224,8 +189,5 @@ gc.work()
 ### Papers
 
 * Lingxi Xie and Alan L. Yuille, [Genetic CNN](https://arxiv.org/abs/1703.01513)
-* Masanori Suganuma, Shinichi Shirakawa, and Tomoharu Nagao, [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/abs/1704.00764)
-
-### Server-client model and RabbitMQ
-
-* https://www.rabbitmq.com/tutorials/tutorial-six-python.html
+* Masanori Suganuma, Shinichi Shirakawa, and Tomoharu
+  Nagao, [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/abs/1704.00764)

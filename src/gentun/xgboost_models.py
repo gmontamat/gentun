@@ -1,11 +1,10 @@
-#!/usr/bin/env python
 """
 Machine Learning models compatible with the Genetic Algorithm implemented using xgboost
 """
 
 import xgboost as xgb
 
-from .generic_models import GentunModel
+from .models import GentunModel
 
 
 class XgboostModel(GentunModel):
@@ -25,7 +24,7 @@ class XgboostModel(GentunModel):
         self.num_boost_round = num_boost_round
         self.early_stopping_rounds = early_stopping_rounds
 
-    def cross_validate(self):
+    def evaluate(self):
         """Train model using k-fold cross validation and
         return mean value of validation metric.
         """

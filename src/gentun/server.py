@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Client to communicate with RabbitMQ and extension of
 Population which add parallel computing capabilities.

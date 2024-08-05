@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Define client class which loads a train set and receives
 job orders from a master via a RabbitMQ message broker.
@@ -10,7 +9,7 @@ import threading
 import time
 
 
-class GentunClient(object):
+class GentunClient:
 
     def __init__(self, individual, x_train, y_train, host='localhost', port=5672,
                  user='guest', password='guest', rabbit_queue='rpc_queue'):

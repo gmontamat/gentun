@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Machine Learning models compatible with the Genetic Algorithm implemented using Keras
 """
