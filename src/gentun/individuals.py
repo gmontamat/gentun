@@ -19,12 +19,14 @@ class Individual:
     values (hyperparameters of the model).
     """
 
-    def __init__(self,
-                 model: Type[Model],
-                 x_train: Any,
-                 y_train: Any,
-                 hyperparameters: Dict[str, Any],
-                 **kwargs):
+    def __init__(
+        self,
+        model: Type[Model],
+        x_train: Any,
+        y_train: Any,
+        hyperparameters: Dict[str, Any],
+        **kwargs
+    ):
         self.model = model
         self.x_train = x_train
         self.y_train = y_train
@@ -34,8 +36,8 @@ class Individual:
         self.fitness = None  # Until evaluated an individual fitness is unknown
 
     @staticmethod
-    def get_init_params(cls) -> Dict[str, Dict[str, Any]]:
-        init_signature = inspect.signature(cls.__init__)
+    def get_init_params(_class: Type[Model]) -> Dict[str, Dict[str, Any]]:
+        init_signature = inspect.signature(_class.__init__)
         params_info = {}
         for param_name, param in init_signature.parameters.items():
             if param_name == 'self':
@@ -75,41 +77,63 @@ class Individual:
         ).evaluate(self.x_train, self.y_train)
         return self.fitness
 
-    def set_fitness(self, fitness: float):
-        self.fitness = fitness
+    def __getitem__(self, key: str) -> Any:
+        return self.hyperparameters[key]
 
-    def reproduce(self, partner: Individual, crossover_rate: float):
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Change a hyperparameter. Reset fitness."""
+        self.hyperparameters[key] = value
+        self.fitness = None
+
+    def reproduce(self, partner: Individual, rate: float) -> Individual:
         """
         Mix genes from self and partner at random
         and return a new instance of an individual.
         Does not mutate parents.
         """
-        child_hyperparameters = {}
-        for name, value in self.hyperparameters.items():
-            if random.random() < crossover_rate:
-                child_hyperparameters[name] = partner.get_genes()[name]
+        child = {}
+        for param, value in self.hyperparameters.items():
+            if random.random() < rate:
+                child[param] = partner[param]
             else:
-                child_genes[name] = value
+                child[param] = value
         return Individual(
-            self.model, self.x_train, self.y_train,
-            self.genome, child_genes, self.crossover_rate, self.mutation_rate,
-            **self.get_additional_parameters()
-        )
-
-    def __copy__(self):
-        """Copy instance."""
-        individual_copy = self.__class__(
             self.model,
             self.x_train,
             self.y_train,
-            self.hyperparameters,
+            hyperparameters=child,
             **self.parameters
         )
-        individual_copy.set_fitness(self.fitness)
-        return individual_copy
+
+    def crossover(self, partner: Individual, rate: float) -> None:
+        """
+        Swap genes from self and partner at random.
+        Mutates each parent.
+        """
+        for param, value in self.hyperparameters:
+            if random.random() < rate:
+                partner_value = partner[param]
+                partner[param] = value
+                self[param] = partner_value
+
+    def mutate(genes: List[Gene], rate: float) -> None:
+        """Mutate individual."""
+        for gene in genes:
+            if random.random() < rate:
+                self[str(gene)] = gene()
+
+    def __copy__(self):
+        """Copy instance."""
+        return Individual(
+            self.model,
+            self.x_train,
+            self.y_train,
+            self.hyperparameters.copy(),
+            **self.parameters
+        )
 
     def __str__(self):
-        """Return gene values which identify the individual."""
+        """Return hyperparameters which identify the individual."""
         return pprint.pformat(self.hyperparameters)
 
 

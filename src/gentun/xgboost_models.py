@@ -4,10 +4,10 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 
 import xgboost as xgb
 
-from .models import GentunModel
+from .models import Model
 
 
-class XgboostModel(GentunModel):
+class XgboostModel(Model):
 
     def __init__(self, x_train, y_train, hyperparameters, booster='gbtree', objective='reg:linear',
                  eval_metric='rmse', kfold=5, num_boost_round=5000, early_stopping_rounds=100):

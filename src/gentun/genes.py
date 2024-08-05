@@ -1,6 +1,6 @@
 """
-Classes which define the genes of an individual
-which represent the hyperparameters we want to
+Define the genes of an individual which
+represent the hyperparameters we want to
 optimize through the genetic algorithm.
 """
 

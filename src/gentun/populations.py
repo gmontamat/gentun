@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 """
-Population class
+Define a group of individuals
 """
 
 import itertools
@@ -15,30 +14,34 @@ from .genes import Gene
 
 class Population:
     """
-    Group of individuals that share the same parameters.
+    Group of individuals that share the same genes.
     Can be initialized either with a list of individuals
     or a population size so that random individuals are
     created. The get_fittest method returns the strongest
     individual.
     """
 
-    def __init__(self,
-                 model: Type[Model],
-                 genes: List[Gene],
-                 x_train: Any,
-                 y_train: Any,
-                 individuals: Optional[List[Dict[str, Any]]] = None,
-                 size: Optional[int] = None,
-                 crossover_rate: float = 0.5,
-                 mutation_rate: float = 0.015,
-                 maximize: bool = True,
-                 **kwargs):
+    def __init__(
+        self,
+        model: Type[Model],
+        genes: List[Gene],
+        x_train: Any,
+        y_train: Any,
+        individuals: Optional[List[Dict[str, Any]]] = None,
+        size: Optional[int] = None,
+        crossover_rate: float = 0.5,
+        mutation_rate: float = 0.015,
+        maximize: bool = True,
+        **kwargs
+    ):
         self.model = model
         self.genes = genes
         self.x_train = x_train
         self.y_train = y_train
         self.maximize = maximize  # if True, we maximize fitness
         self.parameters = kwargs
+        self.crossover_rate = crossover_rate
+        self.mutation_rate = mutation_rate
         if individuals is None and size is None:
             raise ValueError("Pass a list of individuals or define the population size to create a random population.")
         elif individuals is None:
@@ -49,7 +52,7 @@ class Population:
                     self.model,
                     self.x_train,
                     self.y_train,
-                    {},
+                    {str(gene): gene() for gene in self.genes},
                     **kwargs
                 )
                 for _ in range(size)
@@ -68,61 +71,20 @@ class Population:
                 for hyperparameters in individuals
             ]
 
-    def add_individual(self, individual):
-        assert type(individual) is self.species
+    def add_individual(self, individual: Individual):
         self.individuals.append(individual)
         self.population_size += 1
 
-    def get_size(self):
+    def get_size(self) -> int:
         return self.population_size
 
-    def get_fittest(self):
+    def get_fittest(self) -> Individual:
         if self.maximize:
             return max(self.individuals, key=operator.methodcaller('evaluate_fitness'))
         return min(self.individuals, key=operator.methodcaller('evaluate_fitness'))
 
     def __getitem__(self, item):
         return self.individuals[item]
-
-    def reproduce(self, individual1, individual2):
-        """Mix genes from self and partner randomly and
-        return a new instance of an individual. Do not
-        mutate parents.
-        """
-        child_genes = {}
-        for name, value in self.get_genes().items():
-            if random.random() < self.crossover_rate:
-                child_genes[name] = partner.get_genes()[name]
-            else:
-                child_genes[name] = value
-        return Individual(
-
-            self.x_train, self.y_train, self.genome, child_genes, self.crossover_rate, self.mutation_rate,
-            **self.get_additional_parameters()
-        )
-
-    def crossover(self, partner):
-        """Mix genes from self and partner randomly.
-        Mutates each parent instead of producing a
-        new instance (child).
-        """
-        assert self.__class__ == partner.__class__  # Can only cross if they're the same species
-        for name in self.get_genes().keys():
-            if random.random() < self.crossover_rate:
-                self.get_genes()[name], partner.get_genes()[name] = partner.get_genes()[name], self.get_genes()[name]
-                self.set_fitness(None)
-                partner.set_fitness(None)
-
-    def mutate(self):
-        """Mutate instance's genes with a certain probability."""
-        for name, value in self.get_genes().items():
-            if random.random() < self.mutation_rate:
-                default, minimum, maximum, log_scale = self.get_genome()[name]
-                if type(default) == int:
-                    self.get_genes()[name] = random.randint(minimum, maximum)
-                else:
-                    self.get_genes()[name] = round(random_log_uniform(minimum, maximum, log_scale), 4)
-                self.set_fitness(None)  # The mutation produces a new individual
 
 
 class GridPopulation(Population):

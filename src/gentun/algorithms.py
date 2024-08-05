@@ -15,22 +15,19 @@ class GeneticAlgorithm:
     next one.
     """
 
-    def __init__(self,
-                 population: Population,
-                 tournament_size: int = 5,
-                 elitism: bool = True):
+    def __init__(
+        self,
+        population: Population,
+        tournament_size: int = 5,
+        elitism: bool = True
+    ):
         self.population = population
-        self.x_train, self.y_train = self.population.get_data()
         self.tournament_size = tournament_size
         self.elitism = elitism  # if True, fittest individual survives
         self.generation = 1
 
-    def get_population_type(self):
-        return self.population.__class__
-
     def run(self, max_generations: int):
         print("Starting genetic algorithm...")
-        print()
         while self.generation <= max_generations:
             self.evolve_population()
             self.generation += 1
@@ -51,7 +48,7 @@ class GeneticAlgorithm:
             new_population.add_individual(self.population.get_fittest())
         while new_population.get_size() < self.population.get_size():
             child = self.tournament_select().reproduce(self.tournament_select())
-            child.mutate()
+            child.mutate(population.genes, mutation_rate)
             new_population.add_individual(child)
         self.population = new_population
 
