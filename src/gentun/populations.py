@@ -1,11 +1,11 @@
 """
-Define a group of individuals
+Population
 """
 
 import itertools
 import operator
 
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from .individuals import Individual
 from .models import Model
@@ -23,70 +23,79 @@ class Population:
 
     def __init__(
         self,
-        model: Type[Model],
         genes: List[Gene],
+        model: Type[Model],
         x_train: Any,
         y_train: Any,
-        individuals: Optional[List[Dict[str, Any]]] = None,
-        size: Optional[int] = None,
+        individuals: Optional[Union[List[Dict[str, Any]], int]] = None,
         crossover_rate: float = 0.5,
         mutation_rate: float = 0.015,
         maximize: bool = True,
         **kwargs
     ):
-        self.model = model
         self.genes = genes
+        self.model = model
         self.x_train = x_train
         self.y_train = y_train
-        self.maximize = maximize  # if True, we maximize fitness
-        self.parameters = kwargs
-        self.crossover_rate = crossover_rate
+        # Evolution parameters of the population
         self.mutation_rate = mutation_rate
-        if individuals is None and size is None:
-            raise ValueError("Pass a list of individuals or define the population size to create a random population.")
-        elif individuals is None:
-            # Create a random population
-            self.population_size = size
+        self.crossover_rate = crossover_rate
+        self.maximize = maximize  # if True, maximize fitness
+        # Static parameters used to create model
+        self.parameters = kwargs
+        # Create individuals
+        if isinstance(individuals, int):
+            # Random population
             self.individuals = [
-                Individual(
-                    self.model,
-                    self.x_train,
-                    self.y_train,
-                    {str(gene): gene() for gene in self.genes},
-                    **kwargs
-                )
-                for _ in range(size)
+                self.create_individual()
+                for _ in range(individuals)
             ]
-            print(f"Initializing a random population of size: {size}")
+        elif isinstance(individuals, list):
+            self.individuals = [
+                self.create_individual(hyperparams)
+                for hyperparams in individuals
+            ]
         else:
-            self.population_size = len(individuals)
-            self.individuals = [
-                Individual(
-                    self.model,
-                    self.x_train,
-                    self.y_train,
-                    hyperparameters=hyperparameters,
-                    **kwargs
-                )
-                for hyperparameters in individuals
-            ]
+            raise ValueError("'individuals' must be a `int` or a `list`.")
 
-    def add_individual(self, individual: Individual):
-        self.individuals.append(individual)
-        self.population_size += 1
+    def create_individual(self, hyperparameters: Optional[Dict[str, Any]] = None) -> Individual:
+        if hyperparameters is None:
+            # Random individual
+            hyperparameters = {str(gene): gene() for gene in self.genes}
+        else:
+            # Hyperparameters passed, check them
+            for gene in self.genes:
+                if str(gene) not in hyperparameters:
+                    raise KeyError(f"Missing hyperparameter '{str(gene)}'.")
+                if not gene.validate(hyperparameters[str(gene)]):
+                    raise ValueError(
+                        f"Invalid value `{hyperparameters[str(gene)]}` for gene '{str(gene)}'."
+                    )
+        return Individual(
+            self.genes,
+            self.model,
+            self.x_train,
+            self.y_train,
+            hyperparameters=hyperparameters,
+            **kwargs
+        )
 
-    def get_size(self) -> int:
-        return self.population_size
+    def add_individual(self, hyperparameters: Optional[Dict[str, Any]] = None) -> None:
+        self.individuals.append(self.create_individual(hyperparameters))
 
     def get_fittest(self) -> Individual:
         if self.maximize:
             return max(self.individuals, key=operator.methodcaller('evaluate_fitness'))
         return min(self.individuals, key=operator.methodcaller('evaluate_fitness'))
 
-    def __getitem__(self, item):
+    def __len__(self) -> int:
+        return len(self.individuals)
+
+    def __getitem__(self, item) -> Individual:
         return self.individuals[item]
 
 
+# TODO: re-implement
 class GridPopulation(Population):
     """Population whose individuals are created based on a
      grid search approach instead of randomly. Can be

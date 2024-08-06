@@ -11,6 +11,7 @@ import random
 from typing import Any, Dict, Type
 
 from .models import Model
+from .genes import Gene
 
 
 class Individual:
@@ -22,17 +23,19 @@ class Individual:
     def __init__(
         self,
         model: Type[Model],
+        genes: List[Gene],
         x_train: Any,
         y_train: Any,
         hyperparameters: Dict[str, Any],
         **kwargs
     ):
         self.model = model
+        self.genes = genes
         self.x_train = x_train
         self.y_train = y_train
         self.hyperparameters = hyperparameters
         self.parameters = kwargs  # model parameters that remain unchanged
-        self.validate_model()
+        self.validate_params()
         self.fitness = None  # Until evaluated an individual fitness is unknown
 
     @staticmethod
@@ -49,7 +52,7 @@ class Individual:
             params_info[param_name] = param_info
         return params_info
 
-    def validate_model(self):
+    def validate_params(self):
         """Check all parameters against model."""
         for param_name, param_info in self.get_init_params(self.model):
             if ((param_name not in self.hyperparameters.keys() or param_name not in self.parameters.keys()) and
@@ -69,7 +72,7 @@ class Individual:
                     )
 
     def evaluate_fitness(self) -> float:
-        """If fitness unknown, instantiate model and evaluate."""
+        """Create instance of model and evaluate."""
         if self.fitness is not None:
             return self.fitness
         self.fitness = self.model(
@@ -78,6 +81,7 @@ class Individual:
         return self.fitness
 
     def __getitem__(self, key: str) -> Any:
+        """Select a hyperparameter."""
         return self.hyperparameters[key]
 
     def __setitem__(self, key: str, value: Any) -> None:
@@ -99,6 +103,7 @@ class Individual:
                 child[param] = value
         return Individual(
             self.model,
+            self.genes,
             self.x_train,
             self.y_train,
             hyperparameters=child,
@@ -110,15 +115,15 @@ class Individual:
         Swap genes from self and partner at random.
         Mutates each parent.
         """
-        for param, value in self.hyperparameters:
+        for param, value in self.hyperparameters.items():
             if random.random() < rate:
                 partner_value = partner[param]
                 partner[param] = value
                 self[param] = partner_value
 
-    def mutate(genes: List[Gene], rate: float) -> None:
+    def mutate(self, rate: float) -> None:
         """Mutate individual."""
-        for gene in genes:
+        for gene in self.genes:
             if random.random() < rate:
                 self[str(gene)] = gene()
 

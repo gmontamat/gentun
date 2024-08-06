@@ -1,5 +1,5 @@
 """
-Genetic algorithm class
+Genetic algorithms
 """
 
 import random
@@ -8,11 +8,35 @@ from .populations import Population
 
 
 class GeneticAlgorithm:
+
+    def __init__(self, population: Population):
+        self.population = population
+        self.current_generation = 1
+
+    def run(self, generations: int, verbose: bool = True):
+        """Run genetic algorithm for generations."""
+        while self.current_generation <= generations:
+            if verbose:
+                print(f"Running generation #{self.current_generation}...")
+            self.evolve()
+            if verbose:
+                fittest = self.population.get_fittest()
+                print(f"Fittest individual: {fittest}")
+                print(f"Fitness value: {round(fittest.get_fitness(), 4)}")
+            self.current_generation += 1
+
+    def evolve(self):
+        """Run a single generation."""
+        raise NotImplementedError
+
+
+class Tournament(GeneticAlgorithm):
     """
-    Evolve a population iteratively to find better
-    individuals on each generation. If elitism is set, the
-    fittest individual of a generation will be part of the
-    next one.
+    Evolve a population by running small-group
+    tournaments to find fittest individuals on
+    each generation. If elitism is set, the
+    fittest individual of a generation will be
+    part of the next one.
     """
 
     def __init__(
@@ -21,25 +45,13 @@ class GeneticAlgorithm:
         tournament_size: int = 5,
         elitism: bool = True
     ):
-        self.population = population
+        super().__init__(population)
         self.tournament_size = tournament_size
         self.elitism = elitism  # if True, fittest individual survives
-        self.generation = 1
+        assert self.tournament_size > len(self.population), \
+            "Tournament size must be larger than population size."
 
-    def run(self, max_generations: int):
-        print("Starting genetic algorithm...")
-        while self.generation <= max_generations:
-            self.evolve_population()
-            self.generation += 1
-
-    def evolve_population(self):
-        if self.population.get_size() < self.tournament_size:
-            raise ValueError("Population size is smaller than tournament size.")
-        print(f"Evaluating generation #{self.generation}...")
-        fittest = self.population.get_fittest()
-        print(f"Fittest individual is: {fittest}")
-        print(f"Fitness value is: {round(fittest.get_fitness(), 4)}")
-        print()
+    def evolve(self):
         new_population = self.get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[],
             maximize=self.population.get_fitness_criteria()
@@ -47,6 +59,7 @@ class GeneticAlgorithm:
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
         while new_population.get_size() < self.population.get_size():
+            # Select offspring from tournament
             child = self.tournament_select().reproduce(self.tournament_select())
             child.mutate(population.genes, mutation_rate)
             new_population.add_individual(child)
@@ -61,9 +74,10 @@ class GeneticAlgorithm:
         return tournament.get_fittest()
 
 
-class RussianRouletteGA(GeneticAlgorithm):
+# TODO: re-implement
+class RussianRoulette(GeneticAlgorithm):
     """
-    Simpler genetic algorithm used in the Genetic CNN paper.
+    Algorithm used by the Genetic CNN paper.
     """
 
     def __init__(self, population: Population,
