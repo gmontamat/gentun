@@ -1,8 +1,10 @@
-# things TODO:
-  - get rid of duality individual/model (individual should adapt to any model)
+# TODO
+
+  - get rid of duality individual/model (simplify classes)
   - use redis instead of rabbitmq
-  - adapt to python3.10 (print format, linting, typing suggestions)
-  - check models
+  - use proper logging instead of prints
+  - adapt to python3.10+ (f-strings, linting, type hinting)
+  - check models, rewrite XGboost and GeneticCNN
   - simplify dataset retrieval for mnist, fashion mnist and others
 
 
