@@ -2,21 +2,21 @@
 Machine Learning models compatible with the Genetic Algorithm implemented using Keras
 """
 
-import numpy as np
+# import numpy as np
+#
+# from sklearn.model_selection import StratifiedKFold
+# from tensorflow.keras import backend as K
+# from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
+# from tensorflow.keras.models import Model
+# from tensorflow.keras.optimizers import Adam
+# from tensorflow.keras.utils import plot_model
 
-from sklearn.model_selection import StratifiedKFold
-from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.utils import plot_model
+from .models import Model
 
-from .generic_models import GentunModel
-
-K.set_image_data_format('channels_last')
+# K.set_image_data_format('channels_last')
 
 
-class GeneticCnnModel(GentunModel):
+class GeneticCnnModel(Model):
 
     def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
                  dropout_probability, classes, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):

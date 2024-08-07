@@ -2,7 +2,7 @@
 Machine Learning models compatible with the Genetic Algorithm implemented using xgboost
 """
 
-import xgboost as xgb
+# import xgboost as xgb
 
 from .models import Model
 

@@ -3,12 +3,13 @@ Classes which define the individuals of a population with
 its characteristic genes, generation, crossover and
 mutation processes.
 """
+from __future__ import annotations
 
 import inspect
 import pprint
 import random
 
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Type
 
 from .models import Model
 from .genes import Gene
@@ -21,16 +22,16 @@ class Individual:
     """
 
     def __init__(
-        self,
-        model: Type[Model],
-        genes: List[Gene],
-        x_train: Any,
-        y_train: Any,
-        hyperparameters: Dict[str, Any],
-        **kwargs
+            self,
+            genes: List[Gene],
+            model: Type[Model],
+            x_train: Any,
+            y_train: Any,
+            hyperparameters: Dict[str, Any],
+            **kwargs
     ):
-        self.model = model
         self.genes = genes
+        self.model = model
         self.x_train = x_train
         self.y_train = y_train
         self.hyperparameters = hyperparameters
@@ -52,10 +53,13 @@ class Individual:
             params_info[param_name] = param_info
         return params_info
 
-    def validate_params(self):
+    def validate_params(self) -> None:
         """Check all parameters against model."""
-        for param_name, param_info in self.get_init_params(self.model):
-            if ((param_name not in self.hyperparameters.keys() or param_name not in self.parameters.keys()) and
+        for param_name, param_info in self.get_init_params(self.model).items():
+            if param_name == 'kwargs':
+                continue
+            if ((param_name not in self.hyperparameters.keys() or
+                 param_name not in self.kwargs.keys()) and
                     param_info["default"] is not None):
                 raise ValueError(f"Missing model parameter: {param_name}")
             elif param_name in self.hyperparameters.keys():
@@ -65,10 +69,10 @@ class Individual:
                         f"Expected `{param_info['type']}`, got `{type(self.hyperparameters[param_name])}`."
                     )
             else:
-                if not isinstance(self.parameters[param_name], param_info["type"]):
+                if not isinstance(self.kwargs[param_name], param_info["type"]):
                     raise TypeError(
                         f"Type missmatch with parameter `{param_name}`. "
-                        f"Expected `{param_info['type']}`, got `{type(self.parameters[param_name])}`."
+                        f"Expected `{param_info['type']}`, got `{type(self.kwargs[param_name])}`."
                     )
 
     def evaluate_fitness(self) -> float:
@@ -102,8 +106,8 @@ class Individual:
             else:
                 child[param] = value
         return Individual(
-            self.model,
             self.genes,
+            self.model,
             self.x_train,
             self.y_train,
             hyperparameters=child,

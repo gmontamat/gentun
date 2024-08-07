@@ -2,9 +2,8 @@
 Machine Learning models compatible with the Genetic Algorithm
 """
 
-from .xgboost_models import XgboostModel
-from .keras_models import GeneticCnnModel
-from .genes import Gene, RandomChoiceGene
+# from .xgboost_models import XgboostModel
+# from .keras_models import GeneticCnnModel
 
 from typing import Any, Dict
 
@@ -37,7 +36,7 @@ class DummyModel(Model):
 
     def __init__(self, **kwargs: Dict[str, float]):
         super().__init__(**kwargs)
-        self.fitness = sum([value for key, value in kwargs])
+        self.fitness = sum([value for key, value in kwargs.items()])
 
     def evaluate(self, x_train: Any, y_train: Any):
         """Ignore x_train, y_train; return sum of parameter values."""

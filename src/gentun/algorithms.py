@@ -23,8 +23,9 @@ class GeneticAlgorithm:
             self.evolve()
             if verbose:
                 fittest = self.population.get_fittest()
-                print(f"Fittest individual: {fittest}")
-                print(f"Fitness value: {round(fittest.get_fitness(), 4)}")
+                print("Fittest individual:")
+                print(fittest)
+                print(f"Fitness value: {round(fittest.evaluate_fitness(), 4)}")
             self.current_generation += 1
 
     def evolve(self) -> None:
@@ -55,8 +56,8 @@ class Tournament(GeneticAlgorithm):
         self.reproduction_rate = reproduction_rate
         self.mutation_rate = mutation_rate
         self.elitism = elitism  # if True, fittest individual survives
-        assert self.tournament_size > len(self.population), \
-            "Tournament size must be larger than population size."
+        assert len(self.population) > self.tournament_size, \
+            "Population size must be larger than tournament size."
 
     def evolve(self) -> None:
         # Define the new population
@@ -64,26 +65,17 @@ class Tournament(GeneticAlgorithm):
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
         while len(new_population) < len(self.population):
-            # Select offspring from tournament
+            # Select offspring from tournament and mutate
             parent1 = self.run_tournament()
             parent2 = self.run_tournament()
             child = parent1.reproduce(parent2, self.reproduction_rate)
-            child.mutate(population.genes, self.mutation_rate)
+            child.mutate(self.mutation_rate)
             new_population.add_individual(child)
-        self.population = new_population
+        self.population = new_population  # Garbage collection here?
 
     def run_tournament(self) -> Individual:
         """Define a small random population and return the fittest individual."""
-        tournament = self.population.duplicate()
-        for i in random.sample(len(self.population)):
-            tournament.add_individual(self.population[i])
-
-
-        tournament = self.get_population_type()(
-            self.population.get_species(), self.x_train, self.y_train, individual_list=[
-                self.population[i] for i in random.sample(range(self.population.get_size()), self.tournament_size)
-            ], maximize=self.population.get_fitness_criteria()
-        )
+        tournament = self.population.duplicate(self.tournament_size)
         return tournament.get_fittest()
 
 
@@ -97,7 +89,7 @@ class RussianRoulette(GeneticAlgorithm):
     def __init__(self, population: Population,
                  crossover_probability: int = 0.2,
                  mutation_probability: int = 0.8):
-        super(RussianRouletteGA, self).__init__(population)
+        super().__init__(population)
         self.crossover_probability = crossover_probability
         self.mutation_probability = mutation_probability
 

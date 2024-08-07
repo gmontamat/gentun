@@ -28,7 +28,7 @@ class Gene:
         raise NotImplementedError
 
 
-class RandomChoiceGene(Gene):
+class RandomChoice(Gene):
     """Get random value from a list."""
 
     def __init__(self, name: str, values: List[Any]):
@@ -39,7 +39,7 @@ class RandomChoiceGene(Gene):
         return random.choice(self.values)
 
 
-class RandomUniformGene(Gene):
+class RandomUniform(Gene):
     """
     Sample random uniform number
     between minimum and maximum.
@@ -54,7 +54,7 @@ class RandomUniformGene(Gene):
         return random.uniform(self.minimum, self.maximum)
 
 
-class RandomLogUniformGene(Gene):
+class RandomLogUniform(Gene):
     """
     Uniform random number in log scale.
     Useful for parameters such as lr.

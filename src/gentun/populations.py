@@ -1,15 +1,17 @@
 """
 Population
 """
+from __future__ import annotations
 
 import itertools
 import operator
+import random
 
 from typing import Any, Dict, List, Optional, Type, Union
 
+from .genes import Gene
 from .individuals import Individual
 from .models import Model
-from .genes import Gene
 
 
 class Population:
@@ -27,7 +29,7 @@ class Population:
         model: Type[Model],
         x_train: Any,
         y_train: Any,
-        individuals: Optional[Union[List[Dict[str, Any]], int]] = None,
+        individuals: Optional[Union[List[Dict[str, Any]], List[Individual], int]] = None,
         maximize: bool = True,
         **kwargs
     ):
@@ -46,10 +48,10 @@ class Population:
                 for _ in range(individuals)
             ]
         elif isinstance(individuals, list):
-            self.individuals = [
-                self.spawn(hyperparams)
-                for hyperparams in individuals
-            ]
+            self.individuals = []
+            for individual in individuals:
+                # Here an individual can be an instance or the hyperparameters
+                self.add_individual(individual)
         else:
             raise ValueError("'individuals' must be a `int` or a `list`.")
 
@@ -59,14 +61,10 @@ class Population:
             # Create a random individual
             hyperparameters = {str(gene): gene() for gene in self.genes}
         else:
-            # Hyperparameters passed, check them
+            # Hyperparameters passed, check for missing ones
             for gene in self.genes:
                 if str(gene) not in hyperparameters:
                     raise KeyError(f"Missing hyperparameter '{str(gene)}'.")
-                if not gene.validate(hyperparameters[str(gene)]):
-                    raise ValueError(
-                        f"Invalid value `{hyperparameters[str(gene)]}` for gene '{str(gene)}'."
-                    )
         return Individual(
             self.genes,
             self.model,
@@ -78,13 +76,13 @@ class Population:
 
     def add_individual(
         self,
-        individual: Optional[Union[Dict[str, Any], Individual] = None
+        individual: Optional[Union[Dict[str, Any], Individual]] = None
     ) -> None:
         """Add an individual to this population."""
         if isinstance(individual, dict) or individual is None:
             self.individuals.append(self.spawn(individual))
         elif isinstance(individual, Individual):
-            self.individual.append(individual)
+            self.individuals.append(individual)
         else:
             raise ValueError
 
@@ -93,14 +91,18 @@ class Population:
             return max(self.individuals, key=operator.methodcaller('evaluate_fitness'))
         return min(self.individuals, key=operator.methodcaller('evaluate_fitness'))
 
-    def duplicate(self) -> Population:
+    def get_genes(self) -> List[Gene]:
+        return self.genes
+
+    def duplicate(self, sample_size: int = 0) -> Population:
         """Creates an identical population with no individuals."""
+        individuals = random.sample(self.individuals, sample_size)
         return Population(
             self.genes,
             self.model,
             self.x_train,
             self.y_train,
-            [],  # No individuals
+            individuals,
             self.maximize,
             **self.kwargs
         )
