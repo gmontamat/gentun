@@ -34,7 +34,7 @@ class Individual:
         self.x_train = x_train
         self.y_train = y_train
         self.hyperparameters = hyperparameters
-        self.parameters = kwargs  # model parameters that remain unchanged
+        self.kwargs = kwargs  # model parameters that remain unchanged
         self.validate_params()
         self.fitness = None  # Until evaluated an individual fitness is unknown
 
@@ -76,7 +76,7 @@ class Individual:
         if self.fitness is not None:
             return self.fitness
         self.fitness = self.model(
-            **{**self.hyperparameters, **self.parameters}
+            **{**self.hyperparameters, **self.kwargs}
         ).evaluate(self.x_train, self.y_train)
         return self.fitness
 
@@ -89,7 +89,7 @@ class Individual:
         self.hyperparameters[key] = value
         self.fitness = None
 
-    def reproduce(self, partner: Individual, rate: float) -> Individual:
+    def reproduce(self, partner: Individual, rate: float = 1.) -> Individual:
         """
         Mix genes from self and partner at random
         and return a new instance of an individual.
@@ -107,10 +107,10 @@ class Individual:
             self.x_train,
             self.y_train,
             hyperparameters=child,
-            **self.parameters
+            **self.kwargs
         )
 
-    def crossover(self, partner: Individual, rate: float) -> None:
+    def crossover(self, partner: Individual, rate: float = 1.) -> None:
         """
         Swap genes from self and partner at random.
         Mutates each parent.
@@ -121,21 +121,11 @@ class Individual:
                 partner[param] = value
                 self[param] = partner_value
 
-    def mutate(self, rate: float) -> None:
+    def mutate(self, rate: float = 1.) -> None:
         """Mutate individual."""
         for gene in self.genes:
             if random.random() < rate:
                 self[str(gene)] = gene()
-
-    def __copy__(self):
-        """Copy instance."""
-        return Individual(
-            self.model,
-            self.x_train,
-            self.y_train,
-            self.hyperparameters.copy(),
-            **self.parameters
-        )
 
     def __str__(self):
         """Return hyperparameters which identify the individual."""

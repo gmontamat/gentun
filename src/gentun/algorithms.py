@@ -5,15 +5,17 @@ Genetic algorithms
 import random
 
 from .populations import Population
+from .individuals import Individual
 
 
 class GeneticAlgorithm:
 
     def __init__(self, population: Population):
         self.population = population
+        self.genes = self.population.get_genes()
         self.current_generation = 1
 
-    def run(self, generations: int, verbose: bool = True):
+    def run(self, generations: int, verbose: bool = True) -> None:
         """Run genetic algorithm for generations."""
         while self.current_generation <= generations:
             if verbose:
@@ -25,7 +27,7 @@ class GeneticAlgorithm:
                 print(f"Fitness value: {round(fittest.get_fitness(), 4)}")
             self.current_generation += 1
 
-    def evolve(self):
+    def evolve(self) -> None:
         """Run a single generation."""
         raise NotImplementedError
 
@@ -37,35 +39,46 @@ class Tournament(GeneticAlgorithm):
     each generation. If elitism is set, the
     fittest individual of a generation will be
     part of the next one.
+    TODO: missing reference
     """
 
     def __init__(
         self,
         population: Population,
         tournament_size: int = 5,
+        reproduction_rate: float = 0.5,
+        mutation_rate: float = 0.015,
         elitism: bool = True
     ):
         super().__init__(population)
         self.tournament_size = tournament_size
+        self.reproduction_rate = reproduction_rate
+        self.mutation_rate = mutation_rate
         self.elitism = elitism  # if True, fittest individual survives
         assert self.tournament_size > len(self.population), \
             "Tournament size must be larger than population size."
 
-    def evolve(self):
-        new_population = self.get_population_type()(
-            self.population.get_species(), self.x_train, self.y_train, individual_list=[],
-            maximize=self.population.get_fitness_criteria()
-        )
+    def evolve(self) -> None:
+        # Define the new population
+        new_population = self.population.duplicate()
         if self.elitism:
             new_population.add_individual(self.population.get_fittest())
-        while new_population.get_size() < self.population.get_size():
+        while len(new_population) < len(self.population):
             # Select offspring from tournament
-            child = self.tournament_select().reproduce(self.tournament_select())
-            child.mutate(population.genes, mutation_rate)
+            parent1 = self.run_tournament()
+            parent2 = self.run_tournament()
+            child = parent1.reproduce(parent2, self.reproduction_rate)
+            child.mutate(population.genes, self.mutation_rate)
             new_population.add_individual(child)
         self.population = new_population
 
-    def tournament_select(self):
+    def run_tournament(self) -> Individual:
+        """Define a small random population and return the fittest individual."""
+        tournament = self.population.duplicate()
+        for i in random.sample(len(self.population)):
+            tournament.add_individual(self.population[i])
+
+
         tournament = self.get_population_type()(
             self.population.get_species(), self.x_train, self.y_train, individual_list=[
                 self.population[i] for i in random.sample(range(self.population.get_size()), self.tournament_size)
@@ -78,6 +91,7 @@ class Tournament(GeneticAlgorithm):
 class RussianRoulette(GeneticAlgorithm):
     """
     Algorithm used by the Genetic CNN paper.
+    TODO: arxiv
     """
 
     def __init__(self, population: Population,

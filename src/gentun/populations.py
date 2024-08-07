@@ -28,8 +28,6 @@ class Population:
         x_train: Any,
         y_train: Any,
         individuals: Optional[Union[List[Dict[str, Any]], int]] = None,
-        crossover_rate: float = 0.5,
-        mutation_rate: float = 0.015,
         maximize: bool = True,
         **kwargs
     ):
@@ -37,30 +35,28 @@ class Population:
         self.model = model
         self.x_train = x_train
         self.y_train = y_train
-        # Evolution parameters of the population
-        self.mutation_rate = mutation_rate
-        self.crossover_rate = crossover_rate
         self.maximize = maximize  # if True, maximize fitness
         # Static parameters used to create model
-        self.parameters = kwargs
+        self.kwargs = kwargs
         # Create individuals
         if isinstance(individuals, int):
             # Random population
             self.individuals = [
-                self.create_individual()
+                self.spawn()
                 for _ in range(individuals)
             ]
         elif isinstance(individuals, list):
             self.individuals = [
-                self.create_individual(hyperparams)
+                self.spawn(hyperparams)
                 for hyperparams in individuals
             ]
         else:
             raise ValueError("'individuals' must be a `int` or a `list`.")
 
-    def create_individual(self, hyperparameters: Optional[Dict[str, Any]] = None) -> Individual:
+    def spawn(self, hyperparameters: Optional[Dict[str, Any]] = None) -> Individual:
+        """Return an individual from this population."""
         if hyperparameters is None:
-            # Random individual
+            # Create a random individual
             hyperparameters = {str(gene): gene() for gene in self.genes}
         else:
             # Hyperparameters passed, check them
@@ -77,16 +73,37 @@ class Population:
             self.x_train,
             self.y_train,
             hyperparameters=hyperparameters,
-            **kwargs
+            **self.kwargs
         )
 
-    def add_individual(self, hyperparameters: Optional[Dict[str, Any]] = None) -> None:
-        self.individuals.append(self.create_individual(hyperparameters))
+    def add_individual(
+        self,
+        individual: Optional[Union[Dict[str, Any], Individual] = None
+    ) -> None:
+        """Add an individual to this population."""
+        if isinstance(individual, dict) or individual is None:
+            self.individuals.append(self.spawn(individual))
+        elif isinstance(individual, Individual):
+            self.individual.append(individual)
+        else:
+            raise ValueError
 
     def get_fittest(self) -> Individual:
         if self.maximize:
             return max(self.individuals, key=operator.methodcaller('evaluate_fitness'))
         return min(self.individuals, key=operator.methodcaller('evaluate_fitness'))
+
+    def duplicate(self) -> Population:
+        """Creates an identical population with no individuals."""
+        return Population(
+            self.genes,
+            self.model,
+            self.x_train,
+            self.y_train,
+            [],  # No individuals
+            self.maximize,
+            **self.kwargs
+        )
 
     def __len__(self) -> int:
         return len(self.individuals)
