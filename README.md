@@ -6,6 +6,7 @@
   - adapt to python3.10+ (f-strings, linting, type hinting)
   - check models, rewrite XGboost and GeneticCNN
   - simplify dataset retrieval for mnist, fashion mnist and others
+  - create CONTRIBUTE.md
 
 
 # gentun: genetic algorithm for hyperparameter tuning
@@ -42,7 +43,7 @@ pip install gentun
 
 ## Usage
 
-### Single machine
+### On a single node
 
 The genetic algorithm can be run on a single computer, as shown in the following example:
 
