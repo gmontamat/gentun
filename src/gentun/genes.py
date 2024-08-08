@@ -1,7 +1,7 @@
 """
 The genes of a population represent
 the hyperparameters we want to
-optimize with the genetic algorithm.
+optimize with the algorithm.
 """
 
 import math
@@ -14,7 +14,7 @@ class Gene:
     """
     A hyperparameter we want to optimize.
     Define its name and distribution from
-    which to sample values.
+    which to sample values when called.
     """
 
     def __init__(self, name: str):

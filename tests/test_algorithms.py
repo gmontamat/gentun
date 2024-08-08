@@ -33,4 +33,4 @@ if __name__ == '__main__':
     )
 
     algorithm = Tournament(population)
-    algorithm.run(10)
+    algorithm.run(100, patience=3)
