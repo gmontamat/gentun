@@ -30,14 +30,12 @@ class Population:
         x_train: Any,
         y_train: Any,
         individuals: Optional[Union[List[Dict[str, Any]], List[Individual], int]] = None,
-        maximize: bool = True,
         **kwargs
     ):
         self.genes = genes
         self.model = model
         self.x_train = x_train
         self.y_train = y_train
-        self.maximize = maximize  # if True, maximize fitness
         # Static parameters used to create model
         self.kwargs = kwargs
         # Create individuals
@@ -86,8 +84,8 @@ class Population:
         else:
             raise ValueError
 
-    def get_fittest(self) -> Individual:
-        if self.maximize:
+    def get_fittest(self, maximize: bool = True) -> Individual:
+        if maximize:
             return max(self.individuals, key=operator.methodcaller('evaluate_fitness'))
         return min(self.individuals, key=operator.methodcaller('evaluate_fitness'))
 
@@ -95,7 +93,11 @@ class Population:
         return self.genes
 
     def duplicate(self, sample_size: int = 0) -> Population:
-        """Creates an identical population with no individuals."""
+        """
+        Creates an identical population. If sample_size > 0,
+        sample random individuals from population without
+        replacement.
+        """
         individuals = random.sample(self.individuals, sample_size)
         return Population(
             self.genes,
@@ -103,12 +105,14 @@ class Population:
             self.x_train,
             self.y_train,
             individuals,
-            self.maximize,
             **self.kwargs
         )
 
     def __len__(self) -> int:
         return len(self.individuals)
+
+    def __iter__(self) -> List[Individual]:
+        return self.individuals
 
     def __getitem__(self, item) -> Individual:
         return self.individuals[item]
