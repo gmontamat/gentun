@@ -2,10 +2,12 @@
 
   - get rid of duality individual/model (simplify classes)
   - use redis instead of rabbitmq
-  - use proper logging instead of prints
   - adapt to python3.10+ (f-strings, linting, type hinting)
-  - check models, rewrite XGboost and GeneticCNN
+  - check models, rewrite XGboost and Genetic CNN
   - simplify dataset retrieval for mnist, fashion mnist and others
+  - fix second generation bug in client
+  - automate cicd workflows (linting and package creation) with github actions
+  - use proper logging instead of prints
   - create CONTRIBUTE.md
 
 
