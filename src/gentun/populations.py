@@ -7,7 +7,7 @@ import itertools
 import operator
 import random
 
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union, Iterator
 
 from .genes import Gene
 from .individuals import Individual
@@ -111,8 +111,8 @@ class Population:
     def __len__(self) -> int:
         return len(self.individuals)
 
-    def __iter__(self) -> List[Individual]:
-        return self.individuals
+    def __iter__(self) -> Iterator[Individual]:
+        return iter(self.individuals)
 
     def __getitem__(self, item) -> Individual:
         return self.individuals[item]
