@@ -128,12 +128,12 @@ class RussianRoulette(GeneticAlgorithm):
         # Get weights for russian roulette
         if maximize:
             weights = [
-                individual.get_fitness()
+                individual.evaluate_fitness()
                 for individual in self.population
             ]
         else:
             weights = [
-                1. / (individual.get_fitness() + eps)
+                1. / (individual.evaluate_fitness() + eps)
                 for individual in self.population
             ]
         min_weight = min(weights)
@@ -142,10 +142,10 @@ class RussianRoulette(GeneticAlgorithm):
             weights = [1. for _ in self.population]
         # Sample with replacement using weights
         new_population = self.population.duplicate()
-        for i in random.choices(range(len(self.population)), weights=weights, k=len(population)):
+        for i in random.choices(range(len(self.population)), weights=weights, k=len(self.population)):
             # We have to make copies of the individuals we
             # select, since they may be selected again.
-            new.population.add_individual(self.population[i].duplicate())
+            new_population.add_individual(self.population[i].duplicate())
         # Crossover and mutation
         for i in range(len(new_population) // 2):
             if random.random() < self.crossover_probability:
