@@ -1,7 +1,7 @@
 """
-Classes which define the individuals of a population with
-its characteristic genes, generation, crossover and
-mutation processes.
+Define an individual with its genes,
+duplication, reproduction, crossover
+and mutation processes.
 """
 from __future__ import annotations
 
@@ -130,6 +130,17 @@ class Individual:
         for gene in self.genes:
             if random.random() < rate:
                 self[str(gene)] = gene()
+
+    def duplicate(self) -> Individual:
+        """Copy individual."""
+        return Individual(
+            self.genes,
+            self.model,
+            self.x_train,
+            self.y_train,
+            hyperparameters=self.hyperparameters.copy(),  # algorithms may sample with replacement
+            **self.kwargs
+        )
 
     def __str__(self):
         """Return hyperparameters which identify the individual."""
