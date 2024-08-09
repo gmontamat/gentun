@@ -149,10 +149,12 @@ class RussianRoulette(GeneticAlgorithm):
         # Crossover and mutation
         for i in range(len(new_population) // 2):
             if random.random() < self.crossover_probability:
-                new_population[i].crossover(new_population[i + 1], self.crossover_rate)
+                new_population[2 * i - 1].crossover(
+                    new_population[2 * i], self.crossover_rate
+                )
             else:
                 if random.random() < self.mutation_probability:
-                    new_population[i].mutate(self.mutation_rate)
+                    new_population[2 * i - 1].mutate(self.mutation_rate)
                 if random.random() < self.mutation_probability:
-                    new_population[i + 1].mutate(self.mutation_rate)
+                    new_population[2 * i].mutate(self.mutation_rate)
         self.population = new_population  # Garbage collection here?
