@@ -132,13 +132,17 @@ class Individual:
                 self[str(gene)] = gene()
 
     def duplicate(self) -> Individual:
-        """Copy individual."""
+        """
+        Create a copy of the individual.
+        Useful when algorithms sample
+        with replacement.
+        """
         return Individual(
             self.genes,
             self.model,
             self.x_train,
             self.y_train,
-            hyperparameters=self.hyperparameters.copy(),  # algorithms may sample with replacement
+            hyperparameters=self.hyperparameters.copy(),
             **self.kwargs
         )
 
@@ -147,6 +151,7 @@ class Individual:
         return pprint.pformat(self.hyperparameters)
 
 
+# TODO: re-implement
 class XgboostIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.5, mutation_rate=0.015,
@@ -210,6 +215,7 @@ class XgboostIndividual(Individual):
         }
 
 
+# TODO: re-implement
 class GeneticCnnIndividual(Individual):
 
     def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
