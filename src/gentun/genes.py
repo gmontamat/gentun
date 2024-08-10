@@ -60,14 +60,35 @@ class RandomLogUniform(Gene):
     Useful for parameters such as lr.
     """
 
-    def __init__(self, name: str, minimum: float, maximum: float, base: float = 10, eps: float = 1e-12):
+    def __init__(
+        self,
+        name: str,
+        minimum: float,
+        maximum: float,
+        base: float = 10,
+        reverse: bool = False,
+        eps: float = 1e-12
+    ):
         super().__init__(name)
         self.minimum = minimum + eps
         self.maximum = maximum
+        self.eps = eps
         self.base = base
+        self.reverse = reverse
 
     def __call__(self) -> float:
-        return self.base ** random.uniform(
-            math.log(self.minimum, self.base),
-            math.log(self.maximum, self.base)
+        if self.reverse:
+            return self.maximum - math.pow(
+                self.base,
+                random.uniform(
+                    math.log(self.eps, self.base),
+                    math.log(self.maximum - self.minimum, self.base)
+                )
+            )
+        return math.pow(
+            self.base,
+            random.uniform(
+                math.log(self.minimum, self.base),
+                math.log(self.maximum, self.base)
+            )
         )
