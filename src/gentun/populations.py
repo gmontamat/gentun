@@ -24,13 +24,13 @@ class Population:
     """
 
     def __init__(
-        self,
-        genes: List[Gene],
-        model: Type[Model],
-        x_train: Any,
-        y_train: Any,
-        individuals: Optional[Union[List[Dict[str, Any]], List[Individual], int]] = None,
-        **kwargs
+            self,
+            genes: List[Gene],
+            model: Type[Model],
+            x_train: Any,
+            y_train: Any,
+            individuals: Optional[Union[List[Dict[str, Any]], List[Individual], int]] = None,
+            **kwargs
     ):
         self.genes = genes
         self.model = model
@@ -73,8 +73,8 @@ class Population:
         )
 
     def add_individual(
-        self,
-        individual: Optional[Union[Dict[str, Any], Individual]] = None
+            self,
+            individual: Optional[Union[Dict[str, Any], Individual]] = None
     ) -> None:
         """Add an individual to this population."""
         if isinstance(individual, dict) or individual is None:

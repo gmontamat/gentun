@@ -17,11 +17,11 @@ class GeneticAlgorithm:
         self.current_generation = 1
 
     def run(
-        self,
-        generations: int,
-        maximize: bool = True,
-        patience: Optional[int] = None,
-        verbose: bool = True
+            self,
+            generations: int,
+            maximize: bool = True,
+            patience: Optional[int] = None,
+            verbose: bool = True
     ) -> None:
         """Run genetic algorithm for generations."""
         if patience:
@@ -67,12 +67,12 @@ class Tournament(GeneticAlgorithm):
     """
 
     def __init__(
-        self,
-        population: Population,
-        tournament_size: int = 5,
-        reproduction_rate: float = 0.5,
-        mutation_rate: float = 0.015,
-        elitism: bool = True
+            self,
+            population: Population,
+            tournament_size: int = 5,
+            reproduction_rate: float = 0.5,
+            mutation_rate: float = 0.015,
+            elitism: bool = True
     ):
         super().__init__(population)
         self.tournament_size = tournament_size
@@ -109,12 +109,12 @@ class RussianRoulette(GeneticAlgorithm):
     """
 
     def __init__(
-        self,
-        population: Population,
-        crossover_probability: float = 0.2,
-        crossover_rate: float = 0.3,
-        mutation_probability: float = 0.8,
-        mutation_rate: float = 0.1
+            self,
+            population: Population,
+            crossover_probability: float = 0.2,
+            crossover_rate: float = 0.3,
+            mutation_probability: float = 0.8,
+            mutation_rate: float = 0.1
     ):
         super().__init__(population)
         self.crossover_probability = crossover_probability

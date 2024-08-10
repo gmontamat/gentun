@@ -61,13 +61,13 @@ class RandomLogUniform(Gene):
     """
 
     def __init__(
-        self,
-        name: str,
-        minimum: float,
-        maximum: float,
-        base: float = 10,
-        reverse: bool = False,
-        eps: float = 1e-12
+            self,
+            name: str,
+            minimum: float,
+            maximum: float,
+            base: float = 10,
+            reverse: bool = False,
+            eps: float = 1e-12
     ):
         super().__init__(name)
         self.minimum = minimum + eps
