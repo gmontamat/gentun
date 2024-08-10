@@ -44,11 +44,12 @@ class Individual:
         init_signature = inspect.signature(_class.__init__)
         params_info = {}
         for param_name, param in init_signature.parameters.items():
-            if param_name == 'self':
+            if param_name == "self":
                 continue
             param_info = {
-                'type': param.annotation if param.annotation != inspect.Parameter.empty else None,
-                'default': param.default if param.default != inspect.Parameter.empty else None
+                "type": param.annotation if param.annotation != inspect.Parameter.empty else None,
+                "default": param.default if param.default != inspect.Parameter.empty else None,
+                "empty_default": param.default == inspect.Parameter.empty
             }
             params_info[param_name] = param_info
         return params_info
@@ -56,19 +57,19 @@ class Individual:
     def validate_params(self) -> None:
         """Check all parameters against model."""
         for param_name, param_info in self.get_init_params(self.model).items():
-            if param_name == 'kwargs':
+            if param_name == "kwargs":
                 continue
-            if ((param_name not in self.hyperparameters.keys() or
-                 param_name not in self.kwargs.keys()) and
-                    param_info["default"] is not None):
-                raise ValueError(f"Missing model parameter: {param_name}")
+            if (param_name not in self.hyperparameters.keys() and
+                    param_name not in self.kwargs.keys() and
+                    param_info["empty_default"]):
+                raise ValueError(f"Missing {self.model} parameter: {param_name}")
             elif param_name in self.hyperparameters.keys():
                 if not isinstance(self.hyperparameters[param_name], param_info["type"]):
                     raise TypeError(
                         f"Type missmatch with hyperparameter `{param_name}`. "
                         f"Expected `{param_info['type']}`, got `{type(self.hyperparameters[param_name])}`."
                     )
-            else:
+            elif param_name in self.kwargs.keys():
                 if not isinstance(self.kwargs[param_name], param_info["type"]):
                     raise TypeError(
                         f"Type missmatch with parameter `{param_name}`. "
