@@ -3,6 +3,7 @@
 Implementation of Genetic CNN on MNIST data.
 This is a replica of the algorithm described
 on section 4.1.1 of the Genetic CNN paper.
+http://arxiv.org/pdf/1703.01513
 """
 
 import os

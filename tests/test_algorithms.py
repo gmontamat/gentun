@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Test the genetic algorithm on a single node
-using the dummy model which sums
+Test the genetic algorithm on a single
+node using the dummy model which sums
 hyperparameter values.
 """
 
@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 if __name__ == '__main__':
-    from gentun.algorithms import Tournament
+    from gentun.algorithms import Tournament, RussianRoulette
     from gentun.genes import RandomChoice
     from gentun.populations import Population
     from gentun.models import DummyModel
@@ -29,8 +29,20 @@ if __name__ == '__main__':
         DummyModel,
         x_train,
         y_train,
+        20
+    )
+
+    algorithm = RussianRoulette(population)
+    algorithm.run(50)
+
+
+    population = Population(
+        genes,
+        DummyModel,
+        x_train,
+        y_train,
         50
     )
 
     algorithm = Tournament(population)
-    algorithm.run(100, patience=3)
+    algorithm.run(20, patience=3)
