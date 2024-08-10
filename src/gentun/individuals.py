@@ -28,7 +28,7 @@ class Individual:
             x_train: Any,
             y_train: Any,
             hyperparameters: Dict[str, Any],
-            **kwargs
+            **kwargs: Any
     ):
         self.genes = genes
         self.model = model

@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 if __name__ == '__main__':
     from gentun.algorithms import Tournament, RussianRoulette
     from gentun.genes import RandomChoice
-    from gentun.populations import Population
     from gentun.models.base import DummyModel
+    from gentun.populations import Population
 
     y_train = None
     x_train = None
@@ -24,6 +24,7 @@ if __name__ == '__main__':
         for i in range(10)
     ]
 
+    # Run russian roulette with a population of 20 for 50 generations
     population = Population(
         genes,
         DummyModel,
@@ -31,11 +32,10 @@ if __name__ == '__main__':
         y_train,
         20
     )
-
     algorithm = RussianRoulette(population)
     algorithm.run(50)
 
-
+    # Run tournament select with a population of 50 for 20 generations
     population = Population(
         genes,
         DummyModel,
@@ -43,6 +43,5 @@ if __name__ == '__main__':
         y_train,
         50
     )
-
     algorithm = Tournament(population)
     algorithm.run(20, patience=3)

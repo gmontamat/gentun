@@ -36,7 +36,7 @@ if __name__ == '__main__':
     ]
     # Static parameters
     kwargs = {
-        "bootter": "gbtree",
+        "booster": "gbtree",
         "objective": "reg:linear",
         "eval_metric": "rmse",
         "kfold": 5,
