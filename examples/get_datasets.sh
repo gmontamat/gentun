@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-echo "Downloading iris dataset..."
-wget http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
+if [ ! -e iris.data ]; then
+    echo "Downloading iris dataset..."
+    wget http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data
+fi
 
-echo "Downloading MNIST dataset..."
-wget --no-check-certificate http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-wget --no-check-certificate http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
-
-echo "Unzipping MNIST dataset..."
-gzip -f -d train-images-idx3-ubyte.gz
-gzip -f -d train-labels-idx1-ubyte.gz
+if [ ! -e mnist.npz ]; then
+    echo "Downloading MNIST dataset..."
+    wget https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz
+fi
 
 echo "Done!"
