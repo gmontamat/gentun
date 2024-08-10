@@ -11,8 +11,8 @@ import random
 
 from typing import Any, Dict, List, Type
 
-from .models import Model
 from .genes import Gene
+from .models.base import Model
 
 
 class Individual:

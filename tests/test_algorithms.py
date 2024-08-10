@@ -14,7 +14,7 @@ if __name__ == '__main__':
     from gentun.algorithms import Tournament, RussianRoulette
     from gentun.genes import RandomChoice
     from gentun.populations import Population
-    from gentun.models import DummyModel
+    from gentun.models.base import DummyModel
 
     y_train = None
     x_train = None

@@ -1,11 +1,9 @@
 """
-Machine Learning models compatible with the Genetic Algorithm
+Base class for the models compatible
+with the genetic algorithms.
 """
 
-# from .xgboost_models import XgboostModel
-# from .keras_models import GeneticCnnModel
-
-from typing import Any, Dict
+from typing import Any
 
 
 class Model:
@@ -15,7 +13,7 @@ class Model:
     n-fold cross-validation to avoid over-fitting.
     """
 
-    def __init__(self, **kwargs: Dict[str, Any]):
+    def __init__(self, **kwargs: Any):
         """Create an instance of your model."""
         self.model_params = kwargs
 
@@ -34,7 +32,7 @@ class DummyModel(Model):
     returns the sum of its hyperparameters.
     """
 
-    def __init__(self, **kwargs: Dict[str, float]):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.fitness = sum([value for key, value in kwargs.items()])
 

@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Type, Union, Iterator
 
 from .genes import Gene
 from .individuals import Individual
-from .models import Model
+from .models.base import Model
 
 
 class Population:
