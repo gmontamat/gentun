@@ -20,8 +20,13 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
     with open(file_name, "r") as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
+            if not row:
+                continue
             features = [float(val) for val in row[:-1]]
-            targets = int(row[-1])
+            targets = (
+                0 if "setosa" in row[-1] else
+                1 if "versicolor" in row[-1] else 2
+            )
             x.append(features)
             y.append(targets)
     x = np.array(x).astype(np.float64)
@@ -54,7 +59,8 @@ if __name__ == '__main__':
         "booster": "gbtree",
         "device": "cpu",
         "objective": "multi:softmax",
-        "num_classes": 3,
+        "metrics": "mlogloss",  # The metric we want to minimize with the algorithm
+        "num_class": 3,
         "nfold": 5,
         "num_boost_round": 5000,
         "early_stopping_rounds": 100,
@@ -63,6 +69,6 @@ if __name__ == '__main__':
     # Fetch training data
     x_train, y_train = parse_iris("iris.data")
     # Run genetic algorithm on a population of 50 for 100 generations
-    population = Population(genes, XGBoostCV, x_train, y_train, 50)
+    population = Population(genes, XGBoostCV, x_train, y_train, 50, **kwargs)
     algorithm = Tournament(population)
     algorithm.run(100, maximize=False)
