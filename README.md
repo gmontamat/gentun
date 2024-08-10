@@ -1,14 +1,17 @@
 # TODO
 
   - get rid of duality individual/model (simplify classes)
-  - use redis instead of rabbitmq
+  - use redis instead of rabbitmq for distributed algorithm
   - adapt to python3.10+ (f-strings, linting, type hinting)
-  - check models, rewrite XGboost and Genetic CNN
+  - rewrite XGboost and Genetic CNN
+  - add a scikit-learn model
   - simplify dataset retrieval for mnist, fashion mnist and others
   - fix second generation bug in client
-  - automate cicd workflows (linting and package creation) with github actions
+  - add public/private key validation for clients
+  - automate cicd workflows (linting, testing, and publishing) with github actions
   - use proper logging instead of prints
   - create CONTRIBUTE.md
+  - add repo badges
 
 
 # gentun: genetic algorithm for hyperparameter tuning
@@ -27,15 +30,23 @@ individuals provided by the server. The server manages the generation of offspri
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN](https://arxiv.org/abs/1703.01513) paper
 
-## TODO: Supported gene encodings
+## :: Supported models
 
-Feel free to submit your own custom models to enhance the project. You can use as an example the
-*XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes.
-So far, this project supports parameter tuning for the following models:
+This project supports hyperparameter tuning for the following models:
 
-- [x] XGBoost regressor and classifier (custom gene encoding)
-- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Keras
+- [x] XGBoost regressor and classifier
+- [ ] Scikit-learn regressor and classifier
+- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Tensorflow
 - [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
+
+## Contributing
+
+Feel free to submit your custom `gentun.models.Model` to enhance the project.
+You can also help us speed up hyperparameter search with your spare GPU time.
+Check [./CONTRIBUTE.md]
+
+You can use as an example the
+*XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes.
 
 ## Installation
 
