@@ -1,18 +1,20 @@
 # TODO
 
-  - get rid of duality individual/model (simplify classes)
-  - use redis instead of rabbitmq for distributed algorithm
-  - adapt to python3.10+ (f-strings, linting, type hinting)
-  - rewrite XGboost and Genetic CNN
-  - add a scikit-learn model
-  - simplify dataset retrieval for mnist, fashion mnist and others
-  - fix second generation bug in client
-  - add public/private key validation for clients
-  - automate cicd workflows (linting, testing, and publishing) with github actions
-  - use proper logging instead of prints
-  - create CONTRIBUTE.md
-  - add repo badges
+Please note there's a major overhaul of this package taking place:
 
+  - [x] Get rid of duality individual-model (simplify classes)
+  - [ ] Rewrite XGBoost and Genetic CNN models
+  - [ ] Add a scikit-learn model
+  - [ ] Use redis instead of rabbitmq for distributed algorithm
+  - [x] Adapt to python3.10+ (f-strings, linting, type hinting)
+  - [x] Simplify dataset retrieval for mnist, iris, fashion-mnist, and others
+  - [ ] Fix second generation bug in client
+  - [ ] Add public/private key validation for clients
+  - [ ] Implement Genetic CNN or other in PyTorch
+  - [ ] Automate CICD workflows (linting, testing, and publishing) with GitHub Actions
+  - [ ] Use proper logging instead of prints
+  - [ ] Create CONTRIBUTE.md
+  - [ ] Add repo badges
 
 # gentun: genetic algorithm for hyperparameter tuning
 
@@ -24,13 +26,13 @@ address this, we employ a client-server approach. Multiple clients can handle mo
 individuals provided by the server. The server manages the generation of offspring through reproduction and mutation.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
-~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/latest/tutorials/param_tuning.html) on Parameter Tuning
+~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/param_tuning.html) on Parameter Tuning
 
 *"[...] The number of possible network structures increases exponentially with the number of layers in the network,
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN](https://arxiv.org/abs/1703.01513) paper
 
-## :: Supported models
+## :construction: Supported models
 
 This project supports hyperparameter tuning for the following models:
 
@@ -39,7 +41,7 @@ This project supports hyperparameter tuning for the following models:
 - [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Tensorflow
 - [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
 
-## Contributing
+## :construction: Contributing
 
 Feel free to submit your custom `gentun.models.Model` to enhance the project.
 You can also help us speed up hyperparameter search with your spare GPU time.
