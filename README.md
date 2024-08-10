@@ -3,7 +3,8 @@
 Please note there's a major overhaul of this package taking place:
 
   - [x] Get rid of duality individual-model (simplify classes)
-  - [ ] Rewrite XGBoost and Genetic CNN models
+  - [x] Rewrite XGBoost
+  - [ ] Rewrite Genetic CNN model
   - [ ] Add a scikit-learn model
   - [ ] Use redis instead of rabbitmq for distributed algorithm
   - [x] Adapt to python3.10+ (f-strings, linting, type hinting)
