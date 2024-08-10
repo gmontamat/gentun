@@ -1,37 +1,56 @@
 """
-Machine Learning models compatible with the Genetic Algorithm implemented using xgboost
+Models implemented with xgboost
 """
 
-# import xgboost as xgb
+import numpy as np
 
-from .models import Model
+from typing import Union, Tuple, Optional
+
+from .base import Model
 
 
-class XgboostModel(Model):
+class XGBoostCV(Model):
 
-    def __init__(self, x_train, y_train, hyperparameters, booster='gbtree', objective='reg:linear',
-                 eval_metric='rmse', kfold=5, num_boost_round=5000, early_stopping_rounds=100):
-        super(XgboostModel, self).__init__(x_train, y_train)
-        self.params = {
-            'booster': booster,
-            'objective': objective,
-            'eval_metric': eval_metric,
-            'silent': 1
-        }
-        self.params.update(hyperparameters)
-        self.eval_metric = eval_metric
-        self.kfold = kfold
-        self.num_boost_round = num_boost_round
-        self.early_stopping_rounds = early_stopping_rounds
-
-    def evaluate(self):
-        """Train model using k-fold cross validation and
-        return mean value of validation metric.
+    def __init__(
+            self,
+            num_boost_round: int = 10,
+            nfold: int = 3,
+            stratified: bool = False,
+            metrics: Union[str, Tuple[str, ...]] = "",
+            early_stopping_rounds: Optional[int] = None,
+            **kwargs):
         """
-        d_train = xgb.DMatrix(self.x_train, label=self.y_train)
-        # xgb calls its k-fold cross-validation parameter 'nfold'
+        Booster params reference:
+        - https://xgboost.readthedocs.io/en/stable/parameter.html#general-parameters
+        - https://xgboost.readthedocs.io/en/stable/parameter.html#parameters-for-tree-booster
+        - https://xgboost.readthedocs.io/en/stable/parameter.html#learning-task-parameters
+        """
+        super().__init__()
+        # Cross-validation params
+        self.num_boost_round = num_boost_round
+        self.nfold = nfold
+        self.stratified = stratified
+        self.metrics = metrics
+        self.early_stopping_rounds = early_stopping_rounds
+        self.kwargs = kwargs  # Booster params
+        if "verbosity" not in self.kwargs:
+            self.kwargs["verbosity"] = 0
+
+    def evaluate(self, x_train: np.ndarray, y_train: np.ndarray):
+        """
+        Use xgboost cross-validation with given parameters.
+        API reference:
+            - https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.cv
+        """
+        import xgboost as xgb  # We import here so that xgboost is optional
+        d_train = xgb.DMatrix(x_train, label=y_train)
         cv_result = xgb.cv(
-            self.params, d_train, num_boost_round=self.num_boost_round,
-            early_stopping_rounds=self.early_stopping_rounds, nfold=self.kfold
+            self.kwargs,
+            d_train,
+            num_boost_round=self.num_boost_round,
+            nfold=self.nfold,  # the "k" in k-fold cross-validation
+            stratified=self.stratified,
+            metrics=self.metrics,
+            early_stopping_rounds=self.early_stopping_rounds,
         )
-        return cv_result['test-{}-mean'.format(self.eval_metric)][-1]
+        return cv_result[f'test-{self.metrics[-1]}-mean'][-1]
