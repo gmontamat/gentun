@@ -114,7 +114,7 @@ class Population:
     def __iter__(self) -> Iterator[Individual]:
         return iter(self.individuals)
 
-    def __getitem__(self, item) -> Individual:
+    def __getitem__(self, item: Union[int, slice]) -> Union[Individual, List[Individual]]:
         return self.individuals[item]
 
 
