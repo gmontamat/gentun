@@ -1,6 +1,7 @@
 """
 Machine Learning models compatible with the Genetic Algorithm implemented using Keras
 """
+import numpy as np
 
 # import numpy as np
 
@@ -10,17 +11,31 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 # from tensorflow.keras.models import Model
 # from tensorflow.keras.optimizers import Adam
 # from tensorflow.keras.utils import plot_model
+from typing import Tuple
 
 from .base import Model
 
 # K.set_image_data_format('channels_last')
 
 
-class GeneticCnnModel(Model):
+class GeneticCNN(Model):
 
-    def __init__(self, x_train, y_train, genes, nodes, input_shape, kernels_per_layer, kernel_sizes, dense_units,
-                 dropout_probability, classes, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
-        super(GeneticCnnModel, self).__init__(x_train, y_train)
+    def __init__(
+            self,
+            genes,
+            nodes: Tuple[int, ...],
+            input_shape: ,
+            kernels_per_layer,
+            kernel_sizes,
+            dense_units,
+            dropout_probability,
+            classes,
+            kfold=5,
+            epochs=(3,),
+            learning_rate=(1e-3,),
+            batch_size=32
+    ):
+        super().__init__()
         self.model = self.build_model(
             genes, nodes, input_shape, kernels_per_layer, kernel_sizes,
             dense_units, dropout_probability, classes
@@ -123,8 +138,9 @@ class GeneticCnnModel(Model):
             if hasattr(layer, 'kernel_initializer'):
                 layer.kernel.initializer.run(session=session)
 
-    def cross_validate(self):
-        """Train model using k-fold cross validation and
+    def evaluate(self, x_train: np.ndarray, y_train: np.ndarray) -> float:
+        """
+        Train model using k-fold cross validation and
         return mean value of the validation accuracy.
         """
         acc = .0

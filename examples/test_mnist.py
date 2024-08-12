@@ -31,6 +31,7 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
     # One-hot encode the output
     y = np.zeros((n, 10))
     y[np.arange(n), y_raw] = 1
+    # TODO: stratified selection or random (check paper)?
     selection = random.sample(range(n), sample_size)
     return x[selection], y[selection]
 
@@ -38,29 +39,36 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
 if __name__ == '__main__':
     from gentun.algorithms import RussianRoulette
     from gentun.genes import Binary
-    # from gentun.models.tensorflow import GeneticCnn
+    from gentun.models.tensorflow import GeneticCNN
     from gentun.populations import Population
 
-    x_train, y_train = load_mnist("mnist.npz")
-
-    # hyperparameters
-    nodes = (3, 5)
-    genes = [
-        Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2))
-        for i, K_s in enumerate(nodes)
-    ]
-    # static parameters
+    # Genetic CNN static parameters
     kwargs = {
+        "nodes": (3, 5),
+        "input_shape": (28, 28, 1),
+        "kernels_per_layer": (20, 50),
+        "kernel_sizes": ((5, 5), (5, 5)),
+        "dense_units": 500,
+        "dropout_probability": 0.5,
+        "classes": 10,
         "kfold": 5,
         "epochs": (20, 4, 1),
         "learning_rate": (1e-3, 1e-4, 1e-5),
         "batch_size": 32,
     }
-    # pop = Population(
-    #     GeneticCnnIndividual, x_train, y_train, size=20, crossover_rate=0.3, mutation_rate=0.1,
-    #     additional_parameters={
-    #         'kfold': 5, 'epochs': (20, 4, 1), 'learning_rate': (1e-3, 1e-4, 1e-5), 'batch_size': 32
-    #     }, maximize=True
-    # )
-    # ga = RussianRouletteGA(pop, crossover_probability=0.2, mutation_probability=0.8)
-    # ga.run(50)
+    # Genetic CNN hyperparameters
+    genes = [
+        Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2))
+        for i, K_s in enumerate(kwargs["nodes"])
+    ]
+
+    x_train, y_train = load_mnist("mnist.npz")
+    population = Population(genes, GeneticCNN, x_train, y_train, 20, **kwargs)
+    algorithm = RussianRoulette(
+        population,
+        crossover_probability=0.2,
+        crossover_rate=0.3,
+        mutation_probability=0.8,
+        mutation_rate=0.1,
+    )
+    algorithm.run(50)
