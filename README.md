@@ -6,6 +6,7 @@ Please note there's a major overhaul of this package taking place:
   - [x] Rewrite XGBoost
   - [ ] Rewrite Genetic CNN model
   - [ ] Add a scikit-learn model
+  - [ ] Add module section with predefined parameters
   - [ ] Use redis instead of rabbitmq for distributed algorithm
   - [x] Adapt to python3.10+ (f-strings, linting, type hinting)
   - [x] Simplify dataset retrieval for mnist, iris, fashion-mnist, and others
