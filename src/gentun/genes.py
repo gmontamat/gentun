@@ -27,9 +27,20 @@ class Gene:
         """Return a sample value following the gene specification."""
         raise NotImplementedError
 
+    def mutate(self, value: Any, rate: float):
+        """
+        Mutate a gene. The default behavior is
+        to re-sample with probability 'rate'.
+        """
+        if random.random() < rate:
+            return self.__call__()
+        return value
+
 
 class RandomChoice(Gene):
-    """Get random value from a list."""
+    """
+    Get random value from a list.
+    """
 
     def __init__(self, name: str, values: List[Any]):
         super().__init__(name)
@@ -92,3 +103,20 @@ class RandomLogUniform(Gene):
                 math.log(self.maximum, self.base)
             )
         )
+
+
+class Binary(Gene):
+    """
+    Gene used in Genetic CNN paper
+    """
+
+    def __init__(self, name: str, length: int):
+        super().__init__(name)
+        self.length = length
+
+    def __call__(self) -> str:
+        return "".join(["0" if random.random() < 0.5 else "1" for _ in range(self.length)])
+
+    def mutate(self, value: str, rate: float) -> str:
+        """Toggle each bit with probability 'rate'."""
+        return "".join([str(int(int(bit) != (random.random() < rate))) for bit in value])
