@@ -3,17 +3,22 @@ Models implemented in tensorflow
 """
 
 import numpy as np
+import os
+import tensorflow.compat.v1 as tf
 
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
 from tensorflow.python.keras.models import Model as KerasModel
 from tensorflow.python.keras.optimizer_v1 import Adam
-from tensorflow.python.keras.utils.vis_utils import plot_model
+from tensorflow.keras.utils import plot_model
 from typing import List, Tuple, Union
 
 from .base import Model
 
+# Compatibility with TF1
+tf.disable_eager_execution()
+tf.experimental.output_all_intermediates(True)
 K.set_image_data_format("channels_last")
 
 
@@ -42,7 +47,7 @@ class GeneticCNN(Model):
         connections = []
         for i in range(len(nodes)):
             connections.append(kwargs[f"S_{i + 1}"])
-        self.name = "-".join(connection for connection in connections)
+        self.name = f"GeNet__{'-'.join(connection for connection in connections)}"
         self.model = self.build_model(
             connections,
             nodes,
@@ -65,8 +70,13 @@ class GeneticCNN(Model):
         self.learning_rate = learning_rate
 
     def plot(self):
-        """Draw model to validate gene-to-DAG."""
-        plot_model(self.model, to_file=f"{self.name}.png")
+        """
+        Draw model to validate gene-to-DAG.
+        Install graphviz (apt install graphviz) to use.
+        """
+        if not os.path.isdir("models"):
+            os.mkdir("models")
+        plot_model(self.model, to_file=f"models/{self.name}.png", show_shapes=True, show_layer_names=True, expand_nested=True)
 
     @staticmethod
     def build_dag(x, nodes, connections, kernels):
@@ -148,7 +158,7 @@ class GeneticCNN(Model):
         x = Dense(dense_units, activation="relu")(x)
         x = Dropout(dropout_probability)(x)
         x = Dense(num_classes, activation="softmax")(x)
-        return KerasModel(inputs=x_input, outputs=x, name=f"GeNet_{self.name}")
+        return KerasModel(inputs=x_input, outputs=x, name=f"{self.name}")
 
     def reset_weights(self):
         """Initialize model weights."""
