@@ -9,7 +9,7 @@ import inspect
 import pprint
 import random
 
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Union
 
 from .genes import Gene
 from .models.base import Model
@@ -59,21 +59,31 @@ class Individual:
         for param_name, param_info in self.get_init_params(self.model).items():
             if param_name == "kwargs":
                 continue
+            try:
+                param_type = param_info["type"].__origin__
+            except AttributeError:
+                param_type = param_info["type"]
             if (param_name not in self.hyperparameters.keys() and
                     param_name not in self.kwargs.keys() and
                     param_info["empty_default"]):
                 raise ValueError(f"Missing {self.model} parameter: {param_name}")
             elif param_name in self.hyperparameters.keys():
-                if not isinstance(self.hyperparameters[param_name], param_info["type"]):
+                if param_type is Union:
+                    # print(f"Warning: cannot check type for {param_name} with type `Union`.")
+                    pass
+                elif not isinstance(self.hyperparameters[param_name], param_type):
                     raise TypeError(
                         f"Type missmatch with hyperparameter `{param_name}`. "
-                        f"Expected `{param_info['type']}`, got `{type(self.hyperparameters[param_name])}`."
+                        f"Expected `{param_type}`, got `{type(self.hyperparameters[param_name])}`."
                     )
             elif param_name in self.kwargs.keys():
-                if not isinstance(self.kwargs[param_name], param_info["type"]):
+                if param_type is Union:
+                    # print(f"Warning: cannot check type for {param_name} with type `Union`.")
+                    pass
+                elif not isinstance(self.kwargs[param_name], param_type):
                     raise TypeError(
                         f"Type missmatch with parameter `{param_name}`. "
-                        f"Expected `{param_info['type']}`, got `{type(self.kwargs[param_name])}`."
+                        f"Expected `{param_type}`, got `{type(self.kwargs[param_name])}`."
                     )
 
     def evaluate_fitness(self) -> float:
