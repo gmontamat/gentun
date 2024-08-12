@@ -8,8 +8,8 @@ import tensorflow.compat.v1 as tf
 
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
-from tensorflow.python.keras.models import Model as KerasModel
+from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
+from tensorflow.keras.models import Model as KerasModel
 from tensorflow.python.keras.optimizer_v1 import Adam
 from tensorflow.keras.utils import plot_model
 from typing import List, Tuple, Union
@@ -17,8 +17,8 @@ from typing import List, Tuple, Union
 from .base import Model
 
 # Compatibility with TF1
-tf.disable_eager_execution()
-tf.experimental.output_all_intermediates(True)
+#tf.disable_eager_execution()
+#tf.experimental.output_all_intermediates(True)
 K.set_image_data_format("channels_last")
 
 
@@ -76,7 +76,10 @@ class GeneticCNN(Model):
         """
         if not os.path.isdir("models"):
             os.mkdir("models")
-        plot_model(self.model, to_file=f"models/{self.name}.png", show_shapes=True, show_layer_names=True, expand_nested=True)
+        plot_model(
+            self.model, to_file=f"models/{self.name}.png",
+            show_shapes=True, show_layer_names=True, expand_nested=True
+        )
 
     @staticmethod
     def build_dag(x, nodes, connections, kernels):
