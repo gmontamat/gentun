@@ -55,6 +55,7 @@ if __name__ == '__main__':
         "epochs": (20, 4, 1),
         "learning_rate": (1e-3, 1e-4, 1e-5),
         "batch_size": 32,
+        "plot": True
     }
     # Genetic CNN hyperparameters
     genes = [
@@ -66,9 +67,9 @@ if __name__ == '__main__':
     population = Population(genes, GeneticCNN, x_train, y_train, 20, **kwargs)
     algorithm = RussianRoulette(
         population,
-        crossover_probability=0.2,
-        crossover_rate=0.3,
-        mutation_probability=0.8,
-        mutation_rate=0.1,
+        crossover_probability=0.2,  # p_C
+        crossover_rate=0.3,         # q_C
+        mutation_probability=0.8,   # p_M
+        mutation_rate=0.1,          # q_M
     )
     algorithm.run(50)
