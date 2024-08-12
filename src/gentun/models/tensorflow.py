@@ -3,7 +3,7 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 """
 
 # import numpy as np
-#
+
 # from sklearn.model_selection import StratifiedKFold
 # from tensorflow.keras import backend as K
 # from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
@@ -11,7 +11,7 @@ Machine Learning models compatible with the Genetic Algorithm implemented using 
 # from tensorflow.keras.optimizers import Adam
 # from tensorflow.keras.utils import plot_model
 
-from .models import Model
+from .base import Model
 
 # K.set_image_data_format('channels_last')
 
