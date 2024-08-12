@@ -22,27 +22,40 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
     and normalize MNIST dataset.
     """
     mnist = np.load(file_name)
-    x_train = mnist["x_train"].reshape(mnist["x_train"].shape[:-2] + (-1,))
-    y_train = mnist["y_train"]
-    n = x_train.shape[0]
+    x = mnist["x_train"].reshape(mnist["x_train"].shape[:-2] + (-1,))
+    y_raw = mnist["y_train"]
+    n = x.shape[0]
     # Normalize and reshape input
-    x_train = x_train / 255
-    x_train = x_train.reshape(n, 28, 28, 1)
+    x = x / 255
+    x = x.reshape(n, 28, 28, 1)
     # One-hot encode the output
-    y_onehot = np.zeros((n, 10))
-    y_onehot[np.arange(n), y_train] = 1
+    y = np.zeros((n, 10))
+    y[np.arange(n), y_raw] = 1
     selection = random.sample(range(n), sample_size)
-    return x_train[selection], y_onehot[selection]
+    return x[selection], y[selection]
 
 
 if __name__ == '__main__':
     from gentun.algorithms import RussianRoulette
-    from gentun.genes import RandomChoice, RandomUniform, RandomLogUniform
+    from gentun.genes import Binary
     # from gentun.models.tensorflow import GeneticCnn
     from gentun.populations import Population
 
-    x, y = load_mnist("mnist.npz")
+    x_train, y_train = load_mnist("mnist.npz")
 
+    # hyperparameters
+    nodes = (3, 5)
+    genes = [
+        Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2))
+        for i, K_s in enumerate(nodes)
+    ]
+    # static parameters
+    kwargs = {
+        "kfold": 5,
+        "epochs": (20, 4, 1),
+        "learning_rate": (1e-3, 1e-4, 1e-5),
+        "batch_size": 32,
+    }
     # pop = Population(
     #     GeneticCnnIndividual, x_train, y_train, size=20, crossover_rate=0.3, mutation_rate=0.1,
     #     additional_parameters={
