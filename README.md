@@ -1,22 +1,24 @@
+from sklearn.datasets import load_iris
+
 # TODO
 
 Please note there's a major overhaul of this package taking place:
 
-  - [x] Get rid of duality individual-model (simplify classes)
-  - [x] Rewrite XGBoost
-  - [ ] Rewrite Genetic CNN model
-  - [ ] Add a scikit-learn model
-  - [ ] Add module section with predefined parameters
-  - [ ] Use redis instead of rabbitmq for distributed algorithm
-  - [x] Adapt to python3.10+ (f-strings, linting, type hinting)
-  - [x] Simplify dataset retrieval for mnist, iris, fashion-mnist, and others
-  - [ ] Fix second generation bug in client
-  - [ ] Add public/private key validation for clients
-  - [ ] Implement Genetic CNN or other in PyTorch
-  - [ ] Automate CICD workflows (linting, testing, and publishing) with GitHub Actions
-  - [ ] Use proper logging instead of prints
-  - [ ] Create CONTRIBUTE.md
-  - [ ] Add repo badges
+- [x] Get rid of duality individual-model (simplify classes)
+- [x] Rewrite XGBoost
+- [x] Rewrite Genetic CNN model
+- [ ] Add a scikit-learn model
+- [ ] Add module section with predefined parameters
+- [ ] Use redis instead of rabbitmq for distributed algorithm
+- [x] Adapt to python3.10+ (f-strings, linting, type hinting)
+- [x] Simplify dataset retrieval for mnist, iris, fashion-mnist, and others
+- [ ] Fix second generation bug in client
+- [ ] Add public/private key validation for clients
+- [ ] Implement Genetic CNN or other in PyTorch
+- [ ] Automate CICD workflows (linting, testing, and publishing) with GitHub Actions
+- [ ] Use proper logging instead of prints
+- [ ] Create CONTRIBUTE.md
+- [ ] Add repo badges
 
 # gentun: genetic algorithm for hyperparameter tuning
 
@@ -62,41 +64,68 @@ pip install gentun
 
 ### On a single node
 
-The genetic algorithm can be run on a single computer, as shown in the following example:
+The most basic way to run the algorithm is in a single machine, as shown in the following example where we use it to
+find the optimal hyperparameters of an `xgboost` model. First, we download a sample dataset:
 
 ```python
-from sklearn.datasets import fetch_california_housing
-from gentun import GeneticAlgorithm, Population, XgboostIndividual
-```
+from sklearn.datasets import load_iris
 
-```python
-# Load features and response variable from train set
-data = fetch_california_housing()
-y_train = data.target
+data = load_iris()
 x_train = data.data
+y_train = data.target
 ```
+
+Next, we need to define the hyperparameters we want to optimize:
 
 ```python
-# Generate a random population
-pop = Population(
-    XgboostIndividual, x_train, y_train, size=100,
-    additional_parameters={'kfold': 3}, maximize=False
-)
-# Run the algorithm for ten generations
-ga = GeneticAlgorithm(pop)
-ga.run(10)
+from gentun.genes import RandomChoice, RandomLogUniform
+
+genes = [
+    RandomLogUniform("learning_rate", minimum=0.001, maximum=0.1, base=10),
+    RandomChoice("max_depth", range(3, 11)),
+    RandomChoice("min_child_weight", range(11)),
+]
 ```
 
-As seen above, once the individual is defined and its encoding implemented, experimenting with the genetic algorithm is
-simple. See for example how easily can the GeneticCNN algorithm be
-[implemented on the MNIST handwritten digits set](tests/test_mnist.py).
+We are using the `gentun.models.xgboost.XGBoostCV` model, which performs k-fold cross validation with available train
+data and returns an average metric over the folds. Thus, we need to define some static parameters which are shared
+across the population over all generations:
+
+```python
+kwargs = {
+    "booster": "gbtree",
+    "objective": "multi:softmax",
+    "metrics": "mlogloss",  # The metric we want to minimize with the algorithm
+    "num_class": 3,
+    "nfold": 5,
+    "num_boost_round": 5000,
+    "early_stopping_rounds": 100,
+}
+```
+
+Finally, we are ready to run our search:
+
+```python
+from gentun.algorithms import Tournament
+from gentun.models.xgboost import XGBoostCV
+from gentun.populations import Population
+
+# Run the genetic algorithm with a population of 50 for 100 generations
+population = Population(genes, XGBoostCV, x_train, y_train, 50, **kwargs)
+algorithm = Tournament(population)
+algorithm.run(100, maximize=False)
+```
+
+As shown above, when the model and genes are implemented, experimenting with the genetic algorithm is simple. See for
+example how easily can the Genetic CNN paper
+be [implemented on the MNIST handwritten digits set](examples/geneticcnn_mnist.py).
 
 Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
-follows the convention. Nonetheless, to make the *Population* class and its variants more flexible, you can set the
-parameter `maximize=False` to override this behavior and minimize your fitness metric (so as to minimize the loss, for
-example *rmse* or *binary crossentropy*).
+follows this convention. Nonetheless, to make the algorithm more flexible, you can use the `algorithm.run()` parameter
+`maximize=False` to override this behavior and minimize your fitness metric (to minimize the loss, for example *rmse* or
+*binary crossentropy*).
 
-### Custom individuals and grid search
+#### :construction: Custom individuals
 
 It's usually convenient to initialize the genetic algorithm with some known individuals instead of a random population.
 For example, you can add custom individuals to the population before running the genetic algorithm if you already have
@@ -117,6 +146,8 @@ pop = Population(
 )
 pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, kfold=3))
 ```
+
+#### :construction: Grid search
 
 Moreover, you can create a grid by defining which values you want to evaluate per gene and the *GridPopulation* class
 will generate all possible gene combinations and assign each of them to an individual. This way of generating an initial
