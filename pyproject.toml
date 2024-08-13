@@ -1,11 +1,11 @@
-#[build-system]
-#requires = ["flit_core >=2,<4"]
-#build-backend = "flit_core.buildapi"
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 name =  "gentun"
 authors = [
-    {name = "Gustavo Montamat", email = ""},
+    {name = "Gustavo Montamat", email = "[redacted]@gmail.com"},
 ]
 description = "Hyperparameter tuning for machine learning models using a distributed genetic algorithm"
 readme = "README.md"
@@ -24,17 +24,17 @@ requires-python = ">=3.8.1"
 dynamic = ["version"]
 dependencies = [
     "redis",
+    "scikit-learn",
+    "numpy<2"
 ]
 
 [project.optional-dependencies]
-tensorflow = [
-    "tensorflow>=2.0.0"
-]
 pytorch = [
     "torch"
 ]
-xgboost = [
-    "xgboost"
+tensorflow = [
+    "tensorflow>=2.0.0",
+    "pydot"
 ]
 test = [
     "bandit[toml]==1.7.5",
@@ -55,20 +55,23 @@ test = [
     "pytest-github-actions-annotate-failures",
     "shellcheck-py==0.9.0.2"
 ]
+xgboost = [
+    "xgboost"
+]
 
 [project.urls]
 Documentation = "https://github.com/gmontamat/gentun/tree/main#readme"
 Source = "https://github.com/gmontamat/gentun"
 Tracker = "https://github.com/gmontamat/gentun/issues"
 
-#[tool.flit.module]
-#name = "python_package"
+[tool.flit.module]
+name = "gentun"
 
-#[tool.bandit]
-#exclude_dirs = ["build","dist","tests","scripts"]
-#number = 4
-#recursive = true
-#targets = "src"
+[tool.bandit]
+exclude_dirs = ["build","dist","tests","scripts"]
+number = 4
+recursive = true
+targets = "src"
 
 [tool.black]
 line-length = 120
