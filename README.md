@@ -1,5 +1,3 @@
-from sklearn.datasets import load_iris
-
 # TODO
 
 Please note there's a major overhaul of this package taking place:
