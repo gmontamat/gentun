@@ -4,21 +4,18 @@ Models implemented in tensorflow
 
 import numpy as np
 import os
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 from sklearn.model_selection import StratifiedKFold
-from tensorflow.python.keras import backend as K
+from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
 from tensorflow.keras.models import Model as KerasModel
-from tensorflow.python.keras.optimizer_v1 import Adam
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
 from typing import List, Tuple, Union
 
 from .base import Model
 
-# Compatibility with TF1
-#tf.disable_eager_execution()
-#tf.experimental.output_all_intermediates(True)
 K.set_image_data_format("channels_last")
 
 
@@ -62,12 +59,9 @@ class GeneticCNN(Model):
             self.plot()
         self.kfold = kfold
         self.batch_size = batch_size
-        assert (
-                (isinstance(epochs, int) and isinstance(learning_rate, int)) or
-                (len(epochs) == len(learning_rate))
-        ), "`epochs` and `learning_rate` should have the same dimensions."
-        self.epochs = epochs
-        self.learning_rate = learning_rate
+        self.epochs = (epochs,) if isinstance(epochs, int) else epochs
+        self.learning_rate = (learning_rate,) if isinstance(learning_rate, float) else learning_rate
+        assert len(epochs) == len(learning_rate), "`epochs` and `learning_rate` should have the same dimensions."
 
     def plot(self):
         """
@@ -165,10 +159,12 @@ class GeneticCNN(Model):
 
     def reset_weights(self):
         """Initialize model weights."""
-        session = K.get_session()
         for layer in self.model.layers:
-            if hasattr(layer, "kernel_initializer"):
-                layer.kernel.initializer.run(session=session)
+            if hasattr(layer, "kernel_initializer") and hasattr(layer, "bias_initializer"):
+                layer.kernel.assign(layer.kernel_initializer(tf.shape(layer.kernel)))
+                layer.bias.assign(layer.bias_initializer(tf.shape(layer.bias)))
+            elif hasattr(layer, "kernel_initializer"):
+                layer.kernel.assign(layer.kernel_initializer(tf.shape(layer.kernel)))
 
     def evaluate(self, x_train: np.ndarray, y_train: np.ndarray) -> float:
         """
@@ -182,7 +178,11 @@ class GeneticCNN(Model):
             self.reset_weights()
             for epochs, learning_rate in zip(self.epochs, self.learning_rate):
                 print(f"Training {epochs} epochs with learning rate {learning_rate}")
-                self.model.compile(optimizer=Adam(lr=learning_rate), loss="binary_crossentropy", metrics=["accuracy"])
+                self.model.compile(
+                    optimizer=Adam(learning_rate=learning_rate),
+                    loss="binary_crossentropy",
+                    metrics=["accuracy"]
+                )
                 self.model.fit(
                     x_train[train], y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1
                 )
