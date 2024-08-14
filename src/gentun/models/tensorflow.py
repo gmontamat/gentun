@@ -21,7 +21,7 @@ K.set_image_data_format("channels_last")
 
 class GeneticCNN(Model):
     """
-    Implement Genetic CNN
+    Implement Genetic CNN model.
     http://arxiv.org/pdf/1703.01513
     """
 
