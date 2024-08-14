@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name =  "gentun"
 authors = [
-    {name = "Gustavo Montamat", email = "[redacted]@gmail.com"},
+    {name = "Gustavo Montamat", email = "redacted@gmail.com"},
 ]
 description = "Hyperparameter tuning for machine learning models using a distributed genetic algorithm"
 readme = "README.md"
@@ -29,9 +29,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-pytorch = [
-    "torch"
-]
 tensorflow = [
     "tensorflow>=2.0.0",
     "pydot"
@@ -76,6 +73,9 @@ targets = "src"
 [tool.black]
 line-length = 120
 fast = true
+
+[tool.isort]
+line_length = 120
 
 [tool.coverage.run]
 branch = true
