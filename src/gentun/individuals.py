@@ -8,7 +8,6 @@ from __future__ import annotations
 import inspect
 import pprint
 import random
-
 from typing import Any, Dict, List, Type, Union
 
 from .genes import Gene
@@ -22,13 +21,13 @@ class Individual:
     """
 
     def __init__(
-            self,
-            genes: List[Gene],
-            model: Type[Model],
-            x_train: Any,
-            y_train: Any,
-            hyperparameters: Dict[str, Any],
-            **kwargs: Any
+        self,
+        genes: List[Gene],
+        model: Type[Model],
+        x_train: Any,
+        y_train: Any,
+        hyperparameters: Dict[str, Any],
+        **kwargs: Any,
     ):
         self.genes = genes
         self.model = model
@@ -49,7 +48,7 @@ class Individual:
             param_info = {
                 "type": param.annotation if param.annotation != inspect.Parameter.empty else None,
                 "default": param.default if param.default != inspect.Parameter.empty else None,
-                "empty_default": param.default == inspect.Parameter.empty
+                "empty_default": param.default == inspect.Parameter.empty,
             }
             params_info[param_name] = param_info
         return params_info
@@ -63,9 +62,11 @@ class Individual:
                 param_type = param_info["type"].__origin__
             except AttributeError:
                 param_type = param_info["type"]
-            if (param_name not in self.hyperparameters.keys() and
-                    param_name not in self.kwargs.keys() and
-                    param_info["empty_default"]):
+            if (
+                param_name not in self.hyperparameters.keys()
+                and param_name not in self.kwargs.keys()
+                and param_info["empty_default"]
+            ):
                 raise ValueError(f"Missing {self.model} parameter: {param_name}")
             elif param_name in self.hyperparameters.keys():
                 if param_type is Union:
@@ -90,9 +91,7 @@ class Individual:
         """Create instance of model and evaluate."""
         if self.fitness is not None:
             return self.fitness
-        self.fitness = self.model(
-            **{**self.hyperparameters, **self.kwargs}
-        ).evaluate(self.x_train, self.y_train)
+        self.fitness = self.model(**{**self.hyperparameters, **self.kwargs}).evaluate(self.x_train, self.y_train)
         return self.fitness
 
     def __getitem__(self, key: str) -> Any:
@@ -105,7 +104,7 @@ class Individual:
             self.fitness = None
         self.hyperparameters[key] = value
 
-    def reproduce(self, partner: Individual, rate: float = 1.) -> Individual:
+    def reproduce(self, partner: Individual, rate: float = 1.0) -> Individual:
         """
         Mix genes from self and partner at random
         and return a new instance of an individual.
@@ -117,16 +116,9 @@ class Individual:
                 child[param] = partner[param]
             else:
                 child[param] = value
-        return Individual(
-            self.genes,
-            self.model,
-            self.x_train,
-            self.y_train,
-            hyperparameters=child,
-            **self.kwargs
-        )
+        return Individual(self.genes, self.model, self.x_train, self.y_train, hyperparameters=child, **self.kwargs)
 
-    def crossover(self, partner: Individual, rate: float = 1.) -> None:
+    def crossover(self, partner: Individual, rate: float = 1.0) -> None:
         """
         Swap genes from self and partner at random.
         Mutates each parent.
@@ -137,7 +129,7 @@ class Individual:
                 partner[param] = value
                 self[param] = partner_value
 
-    def mutate(self, rate: float = 1.) -> None:
+    def mutate(self, rate: float = 1.0) -> None:
         """Mutate individual."""
         for gene in self.genes:
             self[str(gene)] = gene.mutate(self[str(gene)], rate)
@@ -154,78 +146,9 @@ class Individual:
             self.x_train,
             self.y_train,
             hyperparameters=self.hyperparameters.copy(),
-            **self.kwargs
+            **self.kwargs,
         )
 
     def __str__(self):
         """Return hyperparameters which identify the individual."""
         return pprint.pformat(self.hyperparameters)
-
-
-# TODO: re-implement
-class GeneticCnnIndividual(Individual):
-
-    def __init__(self, x_train, y_train, genome=None, genes=None, crossover_rate=0.3, mutation_rate=0.1, nodes=(3, 5),
-                 input_shape=(28, 28, 1), kernels_per_layer=(20, 50), kernel_sizes=((5, 5), (5, 5)), dense_units=500,
-                 dropout_probability=0.5, classes=10, kfold=5, epochs=(3,), learning_rate=(1e-3,), batch_size=32):
-        if genome is None:
-            genome = {'S_{}'.format(i + 1): int(K_s * (K_s - 1) / 2) for i, K_s in enumerate(nodes)}
-        if genes is None:
-            genes = self.generate_random_genes(genome)
-        # Set individual's attributes
-        super(GeneticCnnIndividual, self).__init__(x_train, y_train, genome, genes, crossover_rate, mutation_rate)
-        # Set additional parameters which are not tuned
-        assert len(nodes) == len(kernels_per_layer) and len(kernels_per_layer) == len(kernel_sizes)
-        self.nodes = nodes
-        self.input_shape = input_shape
-        self.kernels_per_layer = kernels_per_layer
-        self.kernel_sizes = kernel_sizes
-        self.dense_units = dense_units
-        self.dropout_probability = dropout_probability
-        self.classes = classes
-        self.kfold = kfold
-        self.epochs = epochs
-        self.learning_rate = learning_rate
-        self.batch_size = batch_size
-
-    @staticmethod
-    def generate_random_genes(genome):
-        """Create and return random genes."""
-        genes = {}
-        for name, connections in genome.items():
-            genes[name] = ''.join([random.choice(['0', '1']) for _ in range(connections)])
-        return genes
-
-    def evaluate_fitness(self):
-        """Create model and perform cross-validation."""
-        model = GeneticCnnModel(
-            self.x_train, self.y_train, self.genes, self.nodes, self.input_shape, self.kernels_per_layer,
-            self.kernel_sizes, self.dense_units, self.dropout_probability, self.classes,
-            self.kfold, self.epochs, self.learning_rate, self.batch_size
-        )
-        self.fitness = model.cross_validate()
-
-    def get_additional_parameters(self):
-        return {
-            'nodes': self.nodes,
-            'input_shape': self.input_shape,
-            'kernels_per_layer': self.kernels_per_layer,
-            'kernel_sizes': self.kernel_sizes,
-            'dense_units': self.dense_units,
-            'dropout_probability': self.dropout_probability,
-            'classes': self.classes,
-            'kfold': self.kfold,
-            'epochs': self.epochs,
-            'learning_rate': self.learning_rate,
-            'batch_size': self.batch_size
-        }
-
-    def mutate(self):
-        """Mutate instance's genes with a certain probability."""
-        for name, connections in self.get_genes().items():
-            new_connections = ''.join([
-                str(int(int(byte) != (random.random() < self.mutation_rate))) for byte in connections
-            ])
-            if new_connections != connections:
-                self.set_fitness(None)  # A mutation means the individual has to be re-evaluated
-                self.get_genes()[name] = new_connections

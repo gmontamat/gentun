@@ -3,25 +3,24 @@ Genetic algorithms
 """
 
 import random
-
 from typing import Optional
 
-from .populations import Population
 from .individuals import Individual
+from .populations import Population
 
 
 class GeneticAlgorithm:
+    """
+    Base class for a genetic algorithms.
+    Implement variants as subclasses.
+    """
 
     def __init__(self, population: Population):
         self.population = population
         self.current_generation = 1
 
     def run(
-            self,
-            generations: int,
-            maximize: bool = True,
-            patience: Optional[int] = None,
-            verbose: bool = True
+        self, generations: int, maximize: bool = True, patience: Optional[int] = None, verbose: bool = True
     ) -> None:
         """Run genetic algorithm for generations."""
         if patience:
@@ -38,7 +37,7 @@ class GeneticAlgorithm:
                 print(fittest)
                 print(f"Fitness value: {round(fitness, 4)}")
             if patience:
-                if fitness <= best_fitness * (1. if maximize else -1.):
+                if fitness <= best_fitness * (1.0 if maximize else -1.0):
                     current_strike += 1
                 else:
                     best_fitness = fitness
@@ -67,20 +66,19 @@ class Tournament(GeneticAlgorithm):
     """
 
     def __init__(
-            self,
-            population: Population,
-            tournament_size: int = 5,
-            reproduction_rate: float = 0.5,
-            mutation_rate: float = 0.015,
-            elitism: bool = True
+        self,
+        population: Population,
+        tournament_size: int = 5,
+        reproduction_rate: float = 0.5,
+        mutation_rate: float = 0.015,
+        elitism: bool = True,
     ):
         super().__init__(population)
         self.tournament_size = tournament_size
         self.reproduction_rate = reproduction_rate
         self.mutation_rate = mutation_rate
         self.elitism = elitism  # if True, fittest individual survives
-        assert len(self.population) > self.tournament_size, \
-            "Population size must be larger than tournament size."
+        assert len(self.population) > self.tournament_size, "Population size must be larger than tournament size."
 
     def evolve(self, maximize: bool) -> None:
         # Define the new population
@@ -109,12 +107,12 @@ class RussianRoulette(GeneticAlgorithm):
     """
 
     def __init__(
-            self,
-            population: Population,
-            crossover_probability: float = 0.2,
-            crossover_rate: float = 0.3,
-            mutation_probability: float = 0.8,
-            mutation_rate: float = 0.1
+        self,
+        population: Population,
+        crossover_probability: float = 0.2,
+        crossover_rate: float = 0.3,
+        mutation_probability: float = 0.8,
+        mutation_rate: float = 0.1,
     ):
         super().__init__(population)
         self.crossover_probability = crossover_probability
@@ -127,19 +125,13 @@ class RussianRoulette(GeneticAlgorithm):
         _ = self.population.get_fittest(maximize)
         # Get weights for russian roulette
         if maximize:
-            weights = [
-                individual.evaluate_fitness()
-                for individual in self.population
-            ]
+            weights = [individual.evaluate_fitness() for individual in self.population]
         else:
-            weights = [
-                1. / (individual.evaluate_fitness() + eps)
-                for individual in self.population
-            ]
+            weights = [1.0 / (individual.evaluate_fitness() + eps) for individual in self.population]
         min_weight = min(weights)
         weights = [weight - min_weight for weight in weights]
-        if sum(weights) == .0:
-            weights = [1. for _ in self.population]
+        if sum(weights) == 0.0:
+            weights = [1.0 for _ in self.population]
         # Sample with replacement using weights
         new_population = self.population.duplicate()
         for i in random.choices(range(len(self.population)), weights=weights, k=len(self.population)):
@@ -149,9 +141,7 @@ class RussianRoulette(GeneticAlgorithm):
         # Crossover and mutation
         for i in range(len(new_population) // 2):
             if random.random() < self.crossover_probability:
-                new_population[2 * i - 1].crossover(
-                    new_population[2 * i], self.crossover_rate
-                )
+                new_population[2 * i - 1].crossover(new_population[2 * i], self.crossover_rate)
             else:
                 if random.random() < self.mutation_probability:
                     new_population[2 * i - 1].mutate(self.mutation_rate)

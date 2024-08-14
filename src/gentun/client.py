@@ -4,20 +4,30 @@ job orders from a master via a RabbitMQ message broker.
 """
 
 import json
-import pika
 import threading
 import time
 
+import pika
 
+
+# TODO: re-implement
 class GentunClient:
-
-    def __init__(self, individual, x_train, y_train, host='localhost', port=5672,
-                 user='guest', password='guest', rabbit_queue='rpc_queue'):
+    def __init__(
+        self,
+        individual,
+        x_train,
+        y_train,
+        host="localhost",
+        port=5672,
+        user="guest",
+        password="guest",
+        rabbit_queue="rpc_queue",
+    ):
         self.individual = individual
         self.x_train = x_train
         self.y_train = y_train
         self.credentials = pika.PlainCredentials(user, password)
-        self.parameters = pika.ConnectionParameters(host, port, '/', self.credentials)
+        self.parameters = pika.ConnectionParameters(host, port, "/", self.credentials)
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
         self.rabbit_queue = rabbit_queue
@@ -48,8 +58,10 @@ class GentunClient:
         # Prepare response for master and send it
         response = json.dumps([i, fitness])
         channel.basic_publish(
-            exchange='', routing_key=properties.reply_to,
-            properties=pika.BasicProperties(correlation_id=properties.correlation_id), body=response
+            exchange="",
+            routing_key=properties.reply_to,
+            properties=pika.BasicProperties(correlation_id=properties.correlation_id),
+            body=response,
         )
         channel.basic_ack(delivery_tag=method.delivery_tag)
 

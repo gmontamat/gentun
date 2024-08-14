@@ -2,23 +2,30 @@
 Models implemented with xgboost
 """
 
-import numpy as np
+from typing import Optional, Tuple, Union
 
-from typing import Union, Tuple, Optional
+import numpy as np
+import xgboost as xgb
 
 from .base import Model
 
 
 class XGBoostCV(Model):
+    """
+    Perform cross-validation with xgboost.
+    This model can be used as classifier or
+    regressor depending on the kwargs passed.
+    """
 
     def __init__(
-            self,
-            metrics: Union[str, Tuple[str, ...]],
-            num_boost_round: int = 10,
-            nfold: int = 3,
-            stratified: bool = False,
-            early_stopping_rounds: Optional[int] = None,
-            **kwargs):
+        self,
+        metrics: Union[str, Tuple[str, ...]],
+        num_boost_round: int = 10,
+        nfold: int = 3,
+        stratified: bool = False,
+        early_stopping_rounds: Optional[int] = None,
+        **kwargs,
+    ):
         """
         Booster params reference:
             - https://xgboost.readthedocs.io/en/stable/parameter.html#general-parameters
@@ -42,7 +49,6 @@ class XGBoostCV(Model):
         xgboost.cv API reference:
             - https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.cv
         """
-        import xgboost as xgb  # We import here so that xgboost is optional
         d_train = xgb.DMatrix(x_train, label=y_train)
         cv_result = xgb.cv(
             self.booster_params,

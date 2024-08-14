@@ -2,17 +2,17 @@
 Models implemented in tensorflow
 """
 
-import numpy as np
 import os
-import tensorflow as tf
+from typing import List, Tuple, Union
 
+import numpy as np
+import tensorflow as tf
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
 from tensorflow.keras.models import Model as KerasModel
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
-from typing import List, Tuple, Union
 
 from .base import Model
 
@@ -20,26 +20,31 @@ K.set_image_data_format("channels_last")
 
 
 class GeneticCNN(Model):
+    """
+    Implement Genetic CNN
+    http://arxiv.org/pdf/1703.01513
+    """
 
     def __init__(
-            self,
-            nodes: Tuple[int, ...],
-            kernels_per_layer: Tuple[int, ...],
-            kernel_sizes: Tuple[Tuple[int, ...], ...],
-            dense_units: int = 500,
-            dropout_probability: float = 0.5,
-            input_shape: Tuple[int, ...] = (28, 28, 1),
-            num_classes: int = 10,
-            kfold: int = 5,
-            epochs: Union[int, Tuple[int, ...]] = (3,),
-            learning_rate: Union[int, Tuple[int, ...]] = (1e-3,),
-            batch_size: int = 32,
-            plot: bool = False,
-            **kwargs
+        self,
+        nodes: Tuple[int, ...],
+        kernels_per_layer: Tuple[int, ...],
+        kernel_sizes: Tuple[Tuple[int, ...], ...],
+        dense_units: int = 500,
+        dropout_probability: float = 0.5,
+        input_shape: Tuple[int, ...] = (28, 28, 1),
+        num_classes: int = 10,
+        kfold: int = 5,
+        epochs: Union[int, Tuple[int, ...]] = (3,),
+        learning_rate: Union[int, Tuple[int, ...]] = (1e-3,),
+        batch_size: int = 32,
+        plot: bool = False,
+        **kwargs,
     ):
         super().__init__()
-        assert len(nodes) == len(kernels_per_layer) == len(kernel_sizes), \
-            "`nodes`, `kernels_per_layer`, and `kernel_sizes` should have the same length (#layers)."
+        assert (
+            len(nodes) == len(kernels_per_layer) == len(kernel_sizes)
+        ), "`nodes`, `kernels_per_layer`, and `kernel_sizes` should have the same length (#layers)."
         # Define node connections
         connections = []
         for i in range(len(nodes)):
@@ -53,7 +58,7 @@ class GeneticCNN(Model):
             kernel_sizes,
             dense_units,
             dropout_probability,
-            num_classes
+            num_classes,
         )
         if plot:
             self.plot()
@@ -71,8 +76,7 @@ class GeneticCNN(Model):
         if not os.path.isdir("models"):
             os.mkdir("models")
         plot_model(
-            self.model, to_file=f"models/{self.name}.png",
-            show_shapes=True, show_layer_names=True, expand_nested=True
+            self.model, to_file=f"models/{self.name}.png", show_shapes=True, show_layer_names=True, expand_nested=True
         )
 
     @staticmethod
@@ -85,7 +89,7 @@ class GeneticCNN(Model):
         separated_connections = []
         while idx + ctr < len(connections):
             ctr += 1
-            separated_connections.append(connections[idx:idx + ctr])
+            separated_connections.append(connections[idx : idx + ctr])
             idx += ctr
         # Get outputs by node (dummy output ignored)
         outputs = []
@@ -127,15 +131,15 @@ class GeneticCNN(Model):
         return output_vars[0]
 
     def build_model(
-            self,
-            connections: List[str],
-            nodes: Tuple[int, ...],
-            input_shape: Tuple[int, ...],
-            kernels_per_layer: Tuple[int, ...],
-            kernel_sizes: Tuple[Tuple[int, ...], ...],
-            dense_units: int,
-            dropout_probability: float,
-            num_classes: int
+        self,
+        connections: List[str],
+        nodes: Tuple[int, ...],
+        input_shape: Tuple[int, ...],
+        kernels_per_layer: Tuple[int, ...],
+        kernel_sizes: Tuple[Tuple[int, ...], ...],
+        dense_units: int,
+        dropout_probability: float,
+        num_classes: int,
     ) -> KerasModel:
         x_input = Input(input_shape)
         x = x_input
@@ -171,7 +175,7 @@ class GeneticCNN(Model):
         Train model using k-fold cross validation and
         return mean value of the validation accuracy.
         """
-        acc = .0
+        acc = 0.0
         cross_validation = StratifiedKFold(n_splits=self.kfold, shuffle=True)
         for fold, (train, validation) in enumerate(cross_validation.split(x_train, np.where(y_train == 1)[1])):
             print(f"KFold {fold + 1}/{self.kfold}")
@@ -179,12 +183,8 @@ class GeneticCNN(Model):
             for epochs, learning_rate in zip(self.epochs, self.learning_rate):
                 print(f"Training {epochs} epochs with learning rate {learning_rate}")
                 self.model.compile(
-                    optimizer=Adam(learning_rate=learning_rate),
-                    loss="binary_crossentropy",
-                    metrics=["accuracy"]
+                    optimizer=Adam(learning_rate=learning_rate), loss="binary_crossentropy", metrics=["accuracy"]
                 )
-                self.model.fit(
-                    x_train[train], y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1
-                )
+                self.model.fit(x_train[train], y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1)
             acc += self.model.evaluate(x_train[validation], y_train[validation], verbose=0)[1] / self.kfold
         return acc

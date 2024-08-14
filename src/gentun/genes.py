@@ -6,7 +6,6 @@ optimize with the algorithm.
 
 import math
 import random
-
 from typing import Any, List
 
 
@@ -72,13 +71,7 @@ class RandomLogUniform(Gene):
     """
 
     def __init__(
-            self,
-            name: str,
-            minimum: float,
-            maximum: float,
-            base: float = 10,
-            reverse: bool = False,
-            eps: float = 1e-12
+        self, name: str, minimum: float, maximum: float, base: float = 10, reverse: bool = False, eps: float = 1e-12
     ):
         super().__init__(name)
         self.minimum = minimum + eps
@@ -91,23 +84,15 @@ class RandomLogUniform(Gene):
         if self.reverse:
             return self.maximum - math.pow(
                 self.base,
-                random.uniform(
-                    math.log(self.eps, self.base),
-                    math.log(self.maximum - self.minimum, self.base)
-                )
+                random.uniform(math.log(self.eps, self.base), math.log(self.maximum - self.minimum, self.base)),
             )
-        return math.pow(
-            self.base,
-            random.uniform(
-                math.log(self.minimum, self.base),
-                math.log(self.maximum, self.base)
-            )
-        )
+        return math.pow(self.base, random.uniform(math.log(self.minimum, self.base), math.log(self.maximum, self.base)))
 
 
 class Binary(Gene):
     """
     Gene used in Genetic CNN paper
+    http://arxiv.org/pdf/1703.01513
     """
 
     def __init__(self, name: str, length: int):
