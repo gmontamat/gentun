@@ -30,7 +30,7 @@ class GeneticAlgorithm:
             if verbose:
                 print(f"Running generation #{self.current_generation}...")
             self.evolve(maximize)
-            fittest = self.population.get_fittest()
+            fittest = self.population.get_fittest(maximize)
             fitness = fittest.evaluate_fitness()
             if verbose:
                 print("Fittest individual:")
