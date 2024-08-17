@@ -118,10 +118,10 @@ As shown above, when the model and genes are implemented, experimenting with the
 example how easily can the Genetic CNN paper
 be [implemented on the MNIST handwritten digits set](examples/geneticcnn_mnist.py).
 
-Note that in Genetic Algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
-follows this convention. Nonetheless, to make the algorithm more flexible, you can use the `algorithm.run()` parameter
-`maximize=False` to override this behavior and minimize your fitness metric (to minimize the loss, for example *rmse* or
-*binary crossentropy*).
+Note that in genetic algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
+follows this convention. Nonetheless, to make the framework more flexible, you can use the `maximize=False` parameter in
+`algorithm.run()` to override this behavior and minimize your fitness metric (e.g. when you want to minimize the loss,
+for example *rmse* or *binary crossentropy*).
 
 #### :construction: Custom individuals
 
