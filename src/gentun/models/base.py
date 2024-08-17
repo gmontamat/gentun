@@ -34,7 +34,7 @@ class DummyModel(Model):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.fitness = sum([value for key, value in kwargs.items()])
+        self.fitness = sum(kwargs.values())
 
     def evaluate(self, x_train: Any, y_train: Any):
         """Ignore x_train, y_train; return sum of parameter values."""

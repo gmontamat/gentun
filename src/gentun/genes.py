@@ -32,7 +32,7 @@ class Gene:
         to re-sample with probability 'rate'.
         """
         if random.random() < rate:
-            return self.__call__()
+            return self()
         return value
 
 

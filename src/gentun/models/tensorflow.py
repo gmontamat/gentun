@@ -81,9 +81,13 @@ class GeneticCNN(Model):
 
     @staticmethod
     def build_dag(x, nodes, connections, kernels):
+        """
+        Decode the binary representation into the
+        network stages (Genetic CNN - Section 3.1).
+        """
         # Get number of nodes (K_s) using the fact that K_s*(K_s-1)/2 == #bits
         # nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
-        # Separate bits by whose input they represent (GeneticCNN paper uses a dash)
+        # Separate bits by whose input they represent (Genetic CNN paper uses a dash)
         ctr = 0
         idx = 0
         separated_connections = []
@@ -141,6 +145,7 @@ class GeneticCNN(Model):
         dropout_probability: float,
         num_classes: int,
     ) -> KerasModel:
+        """Create the Convolutional Neural Network."""
         x_input = Input(input_shape)
         x = x_input
         for layer, kernels in enumerate(kernels_per_layer):
@@ -149,7 +154,7 @@ class GeneticCNN(Model):
             x = Activation("relu")(x)
             # Decode internal connections
             # If at least one bit is 1, then we need to construct the Directed Acyclic Graph
-            if not all([not bool(int(bit)) for bit in connections[layer]]):
+            if not all(not bool(int(bit)) for bit in connections[layer]):
                 x = self.build_dag(x, nodes[layer], connections[layer], kernels)
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding="same")(x)

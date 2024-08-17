@@ -1,5 +1,7 @@
 """
-Population
+A collection of individuals with
+different gene values (hyperparameters)
+that will be evaluated with train data.
 """
 from __future__ import annotations
 
@@ -73,12 +75,10 @@ class Population:
             raise ValueError
 
     def get_fittest(self, maximize: bool = True) -> Individual:
+        """Return the fittest individual of the population."""
         if maximize:
             return max(self.individuals, key=operator.methodcaller("evaluate_fitness"))
         return min(self.individuals, key=operator.methodcaller("evaluate_fitness"))
-
-    def get_genes(self) -> List[Gene]:
-        return self.genes
 
     def duplicate(self, sample_size: int = 0) -> Population:
         """
