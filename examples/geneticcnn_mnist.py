@@ -7,11 +7,11 @@ http://arxiv.org/pdf/1703.01513
 """
 
 import os
-import numpy as np
 import random
 import sys
-
 from typing import Tuple
+
+import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
@@ -36,7 +36,7 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
     return x[selection], y[selection]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from gentun.algorithms import RussianRoulette
     from gentun.genes import Binary
     from gentun.models.tensorflow import GeneticCNN
@@ -55,21 +55,18 @@ if __name__ == '__main__':
         "epochs": (20, 4, 1),
         "learning_rate": (1e-3, 1e-4, 1e-5),
         "batch_size": 32,
-        "plot": True
+        "plot": True,
     }
     # Genetic CNN hyperparameters
-    genes = [
-        Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2))
-        for i, K_s in enumerate(kwargs["nodes"])
-    ]
+    genes = [Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2)) for i, K_s in enumerate(kwargs["nodes"])]
 
     x_train, y_train = load_mnist("mnist.npz")
     population = Population(genes, GeneticCNN, x_train, y_train, 20, **kwargs)
     algorithm = RussianRoulette(
         population,
         crossover_probability=0.2,  # p_C
-        crossover_rate=0.3,         # q_C
-        mutation_probability=0.8,   # p_M
-        mutation_rate=0.1,          # q_M
+        crossover_rate=0.3,  # q_C
+        mutation_probability=0.8,  # p_M
+        mutation_rate=0.1,  # q_M
     )
     algorithm.run(50)
