@@ -24,15 +24,15 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
     mnist = np.load(file_name)
     x = mnist["x_train"].reshape(mnist["x_train"].shape[:-2] + (-1,))
     y_raw = mnist["y_train"]
-    n = x.shape[0]
+    size = x.shape[0]
     # Normalize and reshape input
     x = x / 255
-    x = x.reshape(n, 28, 28, 1)
+    x = x.reshape(size, 28, 28, 1)
     # One-hot encode the output
-    y = np.zeros((n, 10))
-    y[np.arange(n), y_raw] = 1
+    y = np.zeros((size, 10))
+    y[np.arange(size), y_raw] = 1
     # TODO: stratified selection or random (check paper)?
-    selection = random.sample(range(n), sample_size)
+    selection = random.sample(range(size), sample_size)
     return x[selection], y[selection]
 
 
