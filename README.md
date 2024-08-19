@@ -5,7 +5,7 @@ Please note there's a major overhaul of this package taking place:
 - [x] Get rid of duality individual-model (simplify classes)
 - [x] Rewrite XGBoost
 - [x] Rewrite Genetic CNN model
-- [ ] Add a scikit-learn model
+- [x] Add a scikit-learn model
 - [ ] Add module section with predefined parameters
 - [ ] Use redis instead of rabbitmq for distributed algorithm
 - [x] Adapt to python3.10+ (f-strings, linting, type hinting)
@@ -47,9 +47,8 @@ This project supports hyperparameter tuning for the following models:
 ## :construction: Contributing
 
 Feel free to submit your custom [`gentun.models.Model`](src/gentun/models/base.py#L9-L25)
-and [`gentun.genes.Gene`]() subclasses to enhance the project. 
-You can also help us speed up hyperparameter search with your spare GPU time.
-Check our documentation on [how to contribute](./CONTRIBUTE.md).
+and [`gentun.genes.Gene`](src/gentun/genes.py#L12-L44) subclasses to enhance the project. You can also help us speed up
+hyperparameter search with your spare GPU time. Check our documentation on [how to contribute](./CONTRIBUTE.md).
 
 ## :construction: Installation
 
@@ -80,8 +79,8 @@ from gentun.genes import RandomChoice, RandomLogUniform
 
 genes = [
     RandomLogUniform("learning_rate", minimum=0.001, maximum=0.1, base=10),
-    RandomChoice("max_depth", range(3, 11)),
-    RandomChoice("min_child_weight", range(11)),
+    RandomChoice("max_depth", [3, 4, 5, 6, 7, 8, 9, 10]),
+    RandomChoice("min_child_weight", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
 ]
 ```
 
@@ -161,8 +160,8 @@ from gentun.populations import Grid
 
 genes = [
     RandomLogUniform("learning_rate", minimum=0.001, maximum=0.1, base=10),
-    RandomChoice("max_depth", range(3, 11)),
-    RandomChoice("min_child_weight", range(11)),
+    RandomChoice("max_depth", [3, 4, 5, 6, 7, 8, 9, 10]),
+    RandomChoice("min_child_weight", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
 ]
 
 gene_samples = [10, 8, 11]  # How many samples we want to get from each gene
