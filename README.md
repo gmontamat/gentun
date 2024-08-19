@@ -24,8 +24,9 @@ The goal of this project is to create a simple framework
 for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
 like Neural Networks and Gradient Boosting Trees, using a genetic algorithm. Evaluating the fitness of an individual in
 a population involves training a model with a specific set of hyperparameters, which is a time-consuming process. To
-address this, we employ a client-server approach. Multiple clients can handle model training and cross-validation of
-individuals provided by the server. The server manages the generation of offspring through reproduction and mutation.
+address this, we provide a client-server approach. Multiple clients can handle model training and cross-validation of
+individuals provided by a server while the server manages the generation of offspring through reproduction and
+mutation.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/param_tuning.html) on Parameter Tuning
@@ -45,14 +46,12 @@ This project supports hyperparameter tuning for the following models:
 
 ## :construction: Contributing
 
-Feel free to submit your custom `gentun.models.Model` to enhance the project.
+Feel free to submit your custom [`gentun.models.Model`](src/gentun/models/base.py#L9-L25)
+and [`gentun.genes.Gene`]() subclasses to enhance the project. 
 You can also help us speed up hyperparameter search with your spare GPU time.
-Check [./CONTRIBUTE.md]
+Check our documentation on [how to contribute](./CONTRIBUTE.md).
 
-You can use as an example the
-*XgboostIndividual* and *XgboostModel* classes provided which have a simple gene encoding for instructional purposes.
-
-## Installation
+## :construction: Installation
 
 ```bash
 pip install gentun
@@ -62,8 +61,9 @@ pip install gentun
 
 ### On a single node
 
-The most basic way to run the algorithm is in a single machine, as shown in the following example where we use it to
-find the optimal hyperparameters of an `xgboost` model. First, we download a sample dataset:
+The most basic way to run the algorithm is using a single machine, as shown in the following example where we use it to
+find the optimal hyperparameters of an [`xgboost`](https://xgboost.readthedocs.io/en/stable/) model. First, we download
+a sample dataset:
 
 ```python
 from sklearn.datasets import load_iris
@@ -101,7 +101,8 @@ kwargs = {
 }
 ```
 
-Finally, we are ready to run our search:
+Finally, we are ready to run our genetic algorithm. `gentun` will check that all the model's required parameters are
+passed either through genes or keyword arguments.
 
 ```python
 from gentun.algorithms import Tournament
@@ -116,60 +117,64 @@ algorithm.run(100, maximize=False)
 
 As shown above, when the model and genes are implemented, experimenting with the genetic algorithm is simple. See for
 example how easily can the Genetic CNN paper
-be [implemented on the MNIST handwritten digits set](examples/geneticcnn_mnist.py).
+be [defined on the MNIST handwritten digits set](examples/geneticcnn_mnist.py).
 
-Note that in genetic algorithms, the *fitness* of an individual is supposed to be maximized. By default, this framework
+Note that in genetic algorithms, the *fitness* of an individual is a number to be maximized. By default, this framework
 follows this convention. Nonetheless, to make the framework more flexible, you can use the `maximize=False` parameter in
 `algorithm.run()` to override this behavior and minimize your fitness metric (e.g. when you want to minimize the loss,
 for example *rmse* or *binary crossentropy*).
 
-#### :construction: Custom individuals
+#### Adding pre-defined individuals
 
-It's usually convenient to initialize the genetic algorithm with some known individuals instead of a random population.
-For example, you can add custom individuals to the population before running the genetic algorithm if you already have
+Oftentimes, it's convenient to initialize the genetic algorithm with some known individuals instead of a random
+population. You can add custom individuals to the population before running the genetic algorithm if you already have
 an intuition of which hyperparameters work well with your model:
 
 ```python
-# Best known parameters so far
-custom_genes = {
-    'eta': 0.1, 'min_child_weight': 1, 'max_depth': 9,
-    'gamma': 0.0, 'max_delta_step': 0, 'subsample': 1.0,
-    'colsample_bytree': 0.9, 'colsample_bylevel': 1.0,
-    'lambda': 1.0, 'alpha': 0.0, 'scale_pos_weight': 1.0
+from gentun.models.xgboost import XGBoostCV
+from gentun.populations import Population
+
+
+# Best known parameters
+hyperparams = {
+    "learning_rate": 0.1,
+    "max_depth": 9,
+    "min_child_weight": 1,
 }
-# Generate a random population and add a custom individual
-pop = Population(
-    XgboostIndividual, x_train, y_train, size=99,
-    additional_parameters={'kfold': 3}, maximize=False
-)
-pop.add_individual(XgboostIndividual(x_train, y_train, genes=custom_genes, kfold=3))
+
+# Generate a random population and then add a custom individual
+population = Population(genes, XGBoostCV, x_train, y_train, 49, **kwargs)
+population.add_individual(hyperparams)
 ```
 
-#### :construction: Grid search
+#### Performing a grid search
 
-Moreover, you can create a grid by defining which values you want to evaluate per gene and the *GridPopulation* class
-will generate all possible gene combinations and assign each of them to an individual. This way of generating an initial
-population resembles the grid search method which is widely used in parameter optimization:
+Grid search is also widely used for hyperparameter optimization. This framework provides `gentun.populations.Grid`,
+which can be used to conduct a grid search over a single generation pass. You must use genes which define the `sample()`
+method, so that uniformly distributed hyperparameter values are obtained with it.
 
 ```python
-# Specify which values you want to use, the remaining genes will take the default one
-grid = {
-    'eta': [0.001, 0.005, 0.01, 0.015, 0.2],
-    'max_depth': range(3, 11),
-    'colsample_bytree': [0.80, 0.85, 0.90, 0.95, 1.0]
-}
-# Generate a grid of individuals as the population
-pop = GridPopulation(
-    XgboostIndividual, genes_grid=grid,
-    additional_parameters={'kfold': 3},
-    maximize=False
-)
+from gentun.genes import RandomChoice, RandomLogUniform
+from gentun.models.xgboost import XGBoostCV
+from gentun.populations import Grid
+
+
+genes = [
+    RandomLogUniform("learning_rate", minimum=0.001, maximum=0.1, base=10),
+    RandomChoice("max_depth", range(3, 11)),
+    RandomChoice("min_child_weight", range(11)),
+]
+
+gene_samples = [10, 8, 11]  # How many samples we want to get from each gene
+
+# Generate a grid of individuals
+population = Grid(genes, XGBoostCV, x_train, y_train, gene_samples, **kwargs)
 ```
 
-Running the genetic algorithm on this population for only one generation is equivalent to doing a grid search. Note that
-only *XgboostIndividual* is compatible with the *GridPopulation* class.
+Running the genetic algorithm on this population for just one generation is equivalent to doing a grid search over 10
+`learning_rate` values, all `max_depth` values between 3 and 10, and all `min_child_weight` values between 0 and 10.
 
-### Multiple computers - distributed algorithm
+### :construction: Distributed algorithm - using multiple nodes
 
 You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *server*,
 generating a population and running the genetic algorithm. Each time this *server* needs to evaluate an individual, it
