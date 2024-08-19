@@ -23,13 +23,21 @@ class Gene:
         return self.name
 
     def __call__(self):
-        """Return a sample value following the gene specification."""
+        """Return a random sample value following the gene specification."""
+        raise NotImplementedError
+
+    def sample(self, percentile: float):
+        """
+        Return a sample value given the percentile.
+        This method enables grid search.
+        """
         raise NotImplementedError
 
     def mutate(self, value: Any, rate: float):
         """
         Mutate a gene. The default behavior is
         to re-sample with probability 'rate'.
+        Subclasses may want to refine this method.
         """
         if random.random() < rate:
             return self()
@@ -48,6 +56,12 @@ class RandomChoice(Gene):
     def __call__(self) -> Any:
         return random.choice(self.values)
 
+    def sample(self, percentile: float) -> Any:
+        try:
+            return self.values[int(len(self.values) * percentile)]
+        except IndexError:
+            return self.values[-1]
+
 
 class RandomUniform(Gene):
     """
@@ -62,6 +76,9 @@ class RandomUniform(Gene):
 
     def __call__(self) -> float:
         return random.uniform(self.minimum, self.maximum)
+
+    def sample(self, percentile: float) -> float:
+        return self.minimum + percentile * (self.maximum - self.minimum)
 
 
 class RandomLogUniform(Gene):
@@ -87,6 +104,19 @@ class RandomLogUniform(Gene):
                 random.uniform(math.log(self.eps, self.base), math.log(self.maximum - self.minimum, self.base)),
             )
         return math.pow(self.base, random.uniform(math.log(self.minimum, self.base), math.log(self.maximum, self.base)))
+
+    def sample(self, percentile: float) -> float:
+        if self.reverse:
+            return self.maximum - math.pow(
+                self.base,
+                math.log(self.eps, self.base)
+                + percentile * (math.log(self.maximum - self.minimum, self.base) - math.log(self.eps, self.base)),
+            )
+        return math.pow(
+            self.base,
+            math.log(self.minimum, self.base)
+            + percentile * (math.log(self.maximum, self.base) - math.log(self.minimum, self.base)),
+        )
 
 
 class Binary(Gene):

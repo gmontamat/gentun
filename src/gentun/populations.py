@@ -10,6 +10,8 @@ import operator
 import random
 from typing import Any, Dict, Iterator, List, Optional, Type, Union
 
+import numpy as np
+
 from .genes import Gene
 from .individuals import Individual
 from .models.base import Model
@@ -99,57 +101,29 @@ class Population:
         return self.individuals[item]
 
 
-# TODO: re-implement
-class GridPopulation(Population):
-    """Population whose individuals are created based on a
-    grid search approach instead of randomly. Can be
-    initialized either with a list of individuals (in
-    which case it behaves like a Population) or with a
-    dictionary of genes and grid values pairs.
+class Grid(Population):
+    """
+    Population whose individuals are created based on a
+    grid search approach instead of at random.
     """
 
     def __init__(
         self,
-        species: Type[Individual],
+        genes: List[Gene],
+        model: Type[Model],
         x_train: Any,
         y_train: Any,
-        individual_list=None,
-        genes_grid=None,
-        crossover_rate: float = 0.5,
-        mutation_rate: float = 0.015,
-        maximize: bool = True,
-        additional_parameters: Optional[Dict[str, Any]] = None,
+        gene_samples: Union[int, List[int]],
+        **kwargs,
     ):
-        if individual_list is None and genes_grid is None:
-            raise ValueError("Pass a list of individuals or a grid definition.")
-        elif genes_grid is not None:
-            genome = species(None, None).get_genome()  # Get species' genome
-            if not set(genes_grid.keys()).issubset(set(genome.keys())):
-                raise ValueError("Some grid parameters do not belong to the species' genome")
-            # Fill genes_grid with default parameters
-            for gene, properties in genome.items():
-                if gene not in genes_grid:
-                    genes_grid[gene] = [properties[0]]  # Use default value
-            individual_list = [
-                species(
-                    x_train,
-                    y_train,
-                    genes=genes,
-                    crossover_rate=crossover_rate,
-                    mutation_rate=mutation_rate,
-                    **additional_parameters,
-                )
-                for genes in (dict(zip(genes_grid, x)) for x in itertools.product(*genes_grid.values()))
-            ]
-            print("Initializing a grid population. Size: {}".format(len(individual_list)))
-        super(GridPopulation, self).__init__(
-            species,
-            x_train,
-            y_train,
-            individual_list,
-            None,
-            crossover_rate,
-            mutation_rate,
-            maximize,
-            additional_parameters,
-        )
+        super().__init__(genes, model, x_train, y_train, [], **kwargs)
+        # Define the grid and add individuals
+        if isinstance(gene_samples, list):
+            assert len(gene_samples) == len(genes), "`genes` and `gene_samples` must have the same length."
+        else:
+            gene_samples = [gene_samples] * len(genes)
+        genes_grid = {}
+        for gene, samples in zip(genes, gene_samples):
+            genes_grid[str(gene)] = [gene.sample(percentile) for percentile in np.linspace(0.0, 1.0, samples)]
+        for hyperparams in (dict(zip(genes_grid, value)) for value in itertools.product(*genes_grid.values())):
+            self.add_individual(hyperparams)
