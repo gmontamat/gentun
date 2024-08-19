@@ -57,7 +57,7 @@ class SklearnCV(Model):
             y = np.where(y_train == 1)[1]
         else:
             y = y_train
-        for fold, (train, validation) in enumerate(cross_validation.split(x_train, y)):
+        for train, validation in cross_validation.split(x_train, y):
             model = self.sklearn_model(**self.model_params)
             model.fit(x_train[train], y_train[train])
             y_pred = model.predict(x_train[validation])
