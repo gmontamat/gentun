@@ -40,7 +40,7 @@ which inspires us to adopt the genetic algorithm to efficiently traverse this la
 This project supports hyperparameter tuning for the following models:
 
 - [x] XGBoost regressor and classifier
-- [ ] Scikit-learn regressor and classifier
+- [x] Scikit-learn regressor and classifier
 - [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Tensorflow
 - [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
 
