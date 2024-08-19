@@ -1,24 +1,4 @@
-# TODO
-
-Please note there's a major overhaul of this package taking place:
-
-- [x] Get rid of duality individual-model (simplify classes)
-- [x] Rewrite XGBoost
-- [x] Rewrite Genetic CNN model
-- [x] Add a scikit-learn model
-- [ ] Add module section with predefined parameters
-- [ ] Use redis instead of rabbitmq for distributed algorithm
-- [x] Adapt to python3.10+ (f-strings, linting, type hinting)
-- [x] Simplify dataset retrieval for mnist, iris, fashion-mnist, and others
-- [ ] Fix second generation bug in client
-- [ ] Add public/private key validation for clients
-- [ ] Implement Genetic CNN or other in PyTorch
-- [ ] Automate CICD workflows (linting, testing, and publishing) with GitHub Actions
-- [ ] Use proper logging instead of prints
-- [ ] Create CONTRIBUTE.md
-- [ ] Add repo badges
-
-# gentun: genetic algorithm for hyperparameter tuning
+# gentun: distributed genetic algorithm for hyperparameter tuning
 
 The goal of this project is to create a simple framework
 for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
