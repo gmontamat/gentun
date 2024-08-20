@@ -26,7 +26,7 @@ This project supports hyperparameter tuning for the following models:
 
 ## :construction: Contributing
 
-Feel free to submit your custom [`gentun.models.Model`](src/gentun/models/base.py#L9-L25)
+Feel free to submit your custom [`gentun.wrappers.ModelWrapper`](src/gentun/wrappers/base.py#L9-L25)
 and [`gentun.genes.Gene`](src/gentun/genes.py#L12-L44) subclasses to enhance the project. You can also help us speed up
 hyperparameter search with your spare GPU time. Check our documentation on [how to contribute](./CONTRIBUTE.md).
 
@@ -64,7 +64,7 @@ genes = [
 ]
 ```
 
-We are using the `gentun.models.xgboost.XGBoostCV` model, which performs k-fold cross validation with available train
+We are using the `gentun.wrappers.xgboost.XGBoostCV` model, which performs k-fold cross validation with available train
 data and returns an average metric over the folds. Thus, we need to define some static parameters which are shared
 across the population over all generations:
 
@@ -85,7 +85,7 @@ passed either through genes or keyword arguments.
 
 ```python
 from gentun.algorithms import Tournament
-from gentun.models.xgboost import XGBoostCV
+from gentun.wrappers.xgboost import XGBoostCV
 from gentun.populations import Population
 
 # Run the genetic algorithm with a population of 50 for 100 generations
@@ -110,7 +110,7 @@ population. You can add custom individuals to the population before running the 
 an intuition of which hyperparameters work well with your model:
 
 ```python
-from gentun.models.xgboost import XGBoostCV
+from gentun.wrappers.xgboost import XGBoostCV
 from gentun.populations import Population
 
 
@@ -134,7 +134,7 @@ method, so that uniformly distributed hyperparameter values are obtained with it
 
 ```python
 from gentun.genes import RandomChoice, RandomLogUniform
-from gentun.models.xgboost import XGBoostCV
+from gentun.wrappers.xgboost import XGBoostCV
 from gentun.populations import Grid
 
 

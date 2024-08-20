@@ -39,7 +39,7 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
 if __name__ == "__main__":
     from gentun.algorithms import RussianRoulette
     from gentun.genes import Binary
-    from gentun.models.tensorflow import GeneticCNN
+    from gentun.wrappers.tensorflow import GeneticCNN
     from gentun.populations import Population
 
     # Genetic CNN static parameters

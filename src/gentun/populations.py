@@ -14,7 +14,7 @@ import numpy as np
 
 from .genes import Gene
 from .individuals import Individual
-from .models.base import Model
+from .wrappers.base import ModelWrapper
 
 
 class Population:
@@ -29,14 +29,14 @@ class Population:
     def __init__(
         self,
         genes: List[Gene],
-        model: Type[Model],
+        model_wrapper: Type[ModelWrapper],
         x_train: Any,
         y_train: Any,
         individuals: Optional[Union[List[Dict[str, Any]], List[Individual], int]] = None,
         **kwargs,
     ):
         self.genes = genes
-        self.model = model
+        self.model_wrapper = model_wrapper
         self.x_train = x_train
         self.y_train = y_train
         # Static parameters used to create model
@@ -64,7 +64,7 @@ class Population:
                 if str(gene) not in hyperparameters:
                     raise KeyError(f"Missing hyperparameter '{str(gene)}'.")
         return Individual(
-            self.genes, self.model, self.x_train, self.y_train, hyperparameters=hyperparameters, **self.kwargs
+            self.genes, self.model_wrapper, self.x_train, self.y_train, hyperparameters=hyperparameters, **self.kwargs
         )
 
     def add_individual(self, individual: Optional[Union[Dict[str, Any], Individual]] = None) -> None:
@@ -89,7 +89,7 @@ class Population:
         replacement.
         """
         individuals = random.sample(self.individuals, sample_size)
-        return Population(self.genes, self.model, self.x_train, self.y_train, individuals, **self.kwargs)
+        return Population(self.genes, self.model_wrapper, self.x_train, self.y_train, individuals, **self.kwargs)
 
     def __len__(self) -> int:
         return len(self.individuals)
@@ -110,13 +110,13 @@ class Grid(Population):
     def __init__(
         self,
         genes: List[Gene],
-        model: Type[Model],
+        model_wrapper: Type[ModelWrapper],
         x_train: Any,
         y_train: Any,
         gene_samples: Union[int, List[int]],
         **kwargs,
     ):
-        super().__init__(genes, model, x_train, y_train, [], **kwargs)
+        super().__init__(genes, model_wrapper, x_train, y_train, [], **kwargs)
         # Define the grid and add individuals
         if isinstance(gene_samples, list):
             assert len(gene_samples) == len(genes), "`genes` and `gene_samples` must have the same length."

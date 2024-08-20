@@ -6,7 +6,7 @@ optimize with the algorithm.
 
 import math
 import random
-from typing import Any, List
+from typing import Any, Sequence
 
 
 class Gene:
@@ -46,10 +46,10 @@ class Gene:
 
 class RandomChoice(Gene):
     """
-    Get random value from a list.
+    Get random value from a sequence.
     """
 
-    def __init__(self, name: str, values: List[Any]):
+    def __init__(self, name: str, values: Sequence[Any]):
         super().__init__(name)
         self.values = values
 

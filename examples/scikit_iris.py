@@ -37,7 +37,7 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
 if __name__ == "__main__":
     from gentun.algorithms import Tournament
     from gentun.genes import RandomChoice
-    from gentun.models.sklearn import SklearnCV
+    from gentun.wrappers.sklearn import SklearnCV
     from gentun.populations import Population
 
     # RandomForestClassifier hyperparameters

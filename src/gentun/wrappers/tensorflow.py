@@ -10,16 +10,16 @@ import tensorflow as tf
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
-from tensorflow.keras.models import Model as KerasModel
+from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
 
-from .base import Model
+from .base import ModelWrapper
 
 K.set_image_data_format("channels_last")
 
 
-class GeneticCNN(Model):
+class GeneticCNN(ModelWrapper):
     """
     Implement Genetic CNN model.
     http://arxiv.org/pdf/1703.01513
@@ -144,7 +144,7 @@ class GeneticCNN(Model):
         dense_units: int,
         dropout_probability: float,
         num_classes: int,
-    ) -> KerasModel:
+    ) -> Model:
         """Create the Convolutional Neural Network."""
         x_input = Input(input_shape)
         x = x_input
@@ -164,7 +164,7 @@ class GeneticCNN(Model):
         x = Dense(dense_units, activation="relu")(x)
         x = Dropout(dropout_probability)(x)
         x = Dense(num_classes, activation="softmax")(x)
-        return KerasModel(inputs=x_input, outputs=x, name=f"{self.name}")
+        return Model(inputs=x_input, outputs=x, name=f"{self.name}")
 
     def reset_weights(self):
         """Initialize model weights."""

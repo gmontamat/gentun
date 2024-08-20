@@ -35,7 +35,7 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
 if __name__ == "__main__":
     from gentun.algorithms import Tournament
     from gentun.genes import RandomChoice, RandomLogUniform, RandomUniform
-    from gentun.models.xgboost import XGBoostCV
+    from gentun.wrappers.xgboost import XGBoostCV
     from gentun.populations import Population
 
     # xgboost hyperparameters

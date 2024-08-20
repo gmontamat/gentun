@@ -7,10 +7,10 @@ from typing import Optional, Tuple, Union
 import numpy as np
 import xgboost as xgb
 
-from .base import Model
+from .base import ModelWrapper
 
 
-class XGBoostCV(Model):
+class XGBoostCV(ModelWrapper):
     """
     Perform cross-validation with xgboost.
     This model can be used as classifier or

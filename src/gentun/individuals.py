@@ -11,7 +11,7 @@ import random
 from typing import Any, Dict, List, Type, Union
 
 from .genes import Gene
-from .models.base import Model
+from .wrappers.base import ModelWrapper
 
 
 class Individual:
@@ -23,14 +23,14 @@ class Individual:
     def __init__(
         self,
         genes: List[Gene],
-        model: Type[Model],
+        model_wrapper: Type[ModelWrapper],
         x_train: Any,
         y_train: Any,
         hyperparameters: Dict[str, Any],
         **kwargs: Any,
     ):
         self.genes = genes
-        self.model = model
+        self.model_wrapper = model_wrapper
         self.x_train = x_train
         self.y_train = y_train
         self.hyperparameters = hyperparameters
@@ -39,8 +39,8 @@ class Individual:
         self.fitness = None  # Until evaluated an individual fitness is unknown
 
     @staticmethod
-    def get_init_params(_class: Type[Model]) -> Dict[str, Dict[str, Any]]:
-        """Get parameters defined in the Model class used."""
+    def get_init_params(_class: Type[ModelWrapper]) -> Dict[str, Dict[str, Any]]:
+        """Get parameters defined in the ModelWrapper class used."""
         init_signature = inspect.signature(_class.__init__)
         params_info = {}
         for param_name, param in init_signature.parameters.items():
@@ -55,8 +55,8 @@ class Individual:
         return params_info
 
     def validate_params(self) -> None:
-        """Check all parameters against model."""
-        for param_name, param_info in self.get_init_params(self.model).items():
+        """Check all parameters against wrapper."""
+        for param_name, param_info in self.get_init_params(self.model_wrapper).items():
             if param_name == "kwargs":
                 continue
             # Convert typing hint types into their original type (e.g. typing.List -> list)
@@ -83,16 +83,18 @@ class Individual:
                         f"Expected `{param_type}`, got `{type(self.kwargs[param_name])}`."
                     )
             elif param_info["empty_default"]:
-                raise ValueError(f"Missing `{self.model}` parameter: `{param_name}`.")
+                raise ValueError(f"Missing `{self.model_wrapper}` parameter: `{param_name}`.")
             else:
-                # print(f"Warning: using `{self.model}`'s default value for `{param_name}`.")
+                # print(f"Warning: using `{self.model_wrapper}`'s default value for `{param_name}`.")
                 pass
 
     def evaluate_fitness(self) -> float:
         """Create instance of model and evaluate."""
         if self.fitness is not None:
             return self.fitness
-        self.fitness = self.model(**{**self.hyperparameters, **self.kwargs}).evaluate(self.x_train, self.y_train)
+        self.fitness = self.model_wrapper(**{**self.hyperparameters, **self.kwargs}).evaluate(
+            self.x_train, self.y_train
+        )
         return self.fitness
 
     def __getitem__(self, key: str) -> Any:
@@ -117,7 +119,9 @@ class Individual:
                 child[param] = partner[param]
             else:
                 child[param] = value
-        return Individual(self.genes, self.model, self.x_train, self.y_train, hyperparameters=child, **self.kwargs)
+        return Individual(
+            self.genes, self.model_wrapper, self.x_train, self.y_train, hyperparameters=child, **self.kwargs
+        )
 
     def crossover(self, partner: Individual, rate: float = 1.0) -> None:
         """
@@ -143,7 +147,7 @@ class Individual:
         """
         return Individual(
             self.genes,
-            self.model,
+            self.model_wrapper,
             self.x_train,
             self.y_train,
             hyperparameters=self.hyperparameters.copy(),
