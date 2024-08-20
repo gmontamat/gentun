@@ -2,7 +2,7 @@
 Models implemented with scikit-learn
 """
 
-from typing import Type, Callable
+from typing import Callable, Type
 
 import numpy as np
 from sklearn.base import BaseEstimator
@@ -26,8 +26,6 @@ class SklearnCV(ModelWrapper):
         stratified: bool = False,
         **kwargs,
     ):
-        """
-        """
         super().__init__()
         assert hasattr(sklearn_model, "fit"), f"`{sklearn_model}` has not fit method."
         assert hasattr(sklearn_model, "predict"), f"`{sklearn_model}` has not predict method."

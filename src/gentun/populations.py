@@ -8,7 +8,7 @@ from __future__ import annotations
 import itertools
 import operator
 import random
-from typing import Any, Dict, Iterator, List, Optional, Type, Union
+from typing import Any, Dict, Iterator, Optional, Sequence, Type, Union
 
 import numpy as np
 
@@ -20,19 +20,18 @@ from .wrappers.base import ModelWrapper
 class Population:
     """
     Group of individuals that share the same genes.
-    Can be initialized either with a list of individuals
-    or a population size so that random individuals are
-    created. The get_fittest method returns the strongest
-    individual.
+    Can be initialized either with a sequence of individuals
+    or a population size so that random individuals are created.
+    The get_fittest method returns the strongest individual.
     """
 
     def __init__(
         self,
-        genes: List[Gene],
+        genes: Sequence[Gene],
         model_wrapper: Type[ModelWrapper],
         x_train: Any,
         y_train: Any,
-        individuals: Optional[Union[List[Dict[str, Any]], List[Individual], int]] = None,
+        individuals: Optional[Union[Sequence[Dict[str, Any]], Sequence[Individual], int]] = None,
         **kwargs,
     ):
         self.genes = genes
@@ -45,13 +44,13 @@ class Population:
         if isinstance(individuals, int):
             # Random population
             self.individuals = [self.spawn() for _ in range(individuals)]
-        elif isinstance(individuals, list):
+        elif isinstance(individuals, Sequence):
             self.individuals = []
             for individual in individuals:
                 # Here an individual can be an instance or the hyperparameters
                 self.add_individual(individual)
         else:
-            raise ValueError("'individuals' must be a `int` or a `list`.")
+            raise ValueError("'individuals' must be a `int` or a sequence.")
 
     def spawn(self, hyperparameters: Optional[Dict[str, Any]] = None) -> Individual:
         """Return an individual from this population."""
@@ -97,7 +96,7 @@ class Population:
     def __iter__(self) -> Iterator[Individual]:
         return iter(self.individuals)
 
-    def __getitem__(self, item: Union[int, slice]) -> Union[Individual, List[Individual]]:
+    def __getitem__(self, item: Union[int, slice]) -> Union[Individual, Sequence[Individual]]:
         return self.individuals[item]
 
 
@@ -109,16 +108,16 @@ class Grid(Population):
 
     def __init__(
         self,
-        genes: List[Gene],
+        genes: Sequence[Gene],
         model_wrapper: Type[ModelWrapper],
         x_train: Any,
         y_train: Any,
-        gene_samples: Union[int, List[int]],
+        gene_samples: Union[int, Sequence[int]],
         **kwargs,
     ):
         super().__init__(genes, model_wrapper, x_train, y_train, [], **kwargs)
         # Define the grid and add individuals
-        if isinstance(gene_samples, list):
+        if isinstance(gene_samples, Sequence):
             assert len(gene_samples) == len(genes), "`genes` and `gene_samples` must have the same length."
         else:
             gene_samples = [gene_samples] * len(genes)

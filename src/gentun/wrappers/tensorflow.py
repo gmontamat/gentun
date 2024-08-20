@@ -3,7 +3,7 @@ Models implemented in tensorflow
 """
 
 import os
-from typing import List, Tuple, Union
+from typing import Any, Sequence, Union
 
 import numpy as np
 import tensorflow as tf
@@ -27,16 +27,16 @@ class GeneticCNN(ModelWrapper):
 
     def __init__(
         self,
-        nodes: Tuple[int, ...],
-        kernels_per_layer: Tuple[int, ...],
-        kernel_sizes: Tuple[Tuple[int, ...], ...],
+        nodes: Sequence[int],
+        kernels_per_layer: Sequence[int],
+        kernel_sizes: Sequence[Union[Sequence[int], int]],
         dense_units: int = 500,
         dropout_probability: float = 0.5,
-        input_shape: Tuple[int, ...] = (28, 28, 1),
+        input_shape: Sequence[int] = (28, 28, 1),
         num_classes: int = 10,
         kfold: int = 5,
-        epochs: Union[int, Tuple[int, ...]] = (3,),
-        learning_rate: Union[int, Tuple[int, ...]] = (1e-3,),
+        epochs: Union[int, Sequence[int]] = (3,),
+        learning_rate: Union[int, Sequence[int]] = (1e-3,),
         batch_size: int = 32,
         plot: bool = False,
         **kwargs,
@@ -80,13 +80,11 @@ class GeneticCNN(ModelWrapper):
         )
 
     @staticmethod
-    def build_dag(x, nodes, connections, kernels):
+    def build_dag(x: Any, nodes: int, connections: str, kernels: int):
         """
         Decode the binary representation into the
         network stages (Genetic CNN - Section 3.1).
         """
-        # Get number of nodes (K_s) using the fact that K_s*(K_s-1)/2 == #bits
-        # nodes = int((1 + (1 + 8 * len(connections)) ** 0.5) / 2)
         # Separate bits by whose input they represent (Genetic CNN paper uses a dash)
         ctr = 0
         idx = 0
@@ -120,7 +118,7 @@ class GeneticCNN(ModelWrapper):
                 if not ins:
                     tmp = x
                 else:
-                    add_vars = [all_vars[i] for i in ins]
+                    add_vars = [all_vars[j] for j in ins]
                     if len(add_vars) > 1:
                         tmp = Add()(add_vars)
                     else:
@@ -136,11 +134,11 @@ class GeneticCNN(ModelWrapper):
 
     def build_model(
         self,
-        connections: List[str],
-        nodes: Tuple[int, ...],
-        input_shape: Tuple[int, ...],
-        kernels_per_layer: Tuple[int, ...],
-        kernel_sizes: Tuple[Tuple[int, ...], ...],
+        connections: Sequence[str],
+        nodes: Sequence[int],
+        input_shape: Sequence[int],
+        kernels_per_layer: Sequence[int],
+        kernel_sizes: Sequence[Union[Sequence[int], int]],
         dense_units: int,
         dropout_probability: float,
         num_classes: int,

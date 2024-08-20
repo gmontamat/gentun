@@ -8,7 +8,7 @@ from __future__ import annotations
 import inspect
 import pprint
 import random
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, Sequence, Type, Union
 
 from .genes import Gene
 from .wrappers.base import ModelWrapper
@@ -22,7 +22,7 @@ class Individual:
 
     def __init__(
         self,
-        genes: List[Gene],
+        genes: Sequence[Gene],
         model_wrapper: Type[ModelWrapper],
         x_train: Any,
         y_train: Any,

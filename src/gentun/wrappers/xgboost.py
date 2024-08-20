@@ -2,7 +2,7 @@
 Models implemented with xgboost
 """
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Sequence, Union
 
 import numpy as np
 import xgboost as xgb
@@ -19,7 +19,7 @@ class XGBoostCV(ModelWrapper):
 
     def __init__(
         self,
-        metrics: Union[str, Tuple[str, ...]],
+        metrics: Union[str, Sequence[str]],
         num_boost_round: int = 10,
         nfold: int = 3,
         stratified: bool = False,
@@ -59,8 +59,8 @@ class XGBoostCV(ModelWrapper):
             metrics=self.metrics,
             early_stopping_rounds=self.early_stopping_rounds,
         )
-        if isinstance(self.metrics, list):
-            metric = self.metrics[-1]
-        else:
+        if isinstance(self.metrics, str):
             metric = self.metrics
+        else:
+            metric = self.metrics[-1]
         return cv_result[f"test-{metric}-mean"][-1]
