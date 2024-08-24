@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name =  "gentun"
 authors = [
-    {name = "Gustavo Montamat", email = "redacted@gmail.com"},
+    {name = "Gustavo Montamat"},
 ]
 description = "Hyperparameter tuning for machine learning models using a distributed genetic algorithm"
 readme = "README.md"
