@@ -128,12 +128,15 @@ class RedisWorker:
             while True:
                 job_data = self.client.lpop(self.job_queue)
                 if job_data:
-                    if job_data["name"] == self.name and job_data["handler"] == self.handler.__name__:
-                        fitness = self.process_job(x_train, y_train, **json.loads(job_data["kwargs"]))
-                        result = {"id": job_data["id"], "name": self.name, "fitness": fitness}
+                    data = json.loads(job_data)
+                    print(data)
+                    if data["name"] == self.name and data["handler"] == self.handler.__name__:
+                        fitness = self.process_job(x_train, y_train, **data["kwargs"])
+                        result = {"id": data["id"], "name": self.name, "fitness": fitness}
                         self.client.rpush(self.results_queue, json.dumps(result))
                 else:
                     print("No jobs in queue, sleeping for a while...")
                     time.sleep(1)
         except KeyboardInterrupt:
+            print()
             print("Bye!")
