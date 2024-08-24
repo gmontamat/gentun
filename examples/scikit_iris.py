@@ -37,7 +37,7 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
 if __name__ == "__main__":
     from gentun.algorithms import Tournament
     from gentun.genes import RandomChoice
-    from gentun.wrappers.sklearn import SklearnCV
+    from gentun.models.sklearn import SklearnCV
     from gentun.populations import Population
 
     # RandomForestClassifier hyperparameters
@@ -57,6 +57,6 @@ if __name__ == "__main__":
     # Fetch training data
     x_train, y_train = parse_iris("iris.data")
     # Run genetic algorithm on a population of 10 for 10 generations
-    population = Population(genes, SklearnCV, x_train, y_train, 10, **kwargs)
+    population = Population(genes, SklearnCV, 10, x_train, y_train, **kwargs)
     algorithm = Tournament(population)
     algorithm.run(10)

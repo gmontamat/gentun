@@ -39,7 +39,7 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
 if __name__ == "__main__":
     from gentun.algorithms import RussianRoulette
     from gentun.genes import Binary
-    from gentun.wrappers.tensorflow import GeneticCNN
+    from gentun.models.tensorflow import GeneticCNN
     from gentun.populations import Population
 
     # Genetic CNN static parameters
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     genes = [Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2)) for i, K_s in enumerate(kwargs["nodes"])]
 
     x_train, y_train = load_mnist("mnist.npz")
-    population = Population(genes, GeneticCNN, x_train, y_train, 20, **kwargs)
+    population = Population(genes, GeneticCNN, 20, x_train, y_train, **kwargs)
     algorithm = RussianRoulette(
         population,
         crossover_probability=0.2,  # p_C

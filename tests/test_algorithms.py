@@ -13,20 +13,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 if __name__ == "__main__":
     from gentun.algorithms import RussianRoulette, Tournament
     from gentun.genes import RandomChoice
+    from gentun.models.base import Dummy
     from gentun.populations import Population
-    from gentun.wrappers.base import Dummy
 
-    y_train = None
-    x_train = None
+    x_train = []
+    y_train = []
 
     genes = [RandomChoice(f"hyperparam_{i}", [0, 1, 2]) for i in range(10)]
 
     # Run russian roulette with a population of 20 for 50 generations
-    population = Population(genes, Dummy, x_train, y_train, 20)
+    population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = RussianRoulette(population)
     algorithm.run(50)
 
     # Run tournament select with a population of 50 for 20 generations
-    population = Population(genes, Dummy, x_train, y_train, 50)
+    population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = Tournament(population)
     algorithm.run(20, patience=3)

@@ -35,7 +35,7 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
 if __name__ == "__main__":
     from gentun.algorithms import Tournament
     from gentun.genes import RandomChoice, RandomLogUniform, RandomUniform
-    from gentun.wrappers.xgboost import XGBoostCV
+    from gentun.models.xgboost import XGBoostCV
     from gentun.populations import Population
 
     # xgboost hyperparameters
@@ -67,6 +67,6 @@ if __name__ == "__main__":
     # Fetch training data
     x_train, y_train = parse_iris("iris.data")
     # Run genetic algorithm on a population of 50 for 100 generations
-    population = Population(genes, XGBoostCV, x_train, y_train, 50, **kwargs)
+    population = Population(genes, XGBoostCV, 50, x_train, y_train, **kwargs)
     algorithm = Tournament(population)
     algorithm.run(100, maximize=False)
