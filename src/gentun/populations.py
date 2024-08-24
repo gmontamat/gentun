@@ -14,32 +14,44 @@ import numpy as np
 
 from .genes import Gene
 from .individuals import Individual
-from .wrappers.base import ModelWrapper
+from .models.base import Handler
+from .services import RedisController
 
 
 class Population:
     """
-    Group of individuals that share the same genes.
-    Can be initialized either with a sequence of individuals
-    or a population size so that random individuals are created.
-    The get_fittest method returns the strongest individual.
+    Group of individuals that share the same genes. Can be initialized
+    with a sequence of individuals or a population size, in which case,
+    random individuals are created. The get_fittest() method returns
+    the strongest individual.
     """
 
     def __init__(
         self,
         genes: Sequence[Gene],
-        model_wrapper: Type[ModelWrapper],
-        x_train: Any,
-        y_train: Any,
-        individuals: Optional[Union[Sequence[Dict[str, Any]], Sequence[Individual], int]] = None,
+        handler: Type[Handler],
+        individuals: Union[Sequence[Dict[str, Any]], Sequence[Individual], int],
+        x_train: Any = None,
+        y_train: Any = None,
+        controller: Optional[RedisController] = None,
         **kwargs,
     ):
         self.genes = genes
-        self.model_wrapper = model_wrapper
-        self.x_train = x_train
-        self.y_train = y_train
+        self.handler = handler
         # Static parameters used to create model
         self.kwargs = kwargs
+        # Handle either train data or queueing server
+        if controller is not None:
+            if x_train is not None or y_train is not None:
+                print("Warning: `x_train` and `y_train` ignored, using server instead.")
+        else:
+            if x_train is None:
+                raise ValueError("Missing `x_train`.")
+            if y_train is None:
+                raise ValueError("Missing `y_train`.")
+        self.x_train = x_train
+        self.y_train = y_train
+        self.controller = controller
         # Create individuals
         if isinstance(individuals, int):
             # Random population
@@ -63,7 +75,7 @@ class Population:
                 if str(gene) not in hyperparameters:
                     raise KeyError(f"Missing hyperparameter '{str(gene)}'.")
         return Individual(
-            self.genes, self.model_wrapper, self.x_train, self.y_train, hyperparameters=hyperparameters, **self.kwargs
+            self.genes, self.handler, self.x_train, self.y_train, hyperparameters=hyperparameters, **self.kwargs
         )
 
     def add_individual(self, individual: Optional[Union[Dict[str, Any], Individual]] = None) -> None:
@@ -77,23 +89,33 @@ class Population:
 
     def get_fittest(self, maximize: bool = True) -> Individual:
         """Return the fittest individual of the population."""
+        if self.controller is not None:
+            # Evaluate a population in parallel
+            for individual in self.individuals:
+                if individual.get_fitness() is None:
+                    individual.send_to_queue(self.controller)
+            for individual in self.individuals:
+                if individual.get_fitness() is None:
+                    individual.read_from_queue(self.controller)
         if maximize:
             return max(self.individuals, key=operator.methodcaller("evaluate_fitness"))
         return min(self.individuals, key=operator.methodcaller("evaluate_fitness"))
 
     def duplicate(self, sample_size: int = 0) -> Population:
         """
-        Creates an identical population. If sample_size > 0,
-        sample random individuals from population without
-        replacement.
+        Create an identical population. If sample_size > 0, sample
+        random individuals from population without replacement.
         """
         individuals = random.sample(self.individuals, sample_size)
-        return Population(self.genes, self.model_wrapper, self.x_train, self.y_train, individuals, **self.kwargs)
+        return Population(
+            self.genes, self.handler, individuals, self.x_train, self.y_train, self.controller, **self.kwargs
+        )
 
     def __len__(self) -> int:
         return len(self.individuals)
 
     def __iter__(self) -> Iterator[Individual]:
+        """Enable `for individual in population` usage."""
         return iter(self.individuals)
 
     def __getitem__(self, item: Union[int, slice]) -> Union[Individual, Sequence[Individual]]:
@@ -102,20 +124,21 @@ class Population:
 
 class Grid(Population):
     """
-    Population whose individuals are created based on a
-    grid search approach instead of at random.
+    Population whose individuals are created based on a grid search
+    approach instead of at random.
     """
 
     def __init__(
         self,
         genes: Sequence[Gene],
-        model_wrapper: Type[ModelWrapper],
-        x_train: Any,
-        y_train: Any,
+        handler: Type[Handler],
         gene_samples: Union[int, Sequence[int]],
+        x_train: Any = None,
+        y_train: Any = None,
+        controller: Optional[Handler] = None,
         **kwargs,
     ):
-        super().__init__(genes, model_wrapper, x_train, y_train, [], **kwargs)
+        super().__init__(genes, handler, [], x_train, y_train, controller, **kwargs)
         # Define the grid and add individuals
         if isinstance(gene_samples, Sequence):
             assert len(gene_samples) == len(genes), "`genes` and `gene_samples` must have the same length."

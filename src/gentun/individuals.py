@@ -1,46 +1,47 @@
 """
-Define an individual with its genes,
-duplication, reproduction, crossover
-and mutation processes.
+Define an individual with its genes, duplication, reproduction,
+crossover, and mutation processes.
 """
 from __future__ import annotations
 
 import inspect
 import pprint
 import random
-from typing import Any, Dict, Sequence, Type, Union
+from typing import Any, Dict, Optional, Sequence, Type, Union
 
 from .genes import Gene
-from .wrappers.base import ModelWrapper
+from .models.base import Handler
+from .services import RedisController
 
 
 class Individual:
     """
-    Member of a population with specific gene
-    values (hyperparameters of the model).
+    Member of a population with specific gene values
+    -the hyperparameters of the model-.
     """
 
     def __init__(
         self,
         genes: Sequence[Gene],
-        model_wrapper: Type[ModelWrapper],
+        handler: Type[Handler],
         x_train: Any,
         y_train: Any,
         hyperparameters: Dict[str, Any],
         **kwargs: Any,
     ):
         self.genes = genes
-        self.model_wrapper = model_wrapper
+        self.handler = handler
         self.x_train = x_train
         self.y_train = y_train
         self.hyperparameters = hyperparameters
         self.kwargs = kwargs  # model parameters that remain unchanged
         self.validate_params()
         self.fitness = None  # Until evaluated an individual fitness is unknown
+        self.job_id = None
 
     @staticmethod
-    def get_init_params(_class: Type[ModelWrapper]) -> Dict[str, Dict[str, Any]]:
-        """Get parameters defined in the ModelWrapper class used."""
+    def get_init_params(_class: Type[Handler]) -> Dict[str, Dict[str, Any]]:
+        """Get parameters defined in the Handler class used."""
         init_signature = inspect.signature(_class.__init__)
         params_info = {}
         for param_name, param in init_signature.parameters.items():
@@ -55,8 +56,8 @@ class Individual:
         return params_info
 
     def validate_params(self) -> None:
-        """Check all parameters against wrapper."""
-        for param_name, param_info in self.get_init_params(self.model_wrapper).items():
+        """Check all parameters against model handler."""
+        for param_name, param_info in self.get_init_params(self.handler).items():
             if param_name == "kwargs":
                 continue
             # Convert typing hint types into their original type (e.g. typing.List -> list)
@@ -83,19 +84,29 @@ class Individual:
                         f"Expected `{param_type}`, got `{type(self.kwargs[param_name])}`."
                     )
             elif param_info["empty_default"]:
-                raise ValueError(f"Missing `{self.model_wrapper}` parameter: `{param_name}`.")
+                raise ValueError(f"Missing `{self.handler}` parameter: `{param_name}`.")
             else:
-                # print(f"Warning: using `{self.model_wrapper}`'s default value for `{param_name}`.")
+                # print(f"Warning: using `{self.handler}`'s default value for `{param_name}`.")
                 pass
 
     def evaluate_fitness(self) -> float:
-        """Create instance of model and evaluate."""
+        """Instantiate model and evaluate."""
         if self.fitness is not None:
             return self.fitness
-        self.fitness = self.model_wrapper(**{**self.hyperparameters, **self.kwargs}).evaluate(
-            self.x_train, self.y_train
-        )
+        self.fitness = self.handler(**{**self.hyperparameters, **self.kwargs}).evaluate(self.x_train, self.y_train)
         return self.fitness
+
+    def get_fitness(self) -> Optional[float]:
+        """Return the current value of individual's fitness."""
+        return self.fitness
+
+    def send_to_queue(self, server: RedisController) -> None:
+        """Send individual to be evaluated."""
+        self.job_id = server.send_job(self.handler, **{**self.hyperparameters, **self.kwargs})
+
+    def read_from_queue(self, server: RedisController) -> None:
+        """Read fitness results from queue."""
+        self.fitness = server.wait_for_result(self.job_id)
 
     def __getitem__(self, key: str) -> Any:
         """Select a hyperparameter."""
@@ -109,9 +120,8 @@ class Individual:
 
     def reproduce(self, partner: Individual, rate: float = 1.0) -> Individual:
         """
-        Mix genes from self and partner at random
-        and return a new instance of an individual.
-        Does not mutate parents.
+        Mix genes from self and partner at random and return a new
+        instance of an individual. Does not mutate parents.
         """
         child = {}
         for param, value in self.hyperparameters.items():
@@ -119,9 +129,7 @@ class Individual:
                 child[param] = partner[param]
             else:
                 child[param] = value
-        return Individual(
-            self.genes, self.model_wrapper, self.x_train, self.y_train, hyperparameters=child, **self.kwargs
-        )
+        return Individual(self.genes, self.handler, self.x_train, self.y_train, hyperparameters=child, **self.kwargs)
 
     def crossover(self, partner: Individual, rate: float = 1.0) -> None:
         """
@@ -141,13 +149,12 @@ class Individual:
 
     def duplicate(self) -> Individual:
         """
-        Create a copy of the individual.
-        Useful when algorithms sample
+        Create a copy of the individual. Required when algorithms sample
         with replacement.
         """
         return Individual(
             self.genes,
-            self.model_wrapper,
+            self.handler,
             self.x_train,
             self.y_train,
             hyperparameters=self.hyperparameters.copy(),
