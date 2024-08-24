@@ -4,9 +4,9 @@ The goal of this project is to create a simple framework
 for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
 like Neural Networks and Gradient Boosting Trees, using a genetic algorithm. Evaluating the fitness of an individual in
 a population involves training a model with a specific set of hyperparameters, which is a time-consuming process. To
-address this, we provide a client-server approach. Multiple clients can handle model training and cross-validation of
-individuals provided by a server while the server manages the generation of offspring through reproduction and
-mutation.
+address this problem, we provide a controller-worker . Multiple workers can handle model training and cross-validation
+of individuals provided by a controller while this controller manages the generation of offspring through reproduction
+and mutation.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/param_tuning.html) on Parameter Tuning
@@ -26,7 +26,7 @@ This project supports hyperparameter tuning for the following models:
 
 ## :construction: Contributing
 
-Feel free to submit your custom [`gentun.wrappers.ModelWrapper`](src/gentun/wrappers/base.py#L9-L25)
+Feel free to submit your custom [`gentun.models.Handler`](src/gentun/models/base.py#L9-L25)
 and [`gentun.genes.Gene`](src/gentun/genes.py#L12-L44) subclasses to enhance the project. You can also help us speed up
 hyperparameter search with your spare GPU time. Check our documentation on [how to contribute](./CONTRIBUTE.md).
 
@@ -38,7 +38,7 @@ pip install gentun
 
 ## Usage
 
-### On a single node
+### Single node
 
 The most basic way to run the algorithm is using a single machine, as shown in the following example where we use it to
 find the optimal hyperparameters of an [`xgboost`](https://xgboost.readthedocs.io/en/stable/) model. First, we download
@@ -64,7 +64,7 @@ genes = [
 ]
 ```
 
-We are using the `gentun.wrappers.xgboost.XGBoostCV` model, which performs k-fold cross validation with available train
+We are using the `gentun.models.xgboost.XGBoostCV` handler, which performs k-fold cross validation with available train
 data and returns an average metric over the folds. Thus, we need to define some static parameters which are shared
 across the population over all generations:
 
@@ -85,11 +85,11 @@ passed either through genes or keyword arguments.
 
 ```python
 from gentun.algorithms import Tournament
-from gentun.wrappers.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoostCV
 from gentun.populations import Population
 
 # Run the genetic algorithm with a population of 50 for 100 generations
-population = Population(genes, XGBoostCV, x_train, y_train, 50, **kwargs)
+population = Population(genes, XGBoostCV, 50, x_train, y_train, **kwargs)
 algorithm = Tournament(population)
 algorithm.run(100, maximize=False)
 ```
@@ -110,7 +110,7 @@ population. You can add custom individuals to the population before running the 
 an intuition of which hyperparameters work well with your model:
 
 ```python
-from gentun.wrappers.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoostCV
 from gentun.populations import Population
 
 
@@ -122,7 +122,7 @@ hyperparams = {
 }
 
 # Generate a random population and then add a custom individual
-population = Population(genes, XGBoostCV, x_train, y_train, 49, **kwargs)
+population = Population(genes, XGBoostCV, 49, x_train, y_train, **kwargs)
 population.add_individual(hyperparams)
 ```
 
@@ -134,7 +134,7 @@ method, so that uniformly distributed hyperparameter values are obtained with it
 
 ```python
 from gentun.genes import RandomChoice, RandomLogUniform
-from gentun.wrappers.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoostCV
 from gentun.populations import Grid
 
 
@@ -147,43 +147,47 @@ genes = [
 gene_samples = [10, 8, 11]  # How many samples we want to get from each gene
 
 # Generate a grid of individuals
-population = Grid(genes, XGBoostCV, x_train, y_train, gene_samples, **kwargs)
+population = Grid(genes, XGBoostCV, gene_samples, x_train, y_train, **kwargs)
 ```
 
 Running the genetic algorithm on this population for just one generation is equivalent to doing a grid search over 10
 `learning_rate` values, all `max_depth` values between 3 and 10, and all `min_child_weight` values between 0 and 10.
 
-### :construction: Distributed algorithm - using multiple nodes
+### Multiple nodes
 
-You can speed up the genetic algorithm by using several machines to evaluate models. One of them will act as a *server*,
-generating a population and running the genetic algorithm. Each time this *server* needs to evaluate an individual, it
-will send a request to a pool of *clients*, which receive the model's hyperparameters and perform model fitting using
-k-fold cross-validation. The more *clients* you use, the faster the algorithm will run.
+You can speed up the genetic algorithm by using several machines to evaluate individuals in parallel. One of node has to
+act as a *controller*, generating populations and running the genetic algorithm. Each time this *controller* node needs
+to evaluate an individual from a population, it will send a request to a job queue that is processed by *workers* which
+receive the model's hyperparameters and perform model fitting through k-fold cross-validation. The more *workers* you
+run, the faster the algorithm will evolve each generation.
 
 #### Redis setup
 
+The simplest way to start the Redis service that will host the communication queues is through `docker`:
+
 ```shell
-docker run -d --name gentun-redis -p 6379:6379 redis
+docker run -d --rm --name gentun-redis -p 6379:6379 redis
 ```
 
-#### Running the distributed genetic algorithm
+#### Controller node
 
-To run the distributed genetic algorithm, define either a *DistributedPopulation* or a *DistributedGridPopulation* which
-will serve as the *server* node. It will send job requests to the message broker each time a set of individuals needs to
-be evaluated and will wait until all jobs are completed to produce the next generation of individuals.
+To run the distributed genetic algorithm, define a `gentun.services.RedisController` and pass it to the `Population`
+instead of the `x_train` and `y_train` data. When the algorithm needs to evaluate the fittest individual, it will pass
+the hyperparameters to a job queue in Redis and wait till all the individual's fitness are evaluated by worker
+processes. Once this is done, the mutation and reproduction steps are run by the controller and a new generation is
+produced.
 
 ```python
-from gentun import GeneticAlgorithm, DistributedPopulation, XgboostIndividual
+from gentun.models.xgboost import XGBoostCV
+from gentun.services import RedisController
 
-population = DistributedPopulation(
-    XgboostIndividual, size=100, additional_parameters={'kfold': 3}, maximize=False,
-    host='<rabbitmq_server_ip>', user='<server_username>', password='<server_password>',
-    rabbit_queue='<rabbit_queue>'
-)
-# Run the algorithm for ten generations using client nodes to evaluate individuals
-ga = GeneticAlgorithm(population)
-ga.run(10)
+controller = RedisController("experiment", host="localhost", port=6379)
+# ... define genes
+population = Population(genes, XGBoostCV, 100, controller=controller, **kwargs)
+# ... run algorithm
 ```
+
+#### Worker nodes
 
 The client nodes are defined using the *GentunClient* class and passing the corresponding individual to it. Each node
 has to have access to the train data. You can use as many nodes as desired as long as they have network access to the
