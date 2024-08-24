@@ -14,12 +14,12 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
 
-from .base import ModelWrapper
+from .base import Handler
 
 K.set_image_data_format("channels_last")
 
 
-class GeneticCNN(ModelWrapper):
+class GeneticCNN(Handler):
     """
     Implement Genetic CNN model.
     http://arxiv.org/pdf/1703.01513

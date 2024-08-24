@@ -8,10 +8,10 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from .base import ModelWrapper
+from .base import Handler
 
 
-class SklearnCV(ModelWrapper):
+class SklearnCV(Handler):
     """
     Perform cross-validation with scikit-learn.
     This model can be used as classifier or

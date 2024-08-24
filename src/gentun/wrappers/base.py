@@ -6,7 +6,7 @@ with the genetic algorithms.
 from typing import Any
 
 
-class ModelWrapper:
+class Handler:
     """
     Template definition of a machine learning model
     which receives a train set and fits a model using
@@ -25,7 +25,7 @@ class ModelWrapper:
         raise NotImplementedError("Use a subclass with a defined model.")
 
 
-class Dummy(ModelWrapper):
+class Dummy(Handler):
     """
     Use this model to test algorithms only.
     Ignores x_train, y_train to evaluate, just
