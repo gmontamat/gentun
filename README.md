@@ -189,24 +189,18 @@ population = Population(genes, XGBoostCV, 100, controller=controller, **kwargs)
 
 #### Worker nodes
 
-The client nodes are defined using the *GentunClient* class and passing the corresponding individual to it. Each node
-has to have access to the train data. You can use as many nodes as desired as long as they have network access to the
-message broker server.
+The worker nodes are defined using the `gentun.services.RedisWorker` class and passing the handler to it. Then, we use
+its `run()` method with train data to begin processing jobs from the queue. You can use as many nodes as desired as long
+as they have network access to the redis server.
 
 ```python
-from sklearn.datasets import fetch_california_housing
-from gentun import GentunClient, XgboostIndividual
+from gentun.models.xgboost import XGBoostCV
+from gentun.services import RedisWorker
 
-data = fetch_california_housing()
-y_train = data.target
-x_train = data.data
+worker = RedisWorker("experiment", XGBoostCV, host="localhost", port=6379)
 
-gc = GentunClient(
-    XgboostIndividual, x_train, y_train, host='<rabbitmq_server_ip>',
-    user='<client_username>', password='<client_password>',
-    rabbit_queue='<rabbit_queue>'
-)
-gc.work()
+# ... fetch x_train and y_train
+worker.run(x_train, y_train)
 ```
 
 ## References
