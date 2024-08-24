@@ -129,7 +129,6 @@ class RedisWorker:
                 job_data = self.client.lpop(self.job_queue)
                 if job_data:
                     data = json.loads(job_data)
-                    print(data)
                     if data["name"] == self.name and data["handler"] == self.handler.__name__:
                         fitness = self.process_job(x_train, y_train, **data["kwargs"])
                         result = {"id": data["id"], "name": self.name, "fitness": fitness}
