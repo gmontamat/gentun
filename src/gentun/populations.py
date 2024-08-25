@@ -6,6 +6,7 @@ that will be evaluated with train data.
 from __future__ import annotations
 
 import itertools
+import logging
 import operator
 import random
 from typing import Any, Dict, Iterator, Optional, Sequence, Type, Union
@@ -43,12 +44,12 @@ class Population:
         # Handle either train data or queueing server
         if controller is not None:
             if x_train is not None or y_train is not None:
-                print("Warning: `x_train` and `y_train` ignored, using server instead.")
+                logging.warning("`x_train` and `y_train` ignored, using server instead.")
         else:
             if x_train is None:
-                raise ValueError("Missing `x_train`.")
+                raise ValueError("Missing `x_train` for population.")
             if y_train is None:
-                raise ValueError("Missing `y_train`.")
+                raise ValueError("Missing `y_train` for population.")
         self.x_train = x_train
         self.y_train = y_train
         self.controller = controller
@@ -62,7 +63,7 @@ class Population:
                 # Here an individual can be an instance or the hyperparameters
                 self.add_individual(individual)
         else:
-            raise ValueError("'individuals' must be a `int` or a sequence.")
+            raise ValueError("'individuals' must be either an `int` or a sequence.")
 
     def spawn(self, hyperparameters: Optional[Dict[str, Any]] = None) -> Individual:
         """Return an individual from this population."""
@@ -73,7 +74,7 @@ class Population:
             # Hyperparameters passed, check for missing ones
             for gene in self.genes:
                 if str(gene) not in hyperparameters:
-                    raise KeyError(f"Missing hyperparameter '{str(gene)}'.")
+                    raise KeyError(f"Missing `{self.handler}`'s hyperparameter '{str(gene)}'.")
         return Individual(
             self.genes, self.handler, self.x_train, self.y_train, hyperparameters=hyperparameters, **self.kwargs
         )

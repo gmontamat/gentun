@@ -1,7 +1,7 @@
 """
 Models implemented in tensorflow
 """
-
+import logging
 import os
 from typing import Any, Sequence, Union
 
@@ -181,10 +181,10 @@ class GeneticCNN(Handler):
         acc = 0.0
         cross_validation = StratifiedKFold(n_splits=self.kfold, shuffle=True)
         for fold, (train, validation) in enumerate(cross_validation.split(x_train, np.where(y_train == 1)[1])):
-            print(f"KFold {fold + 1}/{self.kfold}")
+            logging.info("KFold %d of %d", fold + 1, self.kfold)
             self.reset_weights()
             for epochs, learning_rate in zip(self.epochs, self.learning_rate):
-                print(f"Training {epochs} epochs with learning rate {learning_rate}")
+                logging.info("Training %d epochs with learning rate %.4f", epochs, learning_rate)
                 self.model.compile(
                     optimizer=Adam(learning_rate=learning_rate), loss="binary_crossentropy", metrics=["accuracy"]
                 )

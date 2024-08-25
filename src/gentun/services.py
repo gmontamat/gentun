@@ -4,6 +4,7 @@ Handle job queueing and results retrieval.
 
 import inspect
 import json
+import logging
 import os.path
 import socket
 import time
@@ -15,6 +16,7 @@ import redis
 from .models.base import Handler
 
 CONTROLLER_MESSAGE = """
+
 Fitness evaluation job sent to redis queue.
 Use the following code on your worker nodes:
 
@@ -71,7 +73,7 @@ class RedisController:
     def send_job(self, handler: Type[Handler], **kwargs) -> str:
         """Send job data to the job queue for evaluation."""
         if self.first_run:
-            print(self.get_worker_details(handler))
+            logging.info(self.get_worker_details(handler))
             self.first_run = False
         job_id = str(uuid.uuid4())
         job = {
@@ -123,19 +125,19 @@ class RedisWorker:
 
     def run(self, x_train: Any, y_train: Any):
         """Read jobs from queue, call handler, and return fitness."""
-        print("Worker started (Ctrl+C to stop), waiting for jobs...")
+        logging.info("Worker started (Ctrl+C to stop), waiting for jobs...")
         try:
             while True:
                 job_data = self.client.lpop(self.job_queue)
                 if job_data:
                     data = json.loads(job_data)
                     if data["name"] == self.name and data["handler"] == self.handler.__name__:
+                        logging.info("Working on job %s", data["id"])
                         fitness = self.process_job(x_train, y_train, **data["kwargs"])
                         result = {"id": data["id"], "name": self.name, "fitness": fitness}
                         self.client.rpush(self.results_queue, json.dumps(result))
                 else:
-                    print("No jobs in queue, sleeping for a while...")
+                    logging.debug("No jobs in queue, sleeping for a while...")
                     time.sleep(1)
         except KeyboardInterrupt:
-            print()
-            print("Bye!")
+            logging.info("Bye!")

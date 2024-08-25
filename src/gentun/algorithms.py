@@ -2,6 +2,7 @@
 Genetic algorithms
 """
 
+import logging
 import random
 from typing import Optional
 
@@ -28,14 +29,13 @@ class GeneticAlgorithm:
             current_strike = 1
         while self.current_generation <= generations:
             if verbose:
-                print(f"Running generation #{self.current_generation}...")
+                logging.info("Running generation #%d...", self.current_generation)
             self.evolve(maximize)
             fittest = self.population.get_fittest(maximize)
             fitness = fittest.evaluate_fitness()
             if verbose:
-                print("Fittest individual:")
-                print(fittest)
-                print(f"Fitness value: {round(fitness, 4)}")
+                logging.debug("Fittest individual:\n%s", fittest)
+                logging.debug("Fitness value: %.4f", fitness)
             if patience:
                 if fitness <= best_fitness * (1.0 if maximize else -1.0):
                     current_strike += 1
@@ -44,11 +44,10 @@ class GeneticAlgorithm:
                     current_strike = 1
                 if current_strike == patience:
                     if verbose:
-                        print("Ran out of patience...")
+                        logging.info("Ran out of patience...")
                     break
             self.current_generation += 1
-        print("Complete! Fittest individual:")
-        print(fittest)
+        logging.info("Complete! Fittest individual:\n%s", fittest)
 
     def evolve(self, maximize: bool) -> None:
         """Run a single generation."""

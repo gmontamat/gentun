@@ -5,6 +5,7 @@ crossover, and mutation processes.
 from __future__ import annotations
 
 import inspect
+import logging
 import pprint
 import random
 from typing import Any, Dict, Optional, Sequence, Type, Union
@@ -67,27 +68,24 @@ class Individual:
                 param_type = param_info["type"]
             if param_name in self.hyperparameters:
                 if param_type is Union:
-                    # print(f"Warning: cannot check type for `{param_name}` with type `Union`.")
-                    pass
+                    logging.warning("Not checking type for '%s' with type `Union`.", param_name)
                 elif not isinstance(self.hyperparameters[param_name], param_type):
                     raise TypeError(
-                        f"Type missmatch with hyperparameter `{param_name}`. "
+                        f"Type missmatch with hyperparameter '{param_name}'. "
                         f"Expected `{param_type}`, got `{type(self.hyperparameters[param_name])}`."
                     )
             elif param_name in self.kwargs:
                 if param_type is Union:
-                    # print(f"Warning: cannot check type for `{param_name}` with type `Union`.")
-                    pass
+                    logging.warning("Not checking type for '%s' with type `Union`.", param_name)
                 elif not isinstance(self.kwargs[param_name], param_type):
                     raise TypeError(
-                        f"Type missmatch with parameter `{param_name}`. "
+                        f"Type missmatch with parameter '{param_name}'. "
                         f"Expected `{param_type}`, got `{type(self.kwargs[param_name])}`."
                     )
             elif param_info["empty_default"]:
-                raise ValueError(f"Missing `{self.handler}` parameter: `{param_name}`.")
+                raise ValueError(f"Missing `{self.handler.__name__}` parameter: '{param_name}'.")
             else:
-                # print(f"Warning: using `{self.handler}`'s default value for `{param_name}`.")
-                pass
+                logging.debug("Using `%s`'s default value for '%s'", self.handler.__name__, param_name)
 
     def evaluate_fitness(self) -> float:
         """Instantiate model and evaluate."""
