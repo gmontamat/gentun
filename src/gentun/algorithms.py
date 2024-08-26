@@ -56,12 +56,11 @@ class GeneticAlgorithm:
 
 class Tournament(GeneticAlgorithm):
     """
-    Evolve a population by running small-group
-    tournaments to find fittest individuals on
-    each generation. If elitism is set, the
-    fittest individual of a generation will be
-    part of the next one.
-    TODO: add reference
+    Evolve a population by selecting two individuals at random for
+    reproduction. If elitism is set, the fittest individual of a
+    generation will also be part of the next one.
+    Based on: "Artificial Intelligence: A Modern Approach, 3rd ed."
+    by Peter Norvig, Section 4.1.4
     """
 
     def __init__(
