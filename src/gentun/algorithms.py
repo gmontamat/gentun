@@ -1,5 +1,13 @@
 """
-Genetic algorithms
+This module provides implementations of genetic algorithms for various
+optimization tasks. It includes base classes and specific algorithm
+variants designed to evolve populations of individuals towards optimal
+solutions.
+
+Key components:
+- GeneticAlgorithm: Base class for genetic algorithm implementations
+- Specialized subclasses for different genetic algorithm variants
+- Utility functions for selection, crossover, and mutation operations
 """
 
 import logging
@@ -23,10 +31,11 @@ class GeneticAlgorithm:
     def run(
         self, generations: int, maximize: bool = True, patience: Optional[int] = None, verbose: bool = True
     ) -> None:
-        """Run genetic algorithm for generations."""
-        if patience:
-            best_fitness = -float("inf") if maximize else float("inf")
-            current_strike = 1
+        """
+        Evolve the population for the specified number of generations.
+        """
+        best_fitness = -float("inf") if maximize else float("inf")
+        current_strike = 1
         while self.current_generation <= generations:
             if verbose:
                 logging.info("Running generation #%d...", self.current_generation)
@@ -37,7 +46,7 @@ class GeneticAlgorithm:
                 logging.debug("Fittest individual:\n%s", fittest)
                 logging.debug("Fitness value: %.4f", fitness)
             if patience:
-                if fitness <= best_fitness * (1.0 if maximize else -1.0):
+                if (maximize and fitness <= best_fitness) or (not maximize and fitness >= best_fitness):
                     current_strike += 1
                 else:
                     best_fitness = fitness
@@ -56,10 +65,14 @@ class GeneticAlgorithm:
 
 class Tournament(GeneticAlgorithm):
     """
-    Evolve a population by selecting two individuals at random for
-    reproduction. If elitism is set, the fittest individual of a
-    generation will also be part of the next one.
-    Based on: "Artificial Intelligence: A Modern Approach, 3rd ed."
+    This class evolves a population using a tournament selection
+    method. In each generation, pairs of individuals are randomly
+    selected to reproduce. If elitism is enabled, the fittest
+    individual from the current generation is guaranteed to survive to
+    the next generation.
+
+    Reference:
+    "Artificial Intelligence: A Modern Approach, 3rd ed."
     by Peter Norvig, Section 4.1.4
     """
 
@@ -100,8 +113,11 @@ class Tournament(GeneticAlgorithm):
 
 class RussianRoulette(GeneticAlgorithm):
     """
-    Algorithm used by the Genetic CNN paper.
-    http://arxiv.org/pdf/1703.01513
+    Uses Russian Roulette selection for genetic evolution. Individuals
+    are selected based on fitness-proportional probabilities.
+    Crossover and mutation are applied to generate new population.
+    Reference:
+    "Genetic CNN paper" (http://arxiv.org/pdf/1703.01513)
     """
 
     def __init__(
