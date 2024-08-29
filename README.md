@@ -36,6 +36,14 @@ hyperparameter search with your spare GPU time. Check our documentation on [how 
 pip install gentun
 ```
 
+To setup a development environment, run:
+
+```bash
+python -m pip install --upgrade pip
+pip install 'flit>=3.8.0'
+flit install --deps develop --extras tensorflow,xgboost
+```
+
 ## Usage
 
 ### Single node
