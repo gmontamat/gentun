@@ -1,9 +1,10 @@
-name: "Lint code"
+name: "Code linter check"
 
 on: [push, pull_request]
 
 jobs:
-  lint:
+  main:
+    name: Check code formatting
     runs-on: ubuntu-latest
 
     steps:
@@ -31,3 +32,7 @@ jobs:
     - name: Run black
       run: |
         black --check src/
+
+    - name: Run pylint
+      run: |
+        pylint src/
