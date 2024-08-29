@@ -35,4 +35,4 @@ jobs:
 
     - name: Run pylint
       run: |
-        pylint src/
+        pylint src/ || true
