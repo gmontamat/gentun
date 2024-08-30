@@ -24,10 +24,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install 'flit>=3.8.0'
 
-    - name: Install project dependencies
-      run: |
-        flit install --deps develop
-
     - name: Build the package
       run: |
         flit build
