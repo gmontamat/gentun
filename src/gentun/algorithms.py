@@ -60,7 +60,7 @@ class GeneticAlgorithm:
 
     def evolve(self, maximize: bool) -> None:
         """Run a single generation."""
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement this method.")
 
 
 class Tournament(GeneticAlgorithm):

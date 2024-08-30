@@ -1,7 +1,13 @@
 """
-A collection of individuals with
-different gene values (hyperparameters)
-that will be evaluated with train data.
+The Population class manages a group of individuals sharing the same
+genetic structure. It provides functionality for initializing,
+evolving, and analyzing populations of individuals.
+
+Key features:
+- Initialization of populations with random or predefined individuals
+- Support for local computation and distributed processing using Redis
+- Methods for selecting fittest individuals and evolving the population
+- Integration with various machine learning models via a handler class
 """
 from __future__ import annotations
 
@@ -21,10 +27,9 @@ from .services import RedisController
 
 class Population:
     """
-    Group of individuals that share the same genes. Can be initialized
-    with a sequence of individuals or a population size, in which case,
-    random individuals are created. The get_fittest() method returns
-    the strongest individual.
+    A collection of individuals sharing the same genes. It can be
+    initialized either with a sequence of individuals or by specifying
+    a population size, in which case random individuals are generated.
     """
 
     def __init__(
@@ -104,8 +109,9 @@ class Population:
 
     def duplicate(self, sample_size: int = 0) -> Population:
         """
-        Create an identical population. If sample_size > 0, sample
-        random individuals from population without replacement.
+        Create a copy of the population. If sample_size > 0, randomly
+        select that many individuals without replacement. Otherwise,
+        the returned copy has no individuals.
         """
         individuals = random.sample(self.individuals, sample_size)
         return Population(
@@ -125,8 +131,9 @@ class Population:
 
 class Grid(Population):
     """
-    Population whose individuals are created based on a grid search
-    approach instead of at random.
+    Population with individuals created using a grid search approach.
+    This class generates a population by systematically exploring
+    the parameter space, rather than using random sampling.
     """
 
     def __init__(

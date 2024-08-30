@@ -1,5 +1,5 @@
 """
-gentun: distributed genetic algorithm for hyperparameter tuning
+gentun - Distributed Genetic Algorithm for Hyperparameter Tuning
 """
 from .config import setup_logging
 
