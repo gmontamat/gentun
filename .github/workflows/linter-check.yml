@@ -23,7 +23,7 @@ jobs:
 
     - name: Install project dependencies
       run: |
-        flit install --deps develop
+        flit install --deps develop --extras tensorflow,xgboost
 
     - name: Run isort
       run: |
