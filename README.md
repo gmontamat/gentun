@@ -30,7 +30,7 @@ Feel free to submit your custom [`gentun.models.Handler`](src/gentun/models/base
 and [`gentun.genes.Gene`](src/gentun/genes.py#L12-L44) subclasses to enhance the project. You can also help us speed up
 hyperparameter search with your spare GPU time. Check our documentation on [how to contribute](./CONTRIBUTE.md).
 
-## :construction: Installation
+## Installation
 
 ```bash
 pip install gentun
