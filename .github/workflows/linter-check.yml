@@ -1,10 +1,10 @@
-name: "Code linter check"
+name: "Code linter check and unit tests"
 
 on: [push, pull_request]
 
 jobs:
   main:
-    name: Check code formatting
+    name: Check code formatting and run unit tests
     runs-on: ubuntu-latest
 
     steps:
@@ -28,10 +28,16 @@ jobs:
     - name: Run isort
       run: |
         isort --check src/
+        isort --check tests/
 
     - name: Run black
       run: |
         black --check src/
+        black --check tests/
+
+    - name: Run pytest
+      run: |
+        pytest
 
     - name: Run pylint
       run: |
