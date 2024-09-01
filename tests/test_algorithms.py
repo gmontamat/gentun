@@ -1,32 +1,84 @@
-#!/usr/bin/env python
-"""
-Test the genetic algorithm on a single
-node using the dummy model which sums
-hyperparameter values.
-"""
+import pytest
 
-import os
-import sys
+from gentun.algorithms import GeneticAlgorithm, RussianRoulette, Tournament
+from gentun.genes import RandomChoice
+from gentun.models.base import Dummy
+from gentun.populations import Population
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-if __name__ == "__main__":
-    from gentun.algorithms import RussianRoulette, Tournament
-    from gentun.genes import RandomChoice
-    from gentun.models.base import Dummy
-    from gentun.populations import Population
+@pytest.fixture
+def setup_genes():
+    return [RandomChoice(f"hyperparam_{i + 1}", [0, 1, 2]) for i in range(10)]
 
-    x_train = []
-    y_train = []
 
-    genes = [RandomChoice(f"hyperparam_{i}", [0, 1, 2]) for i in range(10)]
+@pytest.fixture
+def setup_individuals():
+    return [{f"hyperparam_{i + 1}": 1 for i in range(10)}] * 50
 
-    # Run russian roulette with a population of 20 for 50 generations
+
+@pytest.fixture
+def setup_data():
+    return [], []
+
+
+def test_russian_roulette(setup_genes, setup_data):
+    genes = setup_genes
+    x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = RussianRoulette(population)
-    algorithm.run(50)
+    fitness = algorithm.run(100, verbose=False)
+    assert algorithm.current_generation == 101
+    assert fitness == 20
 
-    # Run tournament select with a population of 50 for 20 generations
+
+def test_minimize_russian_roulette(setup_genes, setup_data):
+    genes = setup_genes
+    x_train, y_train = setup_data
+    population = Population(genes, Dummy, 50, x_train, y_train)
+    algorithm = RussianRoulette(population)
+    fitness = algorithm.run(100, maximize=False, patience=10)
+    assert algorithm.current_generation <= 101
+    assert fitness == 0
+
+
+def test_weights_russian_roulette(setup_genes, setup_individuals, setup_data):
+    genes = setup_genes
+    individuals = setup_individuals
+    x_train, y_train = setup_data
+    population = Population(genes, Dummy, [], x_train, y_train)
+    for individual in individuals:
+        population.add_individual(individual)
+    algorithm = RussianRoulette(population)
+    fitness = algorithm.run(100, maximize=False, patience=10)
+    assert algorithm.current_generation <= 101
+    assert fitness == 0
+
+
+def test_tournament(setup_genes, setup_data):
+    genes = setup_genes
+    x_train, y_train = setup_data
+    population = Population(genes, Dummy, 50, x_train, y_train)
+    algorithm = Tournament(population, elitism=False)
+    fitness = algorithm.run(20, patience=3, verbose=False)
+    assert algorithm.current_generation <= 21
+    assert fitness == 20
+
+
+def test_minimize_tournament(setup_genes, setup_data):
+    genes = setup_genes
+    x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = Tournament(population)
-    algorithm.run(20, patience=3)
+    fitness = algorithm.run(20, maximize=False)
+    assert algorithm.current_generation == 21
+    assert fitness == 0
+
+
+def test_genetic_algorithm_evolve(setup_genes, setup_data):
+    genes = setup_genes
+    x_train, y_train = setup_data
+    population = Population(genes, Dummy, 50, x_train, y_train)
+    algorithm = GeneticAlgorithm(population)
+    # Test that calling evolve raises NotImplementedError
+    with pytest.raises(NotImplementedError):
+        algorithm.evolve(maximize=True)
