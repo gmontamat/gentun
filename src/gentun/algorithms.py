@@ -30,7 +30,7 @@ class GeneticAlgorithm:
 
     def run(
         self, generations: int, maximize: bool = True, patience: Optional[int] = None, verbose: bool = True
-    ) -> None:
+    ) -> float:
         """
         Evolve the population for the specified number of generations.
         """
@@ -57,6 +57,7 @@ class GeneticAlgorithm:
                     break
             self.current_generation += 1
         logging.info("Complete! Fittest individual:\n%s", fittest)
+        return fitness
 
     def evolve(self, maximize: bool) -> None:
         """Run a single generation."""
