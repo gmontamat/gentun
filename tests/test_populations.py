@@ -55,8 +55,13 @@ def test_population_init_with_redis(mock_redis):
     handler = MockHandler
     x_train, y_train = [1, 2, 3], [4, 5, 6]
     controller = RedisController("test")
+    # x_train and y_train ignored
     population = Population(genes, handler, 10, x_train, y_train, controller=controller)
     assert len(population) == 10
+    assert all(isinstance(individual, Individual) for individual in population)
+    # No data passed
+    population = Population(genes, handler, 5, controller=controller)
+    assert len(population) == 5
     assert all(isinstance(individual, Individual) for individual in population)
 
 
