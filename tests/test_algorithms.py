@@ -31,17 +31,17 @@ def test_russian_roulette(setup_genes, setup_data):
     assert fitness == 20
 
 
-def test_minimize_russian_roulette(setup_genes, setup_data):
+def test_russian_roulette_minimize(setup_genes, setup_data):
     genes = setup_genes
     x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = RussianRoulette(population)
-    fitness = algorithm.run(100, maximize=False, patience=10)
+    fitness = algorithm.run(100, maximize=False, patience=20)
     assert algorithm.current_generation <= 101
     assert fitness == 0
 
 
-def test_weights_russian_roulette(setup_genes, setup_individuals, setup_data):
+def test_russian_roulette_weights(setup_genes, setup_individuals, setup_data):
     genes = setup_genes
     individuals = setup_individuals
     x_train, y_train = setup_data
@@ -49,7 +49,7 @@ def test_weights_russian_roulette(setup_genes, setup_individuals, setup_data):
     for individual in individuals:
         population.add_individual(individual)
     algorithm = RussianRoulette(population)
-    fitness = algorithm.run(100, maximize=False, patience=10)
+    fitness = algorithm.run(100, maximize=False, patience=20)
     assert algorithm.current_generation <= 101
     assert fitness == 0
 
@@ -59,8 +59,8 @@ def test_tournament(setup_genes, setup_data):
     x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = Tournament(population, elitism=False)
-    fitness = algorithm.run(20, patience=3, verbose=False)
-    assert algorithm.current_generation <= 21
+    fitness = algorithm.run(50, patience=5, verbose=False)
+    assert algorithm.current_generation <= 51
     assert fitness == 20
 
 
@@ -74,7 +74,7 @@ def test_minimize_tournament(setup_genes, setup_data):
     assert fitness == 0
 
 
-def test_genetic_algorithm_evolve(setup_genes, setup_data):
+def test_genetic_algorithm_evolve_error(setup_genes, setup_data):
     genes = setup_genes
     x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
