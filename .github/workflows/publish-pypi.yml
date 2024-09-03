@@ -33,4 +33,4 @@ jobs:
         FLIT_USERNAME: __token__
         FLIT_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        flit publish --repository pypi
+        flit publish
