@@ -21,7 +21,7 @@ jobs:
       id: get_version
       run: |
         VERSION=$(python -c "import re; content=open('src/gentun/__init__.py').read(); version=re.search(r'__version__ = \"(.*?)\"', content).group(1); print(version)")
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Create Tag
       run: |
@@ -29,34 +29,20 @@ jobs:
         git push origin v${{ steps.get_version.outputs.version }}
 
     - name: Generate Release Notes
-      id: generate_release_notes
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const { data: releases } = await github.repos.listReleases({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          });
-          let releaseNotes;
-          if (releases.length === 0) {
-            releaseNotes = `Release of version ${{ steps.get_version.outputs.version }}\n\n` +
-                           `This is the first release.`;
-          } else {
-            const latestRelease = releases[0];
-            releaseNotes = `Release of version ${{ steps.get_version.outputs.version }}\n\n` +
-                           `Changes since last release:\n` +
-                           `${latestRelease.body}`;
-          }
-          return { releaseNotes };
+      id: generate_notes
+      uses: release-drafter/release-drafter@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        config-name: release-drafter.yml
+        version: ${{ steps.get_version.outputs.version }}
 
     - name: Create Release
       uses: actions/create-release@v1
       with:
         tag_name: v${{ steps.get_version.outputs.version }}
-        release_name: Release ${{ steps.get_version.outputs.version }}
-        body: ${{ steps.generate_release_notes.outputs.releaseNotes }}
+        release_name: Release v${{ steps.get_version.outputs.version }}
+        body: ${{ steps.generate_notes.outputs.body }}
         draft: true
         prerelease: false
       env:
