@@ -43,7 +43,8 @@ def test_validate_params():
 
     # Should not raise any exceptions
     hyperparameters = {"param1": 10, "param2": "value", "param3": 3}
-    individual = Individual(genes, handler, x_train, y_train, hyperparameters)
+    kwargs = {"param4": 4}
+    individual = Individual(genes, handler, x_train, y_train, hyperparameters, **kwargs)
     individual.validate_params()
 
     # Should not raise any exceptions

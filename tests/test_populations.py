@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -49,6 +49,31 @@ def test_population_init():
     assert all(isinstance(individual, Individual) for individual in population)
 
 
+@patch("src.gentun.services.redis.StrictRedis")
+def test_population_init_with_redis(mock_redis):
+    genes = [MockIntGene("param1"), MockStrGene("param2")]
+    handler = MockHandler
+    x_train, y_train = [1, 2, 3], [4, 5, 6]
+    controller = RedisController("test")
+    population = Population(genes, handler, 10, x_train, y_train, controller=controller)
+    assert len(population) == 10
+    assert all(isinstance(individual, Individual) for individual in population)
+
+
+def test_population_init_error_cases():
+    genes = [MockIntGene("param1"), MockStrGene("param2")]
+    handler = MockHandler
+    x_train, y_train = [1, 2, 3], [4, 5, 6]
+    # Missing data
+    with pytest.raises(ValueError):
+        Population(genes, handler, 10, x_train=x_train)
+    with pytest.raises(ValueError):
+        Population(genes, handler, 10, y_train=y_train)
+    # Invalid population type
+    with pytest.raises(ValueError):
+        Population(genes, handler, {"param1": 1}, x_train, y_train)
+
+
 def test_population_init_with_individuals():
     genes = [MockIntGene("param1"), MockStrGene("param2")]
     handler = MockHandler
@@ -69,6 +94,15 @@ def test_population_spawn():
     assert individual.hyperparameters == {"param1": 1, "param2": "1"}
 
 
+def test_population_spawn_error():
+    genes = [MockIntGene("param1"), MockStrGene("param2")]
+    handler = MockHandler
+    x_train, y_train = [1, 2, 3], [4, 5, 6]
+    population = Population(genes, handler, 0, x_train, y_train)
+    with pytest.raises(KeyError):
+        individual = population.spawn({"param1": 1})
+
+
 def test_population_add_individual():
     genes = [MockIntGene("param1"), MockStrGene("param2")]
     handler = MockHandler
@@ -79,6 +113,15 @@ def test_population_add_individual():
     assert isinstance(population[0], Individual)
 
 
+def test_population_add_individual_error():
+    genes = [MockIntGene("param1"), MockStrGene("param2")]
+    handler = MockHandler
+    x_train, y_train = [1, 2, 3], [4, 5, 6]
+    population = Population(genes, handler, 0, x_train, y_train)
+    with pytest.raises(ValueError):
+        population.add_individual("param1")
+
+
 def test_population_get_fittest():
     genes = [MockIntGene("param1"), MockStrGene("param2")]
     handler = MockHandler
@@ -87,6 +130,26 @@ def test_population_get_fittest():
     population = Population(genes, handler, individuals, x_train, y_train)
     fittest = population.get_fittest()
     assert isinstance(fittest, Individual)
+
+
+@patch("src.gentun.services.redis.StrictRedis")
+@patch.object(Individual, "send_to_queue", return_value="job_id")
+@patch.object(Individual, "read_from_queue", return_value=0.9)
+def test_population_get_fittest_with_redis(mock_send_to_queue, mock_read_from_queue, mock_redis):
+    genes = [MockIntGene("param1"), MockStrGene("param2")]
+    handler = MockHandler
+    controller = RedisController("test")
+    x_train, y_train = [1, 2, 3], [4, 5, 6]
+    individuals = [Individual(genes, handler, x_train, y_train, {"param1": 1, "param2": "2"}) for _ in range(5)]
+    population = Population(genes, handler, individuals, x_train, y_train, controller=controller)
+    fittest = population.get_fittest()
+    assert isinstance(fittest, Individual)
+    assert mock_send_to_queue.call_count == 5
+    assert mock_read_from_queue.call_count == 5
+    # No new calls
+    fittest = population.get_fittest()
+    assert mock_send_to_queue.call_count == 5
+    assert mock_read_from_queue.call_count == 5
 
 
 def test_population_duplicate():
