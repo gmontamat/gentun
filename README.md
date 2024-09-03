@@ -1,5 +1,10 @@
 # gentun: distributed genetic algorithm for hyperparameter tuning
 
+[![PyPI](https://img.shields.io/pypi/v/gentun)](https://pypi.org/project/gentun/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/gentun)](https://pypi.org/project/gentun/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/gentun)](https://pypi.org/project/gentun/)
+[![PyPI - License](https://img.shields.io/pypi/l/gentun)](https://pypi.org/project/gentun/)
+
 The goal of this project is to create a simple framework
 for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
 like Neural Networks and Gradient Boosting Trees, using a genetic algorithm. Evaluating the fitness of an individual in
@@ -15,25 +20,31 @@ and mutation.
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN](https://arxiv.org/abs/1703.01513) paper
 
-## :construction: Supported models
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Single node](#single-node)
+    - [Pre-defined individuals](#adding-pre-defined-individuals)
+    - [Grid search](#performing-a-grid-search)
+  - [Multiple nodes](#multiple-nodes)
+    - [Redis setup](#redis-setup)
+    - [Controller](#controller-node)
+    - [Workers](#worker-nodes)
+- [Supported models](#supported-models)
+- [Contributing](#contributing)
+- [References](#references)
 
-This project supports hyperparameter tuning for the following models:
-
-- [x] XGBoost regressor and classifier
-- [x] Scikit-learn regressor and classifier
-- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Tensorflow
-- [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
-
-## :construction: Contributing
-
-Feel free to submit your custom [`gentun.models.Handler`](src/gentun/models/base.py#L9-L25)
-and [`gentun.genes.Gene`](src/gentun/genes.py#L12-L44) subclasses to enhance the project. You can also help us speed up
-hyperparameter search with your spare GPU time. Check our documentation on [how to contribute](./CONTRIBUTE.md).
-
-## :construction: Installation
+## Installation
 
 ```bash
 pip install gentun
+```
+
+To setup a development environment, run:
+
+```bash
+python -m pip install --upgrade pip
+pip install 'flit>=3.8.0'
+flit install --deps develop --extras tensorflow,xgboost
 ```
 
 ## Usage
@@ -202,6 +213,29 @@ worker = RedisWorker("experiment", XGBoostCV, host="localhost", port=6379)
 # ... fetch x_train and y_train
 worker.run(x_train, y_train)
 ```
+
+## Supported models
+
+This project supports hyperparameter tuning for the following models:
+
+- [x] XGBoost regressor and classifier
+- [x] Scikit-learn regressor and classifier
+- [x] [Genetic CNN](https://arxiv.org/pdf/1703.01513.pdf) with Tensorflow
+- [ ] [A Genetic Programming Approach to Designing Convolutional Neural Network Architectures](https://arxiv.org/pdf/1704.00764.pdf)
+
+## Contributing
+
+We welcome contributions to enhance this library. You can submit your custom subclasses for:
+- [`gentun.models.Handler`](src/gentun/models/base.py#L9-L25)
+- [`gentun.genes.Gene`](src/gentun/genes.py#L11-L47)
+
+Our roadmap includes:
+- Training data sharing between the controller and worker nodes
+- Proof-of-work validation of what worker nodes submit
+
+You can also help us speed up hyperparameter search by contributing your spare GPU time.
+
+For more details on how to contribute, please check our [contribution guide](./CONTRIBUTE.md).
 
 ## References
 

@@ -1,5 +1,5 @@
 """
-Handle job queueing and results retrieval.
+This module handles job queueing and results retrieval using Redis.
 """
 
 import inspect
@@ -32,10 +32,7 @@ worker.run(x_train, y_train)
 
 
 class RedisController:
-    """
-    When passed to a population, will use redis as a queue to send jobs
-    to workers.
-    """
+    """Use redis as a queueing service to send jobs to workers."""
 
     def __init__(
         self,

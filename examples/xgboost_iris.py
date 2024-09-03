@@ -5,13 +5,14 @@ with the iris dataset using xgboost.
 """
 
 import csv
-import os
-import sys
 from typing import Tuple
 
 import numpy as np
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+from gentun.algorithms import Tournament
+from gentun.genes import RandomChoice, RandomLogUniform, RandomUniform
+from gentun.models.xgboost import XGBoostCV
+from gentun.populations import Population
 
 
 def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -33,11 +34,6 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
 
 
 if __name__ == "__main__":
-    from gentun.algorithms import Tournament
-    from gentun.genes import RandomChoice, RandomLogUniform, RandomUniform
-    from gentun.models.xgboost import XGBoostCV
-    from gentun.populations import Population
-
     # xgboost hyperparameters
     genes = [
         RandomLogUniform("eta", minimum=0.001, maximum=0.1, base=10),  # aka. learning_rate

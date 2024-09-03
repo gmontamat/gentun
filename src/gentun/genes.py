@@ -1,7 +1,6 @@
 """
-The genes of a population represent
-the hyperparameters we want to
-optimize with the algorithm.
+The genes of a population represent the hyperparameters the algorithm
+will otimize through reproduction and mutation of individuals.
 """
 
 import math
@@ -11,9 +10,8 @@ from typing import Any, Sequence
 
 class Gene:
     """
-    A hyperparameter we want to optimize.
-    Define its name and distribution from
-    which to sample values when called.
+    Represent the hyperparameter "signature". Define its name and
+    distribution from which to sample values when called.
     """
 
     def __init__(self, name: str):
@@ -23,21 +21,26 @@ class Gene:
         return self.name
 
     def __call__(self):
-        """Return a random sample value following the gene specification."""
-        raise NotImplementedError
+        """
+        Return a random sample value following the gene specification.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
 
     def sample(self, percentile: float):
         """
-        Return a sample value given the percentile.
-        This method enables grid search.
+        Given a percentile (a float between 0 and 1), return a sample
+        value based on the gene's distribution. This method is useful
+        for grid search.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement this method.")
 
     def mutate(self, value: Any, rate: float):
         """
-        Mutate a gene. The default behavior is
-        to re-sample with probability 'rate'.
-        Subclasses may want to refine this method.
+        Mutate the gene's value. By default, this method re-samples a
+        new value with a probability equal to 'rate'. If the random
+        probability is greater than or equal to 'rate', the original
+        value is returned. Subclasses may override this method to
+        implement more specific mutation behaviors.
         """
         if random.random() < rate:
             return self()
@@ -45,9 +48,7 @@ class Gene:
 
 
 class RandomChoice(Gene):
-    """
-    Get random value from a sequence.
-    """
+    """Get random value from a sequence."""
 
     def __init__(self, name: str, values: Sequence[Any]):
         super().__init__(name)
@@ -64,10 +65,7 @@ class RandomChoice(Gene):
 
 
 class RandomUniform(Gene):
-    """
-    Sample random uniform number
-    between minimum and maximum.
-    """
+    """Sample random uniform number between minimum and maximum."""
 
     def __init__(self, name: str, minimum: float, maximum: float):
         super().__init__(name)
@@ -83,8 +81,8 @@ class RandomUniform(Gene):
 
 class RandomLogUniform(Gene):
     """
-    Uniform random number in log scale.
-    Useful for parameters such as lr.
+    Generates a random number uniformly distributed on a logarithmic
+    scale. Useful for parameters like learning rates.
     """
 
     def __init__(
@@ -121,7 +119,7 @@ class RandomLogUniform(Gene):
 
 class Binary(Gene):
     """
-    Gene used in Genetic CNN paper
+    Gene used in Genetic CNN paper.
     http://arxiv.org/pdf/1703.01513
     """
 

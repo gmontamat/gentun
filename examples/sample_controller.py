@@ -4,18 +4,13 @@ Test the genetic algorithm on multiple nodes using the Dummy model
 which sums hyperparameter values.
 """
 
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+from gentun.algorithms import RussianRoulette, Tournament
+from gentun.genes import RandomChoice
+from gentun.models.base import Dummy
+from gentun.populations import Population
+from gentun.services import RedisController
 
 if __name__ == "__main__":
-    from gentun.algorithms import RussianRoulette, Tournament
-    from gentun.genes import RandomChoice
-    from gentun.models.base import Dummy
-    from gentun.populations import Population
-    from gentun.services import RedisController
-
     genes = [RandomChoice(f"hyperparam_{i}", [0, 1, 2]) for i in range(10)]
     # This assumes you're running a Redis server on localhost in port 6379
     # The simplest way to set it up is via docker:

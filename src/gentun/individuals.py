@@ -1,6 +1,8 @@
 """
-Define an individual with its genes, duplication, reproduction,
-crossover, and mutation processes.
+Define an individual with its genes and genetic operations.
+This module provides the Individual class, which represents a member
+of a population in genetic algorithms. It includes methods for
+duplication, reproduction, crossover, and mutation processes.
 """
 from __future__ import annotations
 
@@ -17,8 +19,8 @@ from .services import RedisController
 
 class Individual:
     """
-    Member of a population with specific gene values
-    -the hyperparameters of the model-.
+    Member of a population with specific gene values, which are the
+    hyperparameters of the model.
     """
 
     def __init__(

@@ -6,14 +6,15 @@ on section 4.1.1 of the Genetic CNN paper.
 http://arxiv.org/pdf/1703.01513
 """
 
-import os
 import random
-import sys
 from typing import Tuple
 
 import numpy as np
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+from gentun.algorithms import RussianRoulette
+from gentun.genes import Binary
+from gentun.models.tensorflow import GeneticCNN
+from gentun.populations import Population
 
 
 def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np.ndarray]:
@@ -37,11 +38,6 @@ def load_mnist(file_name: str, sample_size: int = 10000) -> Tuple[np.ndarray, np
 
 
 if __name__ == "__main__":
-    from gentun.algorithms import RussianRoulette
-    from gentun.genes import Binary
-    from gentun.models.tensorflow import GeneticCNN
-    from gentun.populations import Population
-
     # Genetic CNN static parameters
     kwargs = {
         "nodes": (3, 5),

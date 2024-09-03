@@ -5,15 +5,16 @@ with the iris dataset using scikit-learn.
 """
 
 import csv
-import os
-import sys
 from typing import Tuple
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+from gentun.algorithms import Tournament
+from gentun.genes import RandomChoice
+from gentun.models.sklearn import SklearnCV
+from gentun.populations import Population
 
 
 def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -35,11 +36,6 @@ def parse_iris(file_name: str) -> Tuple[np.ndarray, np.ndarray]:
 
 
 if __name__ == "__main__":
-    from gentun.algorithms import Tournament
-    from gentun.genes import RandomChoice
-    from gentun.models.sklearn import SklearnCV
-    from gentun.populations import Population
-
     # RandomForestClassifier hyperparameters
     genes = [
         RandomChoice("n_estimators", [10, 20, 30, 40, 50]),

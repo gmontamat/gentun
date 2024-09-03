@@ -1,4 +1,4 @@
-name: "Lint PR"
+name: "Semantic PR Check"
 
 on:
   pull_request_target:
@@ -7,6 +7,8 @@ on:
       - edited
       - synchronize
       - reopened
+    branches:
+      - develop
 
 permissions:
   pull-requests: read
