@@ -64,7 +64,7 @@ def test_tournament(setup_genes, setup_data):
     assert fitness == 20
 
 
-def test_minimize_tournament(setup_genes, setup_data):
+def test_tournament_minimize(setup_genes, setup_data):
     genes = setup_genes
     x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
@@ -79,6 +79,6 @@ def test_genetic_algorithm_evolve_error(setup_genes, setup_data):
     x_train, y_train = setup_data
     population = Population(genes, Dummy, 50, x_train, y_train)
     algorithm = GeneticAlgorithm(population)
-    # Test that calling evolve raises NotImplementedError
+    # Calling the evolve method raises NotImplementedError
     with pytest.raises(NotImplementedError):
         algorithm.evolve(maximize=True)
