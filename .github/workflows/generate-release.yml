@@ -36,6 +36,7 @@ jobs:
       with:
         config-name: release-drafter.yml
         version: ${{ steps.get_version.outputs.version }}
+        publish: false
 
     - name: Create Release
       uses: actions/create-release@v1
