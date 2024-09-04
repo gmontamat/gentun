@@ -18,7 +18,7 @@ and mutation.
 
 *"[...] The number of possible network structures increases exponentially with the number of layers in the network,
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
-[Genetic CNN](https://arxiv.org/abs/1703.01513) paper
+[Genetic CNN paper](https://arxiv.org/abs/1703.01513)
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -37,6 +37,12 @@ which inspires us to adopt the genetic algorithm to efficiently traverse this la
 
 ```bash
 pip install gentun
+```
+
+Some model handlers require additional libraries. You can install the extra packages with:
+
+```bash
+pip install "gentun[xgboost]"  # or "gentun[tensorflow]"
 ```
 
 To setup a development environment, run:
@@ -235,7 +241,7 @@ Our roadmap includes:
 
 You can also help us speed up hyperparameter search by contributing your spare GPU time.
 
-For more details on how to contribute, please check our [contribution guide](./CONTRIBUTE.md).
+For more details on how to contribute, please check our [contribution guidelines](./CONTRIBUTE.md).
 
 ## References
 
