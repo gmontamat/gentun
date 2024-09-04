@@ -241,7 +241,7 @@ Our roadmap includes:
 
 You can also help us speed up hyperparameter search by contributing your spare GPU time.
 
-For more details on how to contribute, please check our [contribution guidelines](./CONTRIBUTE.md).
+For more details on how to contribute, please check our [contribution guidelines](.github/CONTRIBUTING.md).
 
 ## References
 
