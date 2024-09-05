@@ -23,7 +23,7 @@ jobs:
         VERSION=$(python -c "import re; content=open('src/gentun/__init__.py').read(); version=re.search(r'__version__ = \"(.*?)\"', content).group(1); print(version)")
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Create Tag
+    - name: Create and Push Tag
       run: |
         git tag v${{ steps.get_version.outputs.version }}
         git push origin v${{ steps.get_version.outputs.version }}
@@ -38,13 +38,13 @@ jobs:
         version: ${{ steps.get_version.outputs.version }}
         publish: false
 
-    - name: Create Release
-      uses: actions/create-release@v1
-      with:
-        tag_name: v${{ steps.get_version.outputs.version }}
-        release_name: Release v${{ steps.get_version.outputs.version }}
-        body: ${{ steps.generate_notes.outputs.body }}
-        draft: true
-        prerelease: false
+    - name: Create and Upload Release
+      id: create_release
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.get_version.outputs.version }}
+        name: Release ${{ steps.get_version.outputs.version }}
+        body: ${{ steps.generate_notes.outputs.body }}
+        draft: true
