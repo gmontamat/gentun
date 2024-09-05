@@ -1,6 +1,3 @@
-<a name="readme-top"></a>
-
-<br />
 <div align="center">
   <h1 style="margin: 0;" align="center">gentun</h1>
   <p>
@@ -33,7 +30,7 @@
           <a href="#multiple-nodes">Multiple Nodes</a>
           <ul>
             <li><a href="#redis-setup">Redis Setup</a></li>
-            <li><a href="#controler-node">Controller Node</a></li>
+            <li><a href="#controller-node">Controller Node</a></li>
             <li><a href="#worker-nodes">Worker Nodes</a></li>
           </ul>
         </li>
