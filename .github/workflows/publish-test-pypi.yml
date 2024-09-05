@@ -1,12 +1,12 @@
 name: "Publish to Test PyPI"
 
 on:
-  push:
-    branches:
-      - develop
+  release:
+    types: [created]
 
 jobs:
   publish:
+    if: github.event.release.draft == true
     name: Publish to Test PyPI
     runs-on: ubuntu-latest
 
