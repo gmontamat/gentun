@@ -47,10 +47,10 @@
 The goal of this project is to create a simple framework
 for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
 like Neural Networks and Gradient Boosting Trees, using a genetic algorithm. Evaluating the fitness of an individual in
-a population involves training a model with a specific set of hyperparameters, which is a time-consuming process. To
-address this problem, we provide a controller-worker . Multiple workers can handle model training and cross-validation
-of individuals provided by a controller while this controller manages the generation of offspring through reproduction
-and mutation.
+a population requires training a model with a specific set of hyperparameters, which is a time-consuming task. To
+address this issue, we offer a controller-worker system: multiple workers can perform model training and
+cross-validation of individuals provided by a controller while this controller manages the generation of offspring
+through reproduction and mutation.
 
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/param_tuning.html) on Parameter Tuning
@@ -65,7 +65,7 @@ which inspires us to adopt the genetic algorithm to efficiently traverse this la
 pip install gentun
 ```
 
-Some model handlers require additional libraries. You can install the extra packages with:
+Some model handlers require additional libraries. You can also install their dependencies with:
 
 ```bash
 pip install "gentun[xgboost]"  # or "gentun[tensorflow]"
