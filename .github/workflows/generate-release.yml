@@ -36,7 +36,6 @@ jobs:
       with:
         config-name: release-drafter.yml
         version: ${{ steps.get_version.outputs.version }}
-        publish: false
 
     - name: Create and Upload Release
       id: create_release
