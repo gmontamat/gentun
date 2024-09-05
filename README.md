@@ -1,9 +1,51 @@
-# gentun: distributed genetic algorithm for hyperparameter tuning
+<a name="readme-top"></a>
+
+<br />
+<div align="center">
+  <h1 style="margin: 0;" align="center">gentun</h1>
+  <p>
+    Python package for distributed genetic algorithm-based hyperparameter tuning
+  </p>
+</div>
 
 [![PyPI](https://img.shields.io/pypi/v/gentun)](https://pypi.org/project/gentun/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/gentun)](https://pypi.org/project/gentun/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/gentun)](https://pypi.org/project/gentun/)
 [![PyPI - License](https://img.shields.io/pypi/l/gentun)](https://pypi.org/project/gentun/)
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li>
+      <a href="#usage">Usage</a>
+      <ul>
+        <li>
+          <a href="#single-node">Single Node</a>
+          <ul>
+            <li><a href="#adding-pre-defined-individuals">Adding Pre-defined Individuals</a></li>
+            <li><a href="#performing-a-grid-search">Performing a Grid Search</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#multiple-nodes">Multiple Nodes</a>
+          <ul>
+            <li><a href="#redis-setup">Redis Setup</a></li>
+            <li><a href="#controler-node">Controller Node</a></li>
+            <li><a href="#worker-nodes">Worker Nodes</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#supported-models">Supported Models</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#references">References</a></li>
+  </ol>
+</details>
+
+## About The Project
 
 The goal of this project is to create a simple framework
 for [hyperparameter](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)) tuning of machine learning models,
@@ -19,19 +61,6 @@ and mutation.
 *"[...] The number of possible network structures increases exponentially with the number of layers in the network,
 which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN paper](https://arxiv.org/abs/1703.01513)
-
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Single node](#single-node)
-    - [Pre-defined individuals](#adding-pre-defined-individuals)
-    - [Grid search](#performing-a-grid-search)
-  - [Multiple nodes](#multiple-nodes)
-    - [Redis setup](#redis-setup)
-    - [Controller](#controller-node)
-    - [Workers](#worker-nodes)
-- [Supported models](#supported-models)
-- [Contributing](#contributing)
-- [References](#references)
 
 ## Installation
 
@@ -55,7 +84,7 @@ flit install --deps develop --extras tensorflow,xgboost
 
 ## Usage
 
-### Single node
+### Single Node
 
 The most basic way to run the algorithm is using a single machine, as shown in the following example where we use it to
 find the optimal hyperparameters of an [`xgboost`](https://xgboost.readthedocs.io/en/stable/) model. First, we download
@@ -120,7 +149,7 @@ follows this convention. Nonetheless, to make the framework more flexible, you c
 `algorithm.run()` to override this behavior and minimize your fitness metric (e.g. when you want to minimize the loss,
 for example *rmse* or *binary crossentropy*).
 
-#### Adding pre-defined individuals
+#### Adding Pre-defined Individuals
 
 Oftentimes, it's convenient to initialize the genetic algorithm with some known individuals instead of a random
 population. You can add custom individuals to the population before running the genetic algorithm if you already have
@@ -143,7 +172,7 @@ population = Population(genes, XGBoostCV, 49, x_train, y_train, **kwargs)
 population.add_individual(hyperparams)
 ```
 
-#### Performing a grid search
+#### Performing a Grid Search
 
 Grid search is also widely used for hyperparameter optimization. This framework provides `gentun.populations.Grid`,
 which can be used to conduct a grid search over a single generation pass. You must use genes which define the `sample()`
@@ -170,7 +199,7 @@ population = Grid(genes, XGBoostCV, gene_samples, x_train, y_train, **kwargs)
 Running the genetic algorithm on this population for just one generation is equivalent to doing a grid search over 10
 `learning_rate` values, all `max_depth` values between 3 and 10, and all `min_child_weight` values between 0 and 10.
 
-### Multiple nodes
+### Multiple Nodes
 
 You can speed up the genetic algorithm by using several machines to evaluate individuals in parallel. One of node has to
 act as a *controller*, generating populations and running the genetic algorithm. Each time this *controller* node needs
@@ -178,7 +207,7 @@ to evaluate an individual from a population, it will send a request to a job que
 receive the model's hyperparameters and perform model fitting through k-fold cross-validation. The more *workers* you
 run, the faster the algorithm will evolve each generation.
 
-#### Redis setup
+#### Redis Setup
 
 The simplest way to start the Redis service that will host the communication queues is through `docker`:
 
@@ -186,7 +215,7 @@ The simplest way to start the Redis service that will host the communication que
 docker run -d --rm --name gentun-redis -p 6379:6379 redis
 ```
 
-#### Controller node
+#### Controller Node
 
 To run the distributed genetic algorithm, define a `gentun.services.RedisController` and pass it to the `Population`
 instead of the `x_train` and `y_train` data. When the algorithm needs to evaluate the fittest individual, it will pass
@@ -204,7 +233,7 @@ population = Population(genes, XGBoostCV, 100, controller=controller, **kwargs)
 # ... run algorithm
 ```
 
-#### Worker nodes
+#### Worker Nodes
 
 The worker nodes are defined using the `gentun.services.RedisWorker` class and passing the handler to it. Then, we use
 its `run()` method with train data to begin processing jobs from the queue. You can use as many nodes as desired as long
@@ -220,7 +249,7 @@ worker = RedisWorker("experiment", XGBoostCV, host="localhost", port=6379)
 worker.run(x_train, y_train)
 ```
 
-## Supported models
+## Supported Models
 
 This project supports hyperparameter tuning for the following models:
 
@@ -245,13 +274,13 @@ For more details on how to contribute, please check our [contribution guidelines
 
 ## References
 
-### Genetic algorithms
+### Genetic Algorithms
 
 * Artificial Intelligence: A Modern Approach. 3rd edition. Section 4.1.4
 * https://github.com/DEAP/deap
 * http://www.theprojectspot.com/tutorial-post/creating-a-genetic-algorithm-for-beginners/3
 
-### XGBoost parameter tuning
+### XGBoost Parameter Tuning
 
 * http://xgboost.readthedocs.io/en/latest/parameter.html
 * http://xgboost.readthedocs.io/en/latest/how_to/param_tuning.html
