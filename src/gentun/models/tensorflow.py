@@ -1,6 +1,7 @@
 """
 Models implemented in tensorflow
 """
+
 import logging
 import os
 from typing import Any, Sequence, Union
