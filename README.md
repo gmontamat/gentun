@@ -55,8 +55,8 @@ through reproduction and mutation.
 *"Parameter tuning is a dark art in machine learning, the optimal parameters of a model can depend on many scenarios."*
 ~ [XGBoost tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/param_tuning.html) on Parameter Tuning
 
-*"[...] The number of possible network structures increases exponentially with the number of layers in the network,
-which inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
+*"The number of possible network structures increases exponentially with the number of layers in the network, which
+inspires us to adopt the genetic algorithm to efficiently traverse this large search space."* ~
 [Genetic CNN paper](https://arxiv.org/abs/1703.01513)
 
 ## Installation
