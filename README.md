@@ -1,4 +1,10 @@
+<a name="readme-top"></a>
+
+<br />
 <div align="center">
+  <a href="https://github.com/gmontamat/gentun">
+    <img alt="plugin-icon" src="assets/icon.png">
+  </a>
   <h1 style="margin: 0;" align="center">gentun</h1>
   <p>
     Python package for distributed genetic algorithm-based hyperparameter tuning
