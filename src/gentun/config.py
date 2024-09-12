@@ -1,6 +1,7 @@
 """
 logging configurations
 """
+
 import logging
 import sys
 
