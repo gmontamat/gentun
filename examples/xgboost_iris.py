@@ -11,7 +11,7 @@ import numpy as np
 
 from gentun.algorithms import Tournament
 from gentun.genes import RandomChoice, RandomLogUniform, RandomUniform
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.populations import Population
 
 
@@ -63,6 +63,6 @@ if __name__ == "__main__":
     # Fetch training data
     x_train, y_train = parse_iris("iris.data")
     # Run genetic algorithm on a population of 50 for 100 generations
-    population = Population(genes, XGBoostCV, 50, x_train, y_train, **kwargs)
+    population = Population(genes, XGBoost, 50, x_train, y_train, **kwargs)
     algorithm = Tournament(population)
     algorithm.run(100, maximize=False)
