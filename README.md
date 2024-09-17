@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/gmontamat/gentun">
-    <img alt="plugin-icon" src="assets/icon.png">
+    <img alt="plugin-icon" src="https://github.com/gmontamat/gentun/blob/develop/assets/icon.png?raw=true">
   </a>
   <h1 style="margin: 0;" align="center">gentun</h1>
   <p>
