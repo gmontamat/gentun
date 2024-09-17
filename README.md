@@ -113,7 +113,7 @@ genes = [
 ]
 ```
 
-We are using the `gentun.models.xgboost.XGBoostCV` handler, which performs k-fold cross validation with available train
+We are using the `gentun.models.xgboost.XGBoost` handler, which performs k-fold cross validation with available train
 data and returns an average metric over the folds. Thus, we need to define some static parameters which are shared
 across the population over all generations:
 
@@ -134,11 +134,11 @@ passed either through genes or keyword arguments.
 
 ```python
 from gentun.algorithms import Tournament
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.populations import Population
 
 # Run the genetic algorithm with a population of 50 for 100 generations
-population = Population(genes, XGBoostCV, 50, x_train, y_train, **kwargs)
+population = Population(genes, XGBoost, 50, x_train, y_train, **kwargs)
 algorithm = Tournament(population)
 algorithm.run(100, maximize=False)
 ```
@@ -159,7 +159,7 @@ population. You can add custom individuals to the population before running the 
 an intuition of which hyperparameters work well with your model:
 
 ```python
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.populations import Population
 
 
@@ -171,7 +171,7 @@ hyperparams = {
 }
 
 # Generate a random population and then add a custom individual
-population = Population(genes, XGBoostCV, 49, x_train, y_train, **kwargs)
+population = Population(genes, XGBoost, 49, x_train, y_train, **kwargs)
 population.add_individual(hyperparams)
 ```
 
@@ -183,7 +183,7 @@ method, so that uniformly distributed hyperparameter values are obtained with it
 
 ```python
 from gentun.genes import RandomChoice, RandomLogUniform
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.populations import Grid
 
 
@@ -196,7 +196,7 @@ genes = [
 gene_samples = [10, 8, 11]  # How many samples we want to get from each gene
 
 # Generate a grid of individuals
-population = Grid(genes, XGBoostCV, gene_samples, x_train, y_train, **kwargs)
+population = Grid(genes, XGBoost, gene_samples, x_train, y_train, **kwargs)
 ```
 
 Running the genetic algorithm on this population for just one generation is equivalent to doing a grid search over 10
@@ -227,12 +227,12 @@ processes. Once this is done, the mutation and reproduction steps are run by the
 produced.
 
 ```python
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.services import RedisController
 
 controller = RedisController("experiment", host="localhost", port=6379)
 # ... define genes
-population = Population(genes, XGBoostCV, 100, controller=controller, **kwargs)
+population = Population(genes, XGBoost, 100, controller=controller, **kwargs)
 # ... run algorithm
 ```
 
@@ -243,10 +243,10 @@ its `run()` method with train data to begin processing jobs from the queue. You 
 as they have network access to the redis server.
 
 ```python
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.services import RedisWorker
 
-worker = RedisWorker("experiment", XGBoostCV, host="localhost", port=6379)
+worker = RedisWorker("experiment", XGBoost, host="localhost", port=6379)
 
 # ... fetch x_train and y_train
 worker.run(x_train, y_train)
@@ -264,7 +264,7 @@ This project supports hyperparameter tuning for the following models:
 ## Contributing
 
 We welcome contributions to enhance this library. You can submit your custom subclasses for:
-- [`gentun.models.Handler`](src/gentun/models/base.py#L9-L25)
+- [`gentun.models.Handler`](src/gentun/models/base.py#L11-L30)
 - [`gentun.genes.Gene`](src/gentun/genes.py#L11-L47)
 
 Our roadmap includes:
