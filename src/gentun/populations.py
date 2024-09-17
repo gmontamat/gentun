@@ -39,6 +39,8 @@ class Population:
         individuals: Union[Sequence[Dict[str, Any]], Sequence[Individual], int],
         x_train: Any = None,
         y_train: Any = None,
+        x_test: Any = None,
+        y_test: Any = None,
         controller: Optional[RedisController] = None,
         **kwargs,
     ):
@@ -57,6 +59,8 @@ class Population:
                 raise ValueError("Missing `y_train` for population.")
         self.x_train = x_train
         self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
         self.controller = controller
         # Create individuals
         if isinstance(individuals, int):
@@ -81,7 +85,14 @@ class Population:
                 if str(gene) not in hyperparameters:
                     raise KeyError(f"Missing `{self.handler}`'s hyperparameter '{str(gene)}'.")
         return Individual(
-            self.genes, self.handler, self.x_train, self.y_train, hyperparameters=hyperparameters, **self.kwargs
+            self.genes,
+            self.handler,
+            self.x_train,
+            self.y_train,
+            self.x_test,
+            self.y_test,
+            hyperparameters=hyperparameters,
+            **self.kwargs,
         )
 
     def add_individual(self, individual: Optional[Union[Dict[str, Any], Individual]] = None) -> None:
@@ -115,7 +126,15 @@ class Population:
         """
         individuals = random.sample(self.individuals, sample_size)
         return Population(
-            self.genes, self.handler, individuals, self.x_train, self.y_train, self.controller, **self.kwargs
+            self.genes,
+            self.handler,
+            individuals,
+            self.x_train,
+            self.y_train,
+            self.x_test,
+            self.y_test,
+            self.controller,
+            **self.kwargs,
         )
 
     def __len__(self) -> int:
@@ -143,10 +162,12 @@ class Grid(Population):
         gene_samples: Union[int, Sequence[int]],
         x_train: Any = None,
         y_train: Any = None,
+        x_test: Any = None,
+        y_test: Any = None,
         controller: Optional[Handler] = None,
         **kwargs,
     ):
-        super().__init__(genes, handler, [], x_train, y_train, controller, **kwargs)
+        super().__init__(genes, handler, [], x_train, y_train, x_test, y_test, controller, **kwargs)
         # Define the grid and add individuals
         if isinstance(gene_samples, Sequence):
             assert len(gene_samples) == len(genes), "`genes` and `gene_samples` must have the same length."

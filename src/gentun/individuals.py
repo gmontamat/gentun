@@ -23,12 +23,16 @@ class Individual:
     hyperparameters of the model.
     """
 
+    _params_validated = False
+
     def __init__(
         self,
         genes: Sequence[Gene],
         handler: Type[Handler],
         x_train: Any,
         y_train: Any,
+        x_test: Any,
+        y_test: Any,
         hyperparameters: Dict[str, Any],
         **kwargs: Any,
     ):
@@ -36,9 +40,13 @@ class Individual:
         self.handler = handler
         self.x_train = x_train
         self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
         self.hyperparameters = hyperparameters
         self.kwargs = kwargs  # model parameters that remain unchanged
-        self.validate_params()
+        if not Individual._params_validated:
+            self.validate_params()
+            Individual._params_validated = True
         self.fitness = None  # Until evaluated an individual fitness is unknown
         self.job_id = None
 
@@ -93,7 +101,9 @@ class Individual:
         """Instantiate model and evaluate."""
         if self.fitness is not None:
             return self.fitness
-        self.fitness = self.handler(**{**self.hyperparameters, **self.kwargs}).evaluate(self.x_train, self.y_train)
+        self.fitness = self.handler(**{**self.hyperparameters, **self.kwargs})(
+            self.x_train, self.y_train, self.x_test, self.y_test
+        )
         return self.fitness
 
     def get_fitness(self) -> Optional[float]:
@@ -129,7 +139,16 @@ class Individual:
                 child[param] = partner[param]
             else:
                 child[param] = value
-        return Individual(self.genes, self.handler, self.x_train, self.y_train, hyperparameters=child, **self.kwargs)
+        return Individual(
+            self.genes,
+            self.handler,
+            self.x_train,
+            self.y_train,
+            self.x_test,
+            self.y_test,
+            hyperparameters=child,
+            **self.kwargs,
+        )
 
     def crossover(self, partner: Individual, rate: float = 1.0) -> None:
         """
@@ -157,6 +176,8 @@ class Individual:
             self.handler,
             self.x_train,
             self.y_train,
+            self.x_test,
+            self.y_test,
             hyperparameters=self.hyperparameters.copy(),
             **self.kwargs,
         )
