@@ -14,7 +14,7 @@ class MockHandler(Handler):
         self.param1 = param1
         self.param2 = param2
 
-    def evaluate(self, x_train, y_train):
+    def create_train_evaluate(self, x_train, y_train, x_test, y_test):
         return 0.9
 
 
@@ -83,7 +83,10 @@ def test_population_init_with_individuals():
     genes = [MockIntGene("param1"), MockStrGene("param2")]
     handler = MockHandler
     x_train, y_train = [1, 2, 3], [4, 5, 6]
-    individuals = [Individual(genes, handler, x_train, y_train, {"param1": 1, "param2": "2"}) for _ in range(5)]
+    x_test, y_test = [6, 5, 4], [3, 2, 1]
+    individuals = [
+        Individual(genes, handler, x_train, y_train, x_test, y_test, {"param1": 1, "param2": "2"}) for _ in range(5)
+    ]
     population = Population(genes, handler, individuals, x_train, y_train)
     assert len(population) == 5
     assert all(isinstance(individual, Individual) for individual in population)
@@ -131,7 +134,10 @@ def test_population_get_fittest():
     genes = [MockIntGene("param1"), MockStrGene("param2")]
     handler = MockHandler
     x_train, y_train = [1, 2, 3], [4, 5, 6]
-    individuals = [Individual(genes, handler, x_train, y_train, {"param1": 1, "param2": "2"}) for _ in range(5)]
+    x_test, y_test = [6, 5, 4], [3, 2, 1]
+    individuals = [
+        Individual(genes, handler, x_train, y_train, x_test, y_test, {"param1": 1, "param2": "2"}) for _ in range(5)
+    ]
     population = Population(genes, handler, individuals, x_train, y_train)
     fittest = population.get_fittest()
     assert isinstance(fittest, Individual)
@@ -145,8 +151,11 @@ def test_population_get_fittest_with_redis(mock_send_to_queue, mock_read_from_qu
     handler = MockHandler
     controller = RedisController("test")
     x_train, y_train = [1, 2, 3], [4, 5, 6]
-    individuals = [Individual(genes, handler, x_train, y_train, {"param1": 1, "param2": "2"}) for _ in range(5)]
-    population = Population(genes, handler, individuals, x_train, y_train, controller=controller)
+    x_test, y_test = [6, 5, 4], [3, 2, 1]
+    individuals = [
+        Individual(genes, handler, x_train, y_train, x_test, y_test, {"param1": 1, "param2": "2"}) for _ in range(5)
+    ]
+    population = Population(genes, handler, individuals, x_train, y_train, x_test, y_test, controller=controller)
     fittest = population.get_fittest()
     assert isinstance(fittest, Individual)
     assert mock_send_to_queue.call_count == 5
