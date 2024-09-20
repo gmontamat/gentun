@@ -54,7 +54,7 @@ class KFoldCrossValidation(Handler):
         metric = 0.0
         cross_validation = self.fold_method(n_splits=self.folds, shuffle=self.shuffle)
         for fold, (train, validation) in enumerate(cross_validation.split(x_train, y)):
-            logging.info("KFold %d of %d", fold + 1, self.folds)
+            logging.debug("KFold %d of %d", fold + 1, self.folds)
             metric += (
                 self.create_train_evaluate(x_train[train], y_train[train], x_train[validation], y_train[validation])
                 / self.folds
