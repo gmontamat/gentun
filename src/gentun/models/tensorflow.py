@@ -187,7 +187,5 @@ class GeneticCNN(Handler):
             self.model.compile(
                 optimizer=Adam(learning_rate=learning_rate), loss="binary_crossentropy", metrics=["accuracy"]
             )
-            self.model.fit(
-                x_train, y_train, epochs=epochs, batch_size=self.batch_size, validation_data=(x_test, y_test), verbose=1
-            )
+            self.model.fit(x_train, y_train, epochs=epochs, batch_size=self.batch_size, verbose=1)
         return self.model.evaluate(x_test, y_test, verbose=0)[1]
