@@ -33,9 +33,9 @@ def load_cifar10(data_dir: str, test_size: int = 10000) -> Tuple[np.ndarray, np.
         batch_data = unpickle(batch_file)
         x_train.append(batch_data[b"data"])
         y_raw.extend(batch_data[b"labels"])
-    x_train = np.concatenate(x_train).reshape(-1, 32, 32, 3).astype(np.float32)
+    x_train = np.concatenate(x_train).astype(np.float32)
+    x_train = np.moveaxis(x_train.reshape(-1, 3, 32, 32), 1, -1) / 255
     y_raw = np.array(y_raw, dtype=np.int32)
-    x_train = x_train / 255.0  # Normalize the channels
     # One-hot encode the output
     y_train = np.zeros((y_raw.size, 10))
     y_train[np.arange(y_raw.size), y_raw] = 1
