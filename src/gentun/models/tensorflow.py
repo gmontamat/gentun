@@ -30,6 +30,7 @@ class GeneticCNN(Handler):
         nodes: Sequence[int],
         kernels_per_layer: Sequence[int],
         kernel_sizes: Sequence[Union[Sequence[int], int]],
+        pool_sizes: Sequence[Union[Sequence[int], int]],
         dense_units: int = 500,
         dropout_probability: float = 0.5,
         input_shape: Sequence[int] = (28, 28, 1),
@@ -42,8 +43,8 @@ class GeneticCNN(Handler):
     ):
         super().__init__()
         assert (
-            len(nodes) == len(kernels_per_layer) == len(kernel_sizes)
-        ), "`nodes`, `kernels_per_layer`, and `kernel_sizes` should have the same length (#layers)."
+            len(nodes) == len(kernels_per_layer) == len(kernel_sizes) == len(pool_sizes)
+        ), "`nodes`, `kernels_per_layer`, `kernel_sizes`, and `pool_sizes` should have the same length (#layers)."
         # Define node connections
         connections = []
         for i in range(len(nodes)):
@@ -55,6 +56,7 @@ class GeneticCNN(Handler):
             input_shape,
             kernels_per_layer,
             kernel_sizes,
+            pool_sizes,
             dense_units,
             dropout_probability,
             num_classes,
@@ -137,6 +139,7 @@ class GeneticCNN(Handler):
         input_shape: Sequence[int],
         kernels_per_layer: Sequence[int],
         kernel_sizes: Sequence[Union[Sequence[int], int]],
+        pool_sizes: Sequence[Union[Sequence[int], int]],
         dense_units: int,
         dropout_probability: float,
         num_classes: int,
@@ -155,7 +158,7 @@ class GeneticCNN(Handler):
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding="same")(x)
                 x = Activation("relu")(x)
-            x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(x)
+            x = MaxPool2D(pool_size=pool_sizes[layer], strides=(2, 2))(x)
         x = Flatten()(x)
         x = Dense(dense_units, activation="relu")(x)
         x = Dropout(dropout_probability)(x)

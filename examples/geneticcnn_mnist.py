@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """
-Implementation of Genetic CNN on MNIST data.
-This is a replica of the algorithm described
-on section 4.1 of the Genetic CNN paper.
+Implementation of Genetic CNN on MNIST data. This is a replica of the
+algorithm described on section 4.1 of the Genetic CNN paper.
 http://arxiv.org/pdf/1703.01513
 """
 
@@ -18,10 +17,7 @@ from gentun.populations import Population
 
 
 def load_mnist(file_name: str, test_size: int = 10000) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Load, sample, one-hot encode,
-    and normalize MNIST dataset.
-    """
+    """Load, sample, one-hot encode, and normalize MNIST."""
     mnist = np.load(file_name)
     x = mnist["x_train"].reshape(mnist["x_train"].shape[:-2] + (-1,))
     y_raw = mnist["y_train"]
@@ -43,13 +39,14 @@ if __name__ == "__main__":
         "input_shape": (28, 28, 1),
         "kernels_per_layer": (20, 50),
         "kernel_sizes": ((5, 5), (5, 5)),
+        "pool_sizes": ((2, 2), (2, 2)),
         "dense_units": 500,
         "dropout_probability": 0.5,
         "classes": 10,
         "epochs": (20, 4, 1),
         "learning_rate": (1e-3, 1e-4, 1e-5),
-        "batch_size": 32,
-        "plot": False,
+        "batch_size": 32,  # Not mentioned in the paper, but 32 is a good default for most cases
+        "plot": False,  # if True, graphviz needs to be installed on your system
     }
     # Genetic CNN hyperparameters
     genes = [Binary(f"S_{i + 1}", int(K_s * (K_s - 1) / 2)) for i, K_s in enumerate(kwargs["nodes"])]
