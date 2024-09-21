@@ -215,4 +215,4 @@ def test_str():
     x_test, y_test = [6, 5, 4], [3, 2, 1]
     hyperparameters = {"param1": 10, "param2": "value"}
     individual = Individual(genes, handler, x_train, y_train, x_test, y_test, hyperparameters)
-    assert str(individual) == pprint.pformat(hyperparameters)
+    assert str(individual) == str(hyperparameters)
