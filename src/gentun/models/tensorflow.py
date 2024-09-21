@@ -183,9 +183,11 @@ class GeneticCNN(Handler):
         """
         self.reset_weights()
         for epochs, learning_rate in zip(self.epochs, self.learning_rate):
-            logging.info("Training %d epochs with learning rate %.4f", epochs, learning_rate)
+            logging.debug("Training %d epochs with learning rate %4.1g", epochs, learning_rate)
             self.model.compile(
                 optimizer=Adam(learning_rate=learning_rate), loss="binary_crossentropy", metrics=["accuracy"]
             )
-            self.model.fit(x_train, y_train, epochs=epochs, batch_size=self.batch_size, verbose=1)
+            self.model.fit(
+                x_train, y_train, epochs=epochs, batch_size=self.batch_size, validation_data=(x_test, y_test), verbose=1
+            )
         return self.model.evaluate(x_test, y_test, verbose=0)[1]
