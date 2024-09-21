@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import inspect
 import logging
-import pprint
 import random
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
@@ -104,6 +103,7 @@ class Individual:
         self.fitness = self.handler(**{**self.hyperparameters, **self.kwargs})(
             self.x_train, self.y_train, self.x_test, self.y_test
         )
+        logging.info("Individual evaluated: %s; fitness: %s", self, self.fitness)
         return self.fitness
 
     def get_fitness(self) -> Optional[float]:
@@ -117,6 +117,7 @@ class Individual:
     def read_from_queue(self, server: RedisController) -> None:
         """Read fitness results from queue."""
         self.fitness = server.wait_for_result(self.job_id)
+        logging.info("Individual received: %s; fitness: %s", self, self.fitness)
 
     def __getitem__(self, key: str) -> Any:
         """Select a hyperparameter."""
@@ -128,7 +129,7 @@ class Individual:
             self.fitness = None
         self.hyperparameters[key] = value
 
-    def reproduce(self, partner: Individual, rate: float = 1.0) -> Individual:
+    def reproduce(self, partner: Individual, rate: float = 0.5) -> Individual:
         """
         Mix genes from self and partner at random and return a new
         instance of an individual. Does not mutate parents.
@@ -150,7 +151,7 @@ class Individual:
             **self.kwargs,
         )
 
-    def crossover(self, partner: Individual, rate: float = 1.0) -> None:
+    def crossover(self, partner: Individual, rate: float = 0.5) -> None:
         """
         Swap genes from self and partner at random.
         Mutates each parent.
@@ -171,7 +172,7 @@ class Individual:
         Create a copy of the individual. Required when algorithms sample
         with replacement.
         """
-        return Individual(
+        individual = Individual(
             self.genes,
             self.handler,
             self.x_train,
@@ -181,7 +182,10 @@ class Individual:
             hyperparameters=self.hyperparameters.copy(),
             **self.kwargs,
         )
+        individual.fitness = self.fitness
+        return individual
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return hyperparameters which identify the individual."""
-        return pprint.pformat(self.hyperparameters)
+        combined_params = {**self.hyperparameters, **self.kwargs}
+        return str(combined_params)
