@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import inspect
 import logging
-import pprint
 import random
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
@@ -23,12 +22,16 @@ class Individual:
     hyperparameters of the model.
     """
 
+    _params_validated = False
+
     def __init__(
         self,
         genes: Sequence[Gene],
         handler: Type[Handler],
         x_train: Any,
         y_train: Any,
+        x_test: Any,
+        y_test: Any,
         hyperparameters: Dict[str, Any],
         **kwargs: Any,
     ):
@@ -36,9 +39,13 @@ class Individual:
         self.handler = handler
         self.x_train = x_train
         self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
         self.hyperparameters = hyperparameters
         self.kwargs = kwargs  # model parameters that remain unchanged
-        self.validate_params()
+        if not Individual._params_validated:
+            self.validate_params()
+            Individual._params_validated = True
         self.fitness = None  # Until evaluated an individual fitness is unknown
         self.job_id = None
 
@@ -93,7 +100,10 @@ class Individual:
         """Instantiate model and evaluate."""
         if self.fitness is not None:
             return self.fitness
-        self.fitness = self.handler(**{**self.hyperparameters, **self.kwargs}).evaluate(self.x_train, self.y_train)
+        self.fitness = self.handler(**{**self.hyperparameters, **self.kwargs})(
+            self.x_train, self.y_train, self.x_test, self.y_test
+        )
+        logging.info("Individual evaluated: %s; fitness: %s", self, self.fitness)
         return self.fitness
 
     def get_fitness(self) -> Optional[float]:
@@ -107,6 +117,7 @@ class Individual:
     def read_from_queue(self, server: RedisController) -> None:
         """Read fitness results from queue."""
         self.fitness = server.wait_for_result(self.job_id)
+        logging.info("Individual received: %s; fitness: %s", self, self.fitness)
 
     def __getitem__(self, key: str) -> Any:
         """Select a hyperparameter."""
@@ -118,7 +129,7 @@ class Individual:
             self.fitness = None
         self.hyperparameters[key] = value
 
-    def reproduce(self, partner: Individual, rate: float = 1.0) -> Individual:
+    def reproduce(self, partner: Individual, rate: float = 0.5) -> Individual:
         """
         Mix genes from self and partner at random and return a new
         instance of an individual. Does not mutate parents.
@@ -129,9 +140,18 @@ class Individual:
                 child[param] = partner[param]
             else:
                 child[param] = value
-        return Individual(self.genes, self.handler, self.x_train, self.y_train, hyperparameters=child, **self.kwargs)
+        return Individual(
+            self.genes,
+            self.handler,
+            self.x_train,
+            self.y_train,
+            self.x_test,
+            self.y_test,
+            hyperparameters=child,
+            **self.kwargs,
+        )
 
-    def crossover(self, partner: Individual, rate: float = 1.0) -> None:
+    def crossover(self, partner: Individual, rate: float = 0.5) -> None:
         """
         Swap genes from self and partner at random.
         Mutates each parent.
@@ -152,15 +172,20 @@ class Individual:
         Create a copy of the individual. Required when algorithms sample
         with replacement.
         """
-        return Individual(
+        individual = Individual(
             self.genes,
             self.handler,
             self.x_train,
             self.y_train,
+            self.x_test,
+            self.y_test,
             hyperparameters=self.hyperparameters.copy(),
             **self.kwargs,
         )
+        individual.fitness = self.fitness
+        return individual
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return hyperparameters which identify the individual."""
-        return pprint.pformat(self.hyperparameters)
+        combined_params = {**self.hyperparameters, **self.kwargs}
+        return str(combined_params)

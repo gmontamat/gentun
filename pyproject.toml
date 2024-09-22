@@ -307,8 +307,8 @@ valid-classmethod-first-arg="cls"
 valid-metaclass-classmethod-first-arg="cls"
 
 [tool.pylint.'DESIGN']
-max-args=5
-max-attributes=7
+max-args=9  # 5
+max-attributes=12  # 7
 max-bool-expr=5
 max-branches=12
 max-locals=15
@@ -322,6 +322,7 @@ min-public-methods=2
 allow-wildcard-with-all="no"
 analyse-fallback-blocks="no"
 deprecated-modules="optparse,tkinter.tix"
+ignored-modules="tensorflow,tensorflow.keras"
 
 [tool.pylint.'EXCEPTIONS']
 overgeneral-exceptions= [

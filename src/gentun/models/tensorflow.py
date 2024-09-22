@@ -8,7 +8,6 @@ from typing import Any, Sequence, Union
 
 import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
 from tensorflow.keras.models import Model
@@ -31,11 +30,11 @@ class GeneticCNN(Handler):
         nodes: Sequence[int],
         kernels_per_layer: Sequence[int],
         kernel_sizes: Sequence[Union[Sequence[int], int]],
+        pool_sizes: Sequence[Union[Sequence[int], int]],
         dense_units: int = 500,
         dropout_probability: float = 0.5,
         input_shape: Sequence[int] = (28, 28, 1),
         num_classes: int = 10,
-        kfold: int = 5,
         epochs: Union[int, Sequence[int]] = (3,),
         learning_rate: Union[int, Sequence[int]] = (1e-3,),
         batch_size: int = 32,
@@ -44,8 +43,8 @@ class GeneticCNN(Handler):
     ):
         super().__init__()
         assert (
-            len(nodes) == len(kernels_per_layer) == len(kernel_sizes)
-        ), "`nodes`, `kernels_per_layer`, and `kernel_sizes` should have the same length (#layers)."
+            len(nodes) == len(kernels_per_layer) == len(kernel_sizes) == len(pool_sizes)
+        ), "`nodes`, `kernels_per_layer`, `kernel_sizes`, and `pool_sizes` should have the same length (#layers)."
         # Define node connections
         connections = []
         for i in range(len(nodes)):
@@ -57,13 +56,13 @@ class GeneticCNN(Handler):
             input_shape,
             kernels_per_layer,
             kernel_sizes,
+            pool_sizes,
             dense_units,
             dropout_probability,
             num_classes,
         )
         if plot:
             self.plot()
-        self.kfold = kfold
         self.batch_size = batch_size
         self.epochs = (epochs,) if isinstance(epochs, int) else epochs
         self.learning_rate = (learning_rate,) if isinstance(learning_rate, float) else learning_rate
@@ -140,6 +139,7 @@ class GeneticCNN(Handler):
         input_shape: Sequence[int],
         kernels_per_layer: Sequence[int],
         kernel_sizes: Sequence[Union[Sequence[int], int]],
+        pool_sizes: Sequence[Union[Sequence[int], int]],
         dense_units: int,
         dropout_probability: float,
         num_classes: int,
@@ -158,7 +158,7 @@ class GeneticCNN(Handler):
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding="same")(x)
                 x = Activation("relu")(x)
-            x = MaxPool2D(pool_size=(2, 2), strides=(2, 2))(x)
+            x = MaxPool2D(pool_size=pool_sizes[layer], strides=(2, 2))(x)
         x = Flatten()(x)
         x = Dense(dense_units, activation="relu")(x)
         x = Dropout(dropout_probability)(x)
@@ -174,21 +174,18 @@ class GeneticCNN(Handler):
             elif hasattr(layer, "kernel_initializer"):
                 layer.kernel.assign(layer.kernel_initializer(tf.shape(layer.kernel)))
 
-    def evaluate(self, x_train: np.ndarray, y_train: np.ndarray) -> float:
+    def create_train_evaluate(
+        self, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray, y_test: np.ndarray
+    ) -> float:
         """
         Train model using k-fold cross validation and
         return mean value of the validation accuracy.
         """
-        acc = 0.0
-        cross_validation = StratifiedKFold(n_splits=self.kfold, shuffle=True)
-        for fold, (train, validation) in enumerate(cross_validation.split(x_train, np.where(y_train == 1)[1])):
-            logging.info("KFold %d of %d", fold + 1, self.kfold)
-            self.reset_weights()
-            for epochs, learning_rate in zip(self.epochs, self.learning_rate):
-                logging.info("Training %d epochs with learning rate %.4f", epochs, learning_rate)
-                self.model.compile(
-                    optimizer=Adam(learning_rate=learning_rate), loss="binary_crossentropy", metrics=["accuracy"]
-                )
-                self.model.fit(x_train[train], y_train[train], epochs=epochs, batch_size=self.batch_size, verbose=1)
-            acc += self.model.evaluate(x_train[validation], y_train[validation], verbose=0)[1] / self.kfold
-        return acc
+        self.reset_weights()
+        for epochs, learning_rate in zip(self.epochs, self.learning_rate):
+            logging.debug("Training %d epochs with learning rate %4.1g", epochs, learning_rate)
+            self.model.compile(
+                optimizer=Adam(learning_rate=learning_rate), loss="binary_crossentropy", metrics=["accuracy"]
+            )
+            self.model.fit(x_train, y_train, epochs=epochs, batch_size=self.batch_size, verbose=1)
+        return self.model.evaluate(x_test, y_test, verbose=0)[1]

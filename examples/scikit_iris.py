@@ -13,7 +13,7 @@ from sklearn.metrics import f1_score
 
 from gentun.algorithms import Tournament
 from gentun.genes import RandomChoice
-from gentun.models.sklearn import SklearnCV
+from gentun.models.sklearn import Sklearn
 from gentun.populations import Population
 
 
@@ -47,12 +47,12 @@ if __name__ == "__main__":
         "sklearn_model": RandomForestClassifier,
         "sklearn_metric": f1_score,
         "metric_kwargs": {"average": "macro"},
-        "kfold": 5,
+        "folds": 5,
     }
 
     # Fetch training data
     x_train, y_train = parse_iris("iris.data")
     # Run genetic algorithm on a population of 10 for 10 generations
-    population = Population(genes, SklearnCV, 10, x_train, y_train, **kwargs)
+    population = Population(genes, Sklearn, 10, x_train, y_train, **kwargs)
     algorithm = Tournament(population)
     algorithm.run(10)

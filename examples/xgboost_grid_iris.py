@@ -11,7 +11,7 @@ import numpy as np
 
 from gentun.algorithms import Tournament
 from gentun.genes import RandomChoice, RandomLogUniform
-from gentun.models.xgboost import XGBoostCV
+from gentun.models.xgboost import XGBoost
 from gentun.populations import Grid
 
 
@@ -56,6 +56,6 @@ if __name__ == "__main__":
     # Fetch training data
     x_train, y_train = parse_iris("iris.data")
     # Run genetic algorithm on a grid population for 1 generation
-    population = Grid(genes, XGBoostCV, gene_samples, x_train, y_train, **kwargs)
+    population = Grid(genes, XGBoost, gene_samples, x_train, y_train, **kwargs)
     algorithm = Tournament(population)
     algorithm.run(1, maximize=False)
