@@ -25,8 +25,8 @@ from gentun.models.{module} import {handler}
 from gentun.services import RedisWorker
 
 worker = RedisWorker("{name}", {handler}, host="{host}", port={port})
-x_train, y_train = ...  # get data
-worker.run(x_train, y_train)
+x_train, y_train, x_test, y_test = ...  # get data
+worker.run(x_train, y_train, x_test, y_test)
 ```
 """
 
@@ -116,11 +116,11 @@ class RedisWorker:
         self.results_queue = results_queue
         self.timeout = timeout
 
-    def process_job(self, x_train: Any, y_train: Any, **kwargs) -> float:
+    def process_job(self, x_train: Any, y_train: Any, x_test: Any, y_test: Any, **kwargs) -> float:
         """Call model handler, return fitness."""
-        return self.handler(**kwargs).evaluate(x_train, y_train)
+        return self.handler(**kwargs)(x_train, y_train)
 
-    def run(self, x_train: Any, y_train: Any):
+    def run(self, x_train: Any, y_train: Any, x_test: Any = None, y_test: Any = None):
         """Read jobs from queue, call handler, and return fitness."""
         logging.info("Worker started (Ctrl+C to stop), waiting for jobs...")
         try:
@@ -130,7 +130,7 @@ class RedisWorker:
                     data = json.loads(job_data)
                     if data["name"] == self.name and data["handler"] == self.handler.__name__:
                         logging.info("Working on job %s", data["id"])
-                        fitness = self.process_job(x_train, y_train, **data["kwargs"])
+                        fitness = self.process_job(x_train, y_train, x_test, y_test, **data["kwargs"])
                         result = {"id": data["id"], "name": self.name, "fitness": fitness}
                         self.client.rpush(self.results_queue, json.dumps(result))
                 else:
