@@ -118,7 +118,7 @@ class RedisWorker:
 
     def process_job(self, x_train: Any, y_train: Any, x_test: Any, y_test: Any, **kwargs) -> float:
         """Call model handler, return fitness."""
-        return self.handler(**kwargs)(x_train, y_train)
+        return self.handler(**kwargs)(x_train, y_train, x_test, y_test)
 
     def run(self, x_train: Any, y_train: Any, x_test: Any = None, y_test: Any = None):
         """Read jobs from queue, call handler, and return fitness."""
