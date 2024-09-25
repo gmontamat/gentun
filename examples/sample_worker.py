@@ -13,8 +13,8 @@ if __name__ == "__main__":
     # docker run -d --rm --name gentun-redis -p 6379:6379 redis
     worker = RedisWorker("test", Dummy, host="localhost", port=6379)
 
-    x_train = []
-    y_train = []
+    x_train, y_train = [], []
+    x_test, y_test = [], []
 
     # Start worker process
-    worker.run(x_train, y_train)
+    worker.run(x_train, y_train, x_test, y_test)

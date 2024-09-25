@@ -9,7 +9,17 @@ from typing import Any, Sequence, Union
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Activation, Add, Conv2D, Dense, Dropout, Flatten, Input, MaxPool2D
+from tensorflow.keras.layers import (
+    Activation,
+    Add,
+    BatchNormalization,
+    Conv2D,
+    Dense,
+    Dropout,
+    Flatten,
+    Input,
+    MaxPool2D,
+)
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
@@ -124,6 +134,7 @@ class GeneticCNN(Handler):
                     else:
                         tmp = add_vars[0]
                 tmp = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding="same")(tmp)
+                tmp = BatchNormalization()(tmp)
                 tmp = Activation("relu")(tmp)
                 all_vars[i] = tmp
                 if not outs:
@@ -150,6 +161,7 @@ class GeneticCNN(Handler):
         for layer, kernels in enumerate(kernels_per_layer):
             # Default input node
             x = Conv2D(kernels, kernel_size=kernel_sizes[layer], strides=(1, 1), padding="same")(x)
+            x = BatchNormalization()(x)
             x = Activation("relu")(x)
             # Decode internal connections
             # If at least one bit is 1, then we need to construct the Directed Acyclic Graph
@@ -157,6 +169,7 @@ class GeneticCNN(Handler):
                 x = self.build_dag(x, nodes[layer], connections[layer], kernels)
                 # Output node
                 x = Conv2D(kernels, kernel_size=(3, 3), strides=(1, 1), padding="same")(x)
+                x = BatchNormalization()(x)
                 x = Activation("relu")(x)
             x = MaxPool2D(pool_size=pool_sizes[layer], strides=(2, 2))(x)
         x = Flatten()(x)

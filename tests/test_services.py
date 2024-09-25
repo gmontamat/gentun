@@ -12,7 +12,7 @@ class MockHandler(Handler):
         self.param1 = param1
         self.param2 = param2
 
-    def evaluate(self, x_train, y_train):
+    def create_train_evaluate(self, x_train, y_train, x_test, y_test):
         return 0.9
 
 
@@ -47,14 +47,14 @@ def test_redis_controller_send_job(mock_redis):
     # Send first job
     job_id = controller.send_job(MockHandler, param1=1, param2="value")
     assert isinstance(job_id, str)
-    job = json.loads(mock_redis.return_value.rpush.call_args[0][1])
+    job = json.loads(mock_redis.return_value.lpush.call_args[0][1])
     assert job["name"] == "test"
     assert job["handler"] == "MockHandler"
     assert job["kwargs"] == {"param1": 1, "param2": "value"}
     # Send a second job
     job_id = controller.send_job(MockHandler, param1=2, param2="value2")
     assert isinstance(job_id, str)
-    job = json.loads(mock_redis.return_value.rpush.call_args[0][1])
+    job = json.loads(mock_redis.return_value.lpush.call_args[0][1])
     assert job["name"] == "test"
     assert job["handler"] == "MockHandler"
     assert job["kwargs"] == {"param1": 2, "param2": "value2"}
@@ -66,7 +66,7 @@ def test_redis_controller_wait_for_result(mock_redis):
     job_id = "test_job_id"
     result = {"id": job_id, "name": "test", "fitness": 0.9}
     ignore_result = {"id": "not_test_job_id", "name": "test", "fitness": 0.9}
-    mock_redis.return_value.lpop.side_effect = [None, json.dumps(ignore_result), json.dumps(result)]
+    mock_redis.return_value.rpop.side_effect = [None, json.dumps(ignore_result), json.dumps(result)]
     fitness = controller.wait_for_result(job_id)
     assert fitness == 0.9
 
@@ -75,7 +75,7 @@ def test_redis_controller_wait_for_result(mock_redis):
 def test_redis_controller_wait_for_result_timeout(mock_redis):
     controller = RedisController("test", timeout=1)
     job_id = "test_job_id"
-    mock_redis.return_value.lpop.return_value = None
+    mock_redis.return_value.rpop.return_value = None
     with pytest.raises(TimeoutError):
         controller.wait_for_result(job_id)
 
@@ -94,7 +94,7 @@ def test_redis_worker_init(mock_redis):
 @patch("src.gentun.services.redis.StrictRedis")
 def test_redis_worker_process_job(mock_redis):
     worker = RedisWorker("test", MockHandler)
-    fitness = worker.process_job([1, 2, 3], [4, 5, 6], param1=1, param2="value")
+    fitness = worker.process_job([1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 1, 2], param1=1, param2="value")
     assert fitness == 0.9
 
 
@@ -113,12 +113,18 @@ def test_redis_worker_run(mock_redis):
         "handler": "NotMockHandler",
         "kwargs": {"param1": 1, "param2": "value"},
     }
-    mock_redis.return_value.lpop.side_effect = [json.dumps(ignore_job_data)] + [json.dumps(job_data)] + [None]
+    mock_redis.return_value.rpop.side_effect = [json.dumps(ignore_job_data), json.dumps(job_data), None]
     with patch.object(worker, "process_job", return_value=0.9) as mock_process_job:
         with patch("time.sleep", side_effect=KeyboardInterrupt):
-            worker.run([1, 2, 3], [4, 5, 6])
-            mock_process_job.assert_called_once_with([1, 2, 3], [4, 5, 6], param1=1, param2="value")
-            result = json.loads(mock_redis.return_value.rpush.call_args[0][1])
+            worker.run([1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 1, 2])
+            mock_process_job.assert_called_once_with(
+                [1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 1, 2], param1=1, param2="value"
+            )
+            result = json.loads(mock_redis.return_value.lpush.call_args[0][1])
             assert result["id"] == "test_job_id"
             assert result["name"] == "test"
             assert result["fitness"] == 0.9
+    mock_redis.return_value.rpop.side_effect = [json.dumps(ignore_job_data)]
+    with patch("json.loads", side_effect=KeyboardInterrupt):
+        worker.run([1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 1, 2])
+        mock_redis.return_value.lpush.assert_any_call(worker.job_queue, json.dumps(ignore_job_data))

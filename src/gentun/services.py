@@ -25,8 +25,8 @@ from gentun.models.{module} import {handler}
 from gentun.services import RedisWorker
 
 worker = RedisWorker("{name}", {handler}, host="{host}", port={port})
-x_train, y_train = ...  # get data
-worker.run(x_train, y_train)
+x_train, y_train, x_test, y_test = ...  # get data
+worker.run(x_train, y_train, x_test, y_test)
 ```
 """
 
@@ -79,19 +79,22 @@ class RedisController:
             "handler": handler.__name__,
             "kwargs": kwargs,
         }
-        self.client.rpush(self.job_queue, json.dumps(job))
+        self.client.lpush(self.job_queue, json.dumps(job))
         return job_id
 
     def wait_for_result(self, job_id) -> float:
         """Retrieve fitness from the results queue."""
         start_time = time.time()
         while time.time() - start_time < self.timeout:
-            result = self.client.lpop(self.results_queue)
-            if result:
-                result = json.loads(result)
+            data = self.client.rpop(self.results_queue)
+            if data:
+                result = json.loads(data)
                 if result["name"] == self.name and result["id"] == job_id:
                     return result["fitness"]
-            time.sleep(1)
+                # Leave data back in queue
+                self.client.lpush(self.results_queue, data)
+            else:
+                time.sleep(1)
         raise TimeoutError(f"Could not get job with id {job_id}")
 
 
@@ -116,25 +119,30 @@ class RedisWorker:
         self.results_queue = results_queue
         self.timeout = timeout
 
-    def process_job(self, x_train: Any, y_train: Any, **kwargs) -> float:
+    def process_job(self, x_train: Any, y_train: Any, x_test: Any, y_test: Any, **kwargs) -> float:
         """Call model handler, return fitness."""
-        return self.handler(**kwargs).evaluate(x_train, y_train)
+        return self.handler(**kwargs)(x_train, y_train, x_test, y_test)
 
-    def run(self, x_train: Any, y_train: Any):
+    def run(self, x_train: Any, y_train: Any, x_test: Any = None, y_test: Any = None):
         """Read jobs from queue, call handler, and return fitness."""
         logging.info("Worker started (Ctrl+C to stop), waiting for jobs...")
         try:
             while True:
-                job_data = self.client.lpop(self.job_queue)
+                job_data = self.client.rpop(self.job_queue)
                 if job_data:
                     data = json.loads(job_data)
                     if data["name"] == self.name and data["handler"] == self.handler.__name__:
                         logging.info("Working on job %s", data["id"])
-                        fitness = self.process_job(x_train, y_train, **data["kwargs"])
+                        fitness = self.process_job(x_train, y_train, x_test, y_test, **data["kwargs"])
                         result = {"id": data["id"], "name": self.name, "fitness": fitness}
-                        self.client.rpush(self.results_queue, json.dumps(result))
+                        self.client.lpush(self.results_queue, json.dumps(result))
+                    else:
+                        # Job not used, do not dump
+                        self.client.lpush(self.job_queue, job_data)
                 else:
                     logging.debug("No jobs in queue, sleeping for a while...")
                     time.sleep(1)
         except KeyboardInterrupt:
+            if job_data:
+                self.client.lpush(self.job_queue, job_data)
             logging.info("Bye!")
