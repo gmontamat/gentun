@@ -75,6 +75,7 @@ line-length = 120
 fast = true
 
 [tool.isort]
+profile = "black"
 line_length = 120
 
 [tool.coverage.run]
